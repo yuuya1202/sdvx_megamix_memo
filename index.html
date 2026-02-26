@@ -628,8 +628,7 @@
                 onToggleFavorite();
             };
 
-            const handleMemoSave = (e) => {
-                e.stopPropagation();
+            const handleMemoSave = () => {
                 if (!isLoggedIn) return;
                 onSavePersonalMemo(localMemo);
             };
@@ -745,14 +744,10 @@
                                             placeholder="注意点などをメモ..."
                                             value={localMemo}
                                             onChange={(e) => setLocalMemo(e.target.value)}
+                                            onBlur={handleMemoSave}
                                         />
-                                        <div className="flex justify-end">
-                                            <button 
-                                                onClick={handleMemoSave}
-                                                className="bg-blue-500 text-white font-black text-xs px-4 py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-                                            >
-                                                保存する
-                                            </button>
+                                        <div className="text-[9px] text-gray-400 font-bold px-1 text-right">
+                                            ※入力欄から離れると自動保存されます
                                         </div>
                                     </div>
                                 </div>
@@ -1192,7 +1187,9 @@
                 }
             };
 
-            const isLevelFilterActive = useMemo(() => selectedLevels.length > 0, [selectedLevels]);
+            const isLevelFilterActive = useMemo(() => {
+                return selectedLevels.length > 0;
+            }, [selectedLevels]);
 
             const processedSongs = useMemo(() => {
                 return songs.map(s => {
