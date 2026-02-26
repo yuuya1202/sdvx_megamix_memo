@@ -14,6 +14,15 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.FirebaseSDK = { initializeApp, getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query };
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
 
@@ -379,6 +388,98 @@
             border: 2px solid #000;
             box-shadow: 2px 2px 0px #000;
         }
+
+        .auth-btn {
+            background: white;
+            border: 2px solid #000;
+            padding: 8px 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 3px 3px 0px #000;
+            transition: all 0.2s;
+            height: 42px;
+            font-weight: 900;
+            font-size: 13px;
+        }
+        .auth-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000;
+        }
+        .auth-btn.logged-in {
+            background: #fdfdfd;
+            border-color: #666;
+            color: #666;
+            box-shadow: 3px 3px 0px #666;
+        }
+
+        .fav-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #d1d5db;
+        }
+        .fav-btn.active {
+            border-color: #fbbf24;
+            background: #fffbeb;
+            color: #fbbf24;
+            box-shadow: 2px 2px 0px #fbbf24;
+        }
+        
+        .memo-textarea {
+            width: 100%;
+            border: 2px solid #000;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            resize: vertical;
+            min-height: 60px;
+            box-shadow: inset 2px 2px 0px rgba(0,0,0,0.05);
+            background: #f9fafb;
+        }
+        .memo-textarea:focus {
+            outline: none;
+            border-color: #52b788;
+            background: #fff;
+        }
+        .memo-textarea:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+            border-color: #9ca3af;
+        }
+
+        .fav-filter-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 16px;
+            border: 3px solid #000;
+            background: white;
+            font-weight: 900;
+            font-size: 14px;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+        .fav-filter-toggle.active {
+            background: #fffbeb;
+            border-color: #fbbf24;
+            color: #b45309;
+            box-shadow: 4px 4px 0px #fbbf24;
+        }
     </style>
 </head>
 <body>
@@ -387,8 +488,20 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect } = React;
 
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSa7sQ4L9w894TSK8RPs4-XdFZ28CUEgA",
+            authDomain: "sdvx-megamix-memo.firebaseapp.com",
+            projectId: "sdvx-megamix-memo",
+            storageBucket: "sdvx-megamix-memo.firebasestorage.app",
+            messagingSenderId: "808467911876",
+            appId: "1:808467911876:web:4b220e81fb99b240532591",
+            measurementId: "G-PLYC5FW8QK"
+        };
+
         const GAS_URL = "https://script.google.com/macros/s/AKfycbx7_U9VEerpLL3tKpW8fTAOFnETZFzIdbu2ZTyFRwkHASWIRCFNHZldo24VPL2laIjS3Q/exec";
         const ITEMS_PER_PAGE = 30;
+        const APP_ID = "sdvx-megamix-memo";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -449,10 +562,15 @@
             );
         };
 
-        const SongCard = ({ song, showDangerBadge, showTips }) => {
+        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, personalMemo, onSavePersonalMemo }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
+            const [localMemo, setLocalMemo] = useState(personalMemo || "");
             
+            useEffect(() => {
+                setLocalMemo(personalMemo || "");
+            }, [personalMemo]);
+
             const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
             const borderColor = useMemo(() => getBorderColor(song.difficult), [song.difficult]);
 
@@ -473,6 +591,18 @@
                 if (level === "1") return <div className="danger-badge danger-badge-1">要警戒</div>;
                 if (level === "2") return <div className="danger-badge danger-badge-2">危険</div>;
                 return null;
+            };
+
+            const handleFavoriteClick = (e) => {
+                e.stopPropagation();
+                if (!isLoggedIn) return;
+                onToggleFavorite();
+            };
+
+            const handleMemoSave = (e) => {
+                e.stopPropagation();
+                if (!isLoggedIn) return;
+                onSavePersonalMemo(localMemo);
             };
 
             return (
@@ -511,7 +641,17 @@
                                     </div>
                                 </div>
                             </div>
-                            <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl"></i></div>
+                            <div className="flex flex-col items-center gap-2">
+                                {isLoggedIn && (
+                                    <button 
+                                        onClick={handleFavoriteClick} 
+                                        className={`fav-btn ${isFavorite ? 'active' : ''}`}
+                                    >
+                                        <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-xl`}></i>
+                                    </button>
+                                )}
+                                <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl"></i></div>
+                            </div>
                         </div>
                         <div className={`memo-area ${isOpen ? 'open' : ''}`}>
                             <div className="flex items-center mb-2 text-black">
@@ -556,12 +696,37 @@
                                         <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i>
                                         <span>Tips</span>
                                     </div>
-                                    <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px]">
+                                    <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px] mb-4">
                                         <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">
                                             {song.memo || "メモはありません"}
                                         </p>
                                     </div>
                                 </>
+                            )}
+
+                            {isLoggedIn && (
+                                <div className="mt-4 pt-4 border-t-2 border-gray-100" onClick={e => e.stopPropagation()}>
+                                    <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
+                                        <i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i>
+                                        <span>自分用メモ</span>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <textarea 
+                                            className="memo-textarea" 
+                                            placeholder="注意点などをメモ..."
+                                            value={localMemo}
+                                            onChange={(e) => setLocalMemo(e.target.value)}
+                                        />
+                                        <div className="flex justify-end">
+                                            <button 
+                                                onClick={handleMemoSave}
+                                                className="bg-blue-500 text-white font-black text-xs px-4 py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                                            >
+                                                保存する
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -574,6 +739,223 @@
                     />
                 </>
             );
+        };
+
+        const SetlistManager = ({ songs, songMap, setlists, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
+            const [view, setView] = useState("list"); // "list" | "edit"
+            const [editingSetlist, setEditingSetlist] = useState(null);
+            const [selectingSlot, setSelectingSlot] = useState(null); // 0-4
+            
+            const [isSongModalOpen, setIsSongModalOpen] = useState(false);
+            const [searchTerm, setSearchTerm] = useState("");
+            const [openSetlists, setOpenSetlists] = useState({});
+
+            const handleCreate = () => {
+                setEditingSetlist({ id: Date.now().toString(), name: "", songs: [null, null, null, null, null] });
+                setView("edit");
+            };
+
+            const handleEdit = (sl) => {
+                setEditingSetlist({ ...sl, songs: [...sl.songs] });
+                setView("edit");
+            };
+
+            const openSongModal = (slotIndex) => {
+                setSelectingSlot(slotIndex);
+                setSearchTerm("");
+                setIsSongModalOpen(true);
+            };
+
+            const isTitleAlreadySelected = (songIdToCheck) => {
+                if (!editingSetlist) return false;
+                const songToCheck = songMap[songIdToCheck];
+                if (!songToCheck) return false;
+                
+                return editingSetlist.songs.some((selectedId, index) => {
+                    if (index === selectingSlot) return false;
+                    if (!selectedId) return false;
+                    const selectedSong = songMap[selectedId];
+                    return selectedSong && selectedSong.title === songToCheck.title;
+                });
+            };
+
+            const selectSong = (songId) => {
+                if (isTitleAlreadySelected(songId)) return;
+                const newSongs = [...editingSetlist.songs];
+                newSongs[selectingSlot] = songId;
+                setEditingSetlist({ ...editingSetlist, songs: newSongs });
+                setIsSongModalOpen(false);
+            };
+
+            const handleSave = () => {
+                onSave(editingSetlist);
+                setView("list");
+            };
+
+            const canSave = editingSetlist && editingSetlist.name.trim() !== "" && editingSetlist.songs.every(id => id !== null);
+
+            if (view === "list") {
+                return (
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between mb-2 mt-2">
+                            <div className="flex items-center gap-2">
+                                <i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i>
+                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
+                            </div>
+                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
+                                <i className="ph-bold ph-plus"></i> 新規
+                            </button>
+                        </div>
+                        
+                        {setlists.length === 0 ? (
+                            <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md text-white text-center mt-2">
+                                <i className="ph-bold ph-music-notes text-4xl text-white/50 mb-2 block"></i>
+                                <p className="text-sm font-bold">作成されたセトリがありません</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-4 mt-2">
+                                {setlists.map(sl => (
+                                    <div key={sl.id} className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] transition-all">
+                                        <div 
+                                            className="flex items-center justify-between cursor-pointer" 
+                                            onClick={() => setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}
+                                        >
+                                            <h3 className="text-base font-black text-black">{sl.name}</h3>
+                                            <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}>
+                                                <i className="ph-bold ph-caret-circle-down text-2xl text-black"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                            <div className="flex flex-col gap-2 mb-4">
+                                                {sl.songs.map((songId, idx) => {
+                                                    const song = songMap[songId];
+                                                    if (!song) return null;
+                                                    return (
+                                                        <div key={idx} className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
+                                                            <div className="font-black text-gray-400 text-sm w-4 text-center">{idx + 1}.</div>
+                                                            <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
+                                                            <div className="flex-grow min-w-0">
+                                                                <div className="text-sm font-bold truncate text-black">{song.title}</div>
+                                                                <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-yellow-400 text-black font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
+                                                    <i className="ph-bold ph-pencil-simple"></i> 編集
+                                                </button>
+                                                <button onClick={(e) => { e.stopPropagation(); onDelete(sl.id); }} className="flex-1 bg-red-400 text-white font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
+                                                    <i className="ph-bold ph-trash"></i> 削除
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            return (
+                <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
+                    <h3 className="text-xl font-black mb-4 text-black border-b-4 border-[#52b788] pb-2 inline-block">セトリ作成</h3>
+                    
+                    <div className="mb-6">
+                        <label className="block text-xs font-black uppercase text-gray-500 mb-1">セトリ名</label>
+                        <input 
+                            type="text" 
+                            value={editingSetlist.name} 
+                            onChange={e => setEditingSetlist({...editingSetlist, name: e.target.value})}
+                            className="w-full bg-gray-50 border-4 border-black rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:border-[#52b788] focus:bg-white transition-all text-black"
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-3 mb-8">
+                        <label className="block text-xs font-black uppercase text-gray-500 mb-[-4px]">TRACKS</label>
+                        {editingSetlist.songs.map((songId, idx) => {
+                            const song = songId ? songMap[songId] : null;
+                            return (
+                                <div key={idx} className="relative">
+                                    <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
+                                        {idx + 1}
+                                    </div>
+                                    {song ? (
+                                        <div onClick={() => openSongModal(idx)} className="border-4 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
+                                            <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
+                                            <div className="flex-grow min-w-0">
+                                                <div className="text-sm font-black truncate text-black">{song.title}</div>
+                                                <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(song.level)} {song.difficult}</div>
+                                            </div>
+                                            <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
+                                        </div>
+                                    ) : (
+                                        <div onClick={() => openSongModal(idx)} className="border-4 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 active:translate-y-0.5 transition-all">
+                                            <i className="ph-bold ph-plus-circle text-2xl text-gray-400 mr-2"></i>
+                                            <span className="text-gray-500 font-bold text-sm">曲を選択する</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button onClick={() => setView("list")} className="flex-1 bg-gray-200 text-black font-black py-3 rounded-xl border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                            キャンセル
+                        </button>
+                        <button 
+                            onClick={handleSave} 
+                            disabled={!canSave}
+                            className={`flex-1 font-black py-3 rounded-xl border-4 border-black shadow-[3px_3px_0px_#000] transition-all ${canSave ? 'bg-[#52b788] text-white active:translate-x-1 active:translate-y-1 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none border-gray-300 translate-x-1 translate-y-1'}`}
+                        >
+                            保存する
+                        </button>
+                    </div>
+
+                    {isSongModalOpen && (
+                        <div className="modal-overlay" onClick={() => setIsSongModalOpen(false)}>
+                            <div className="modal-content" style={{ padding: '16px', maxWidth: '380px', width: '100%', height: '80vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+                                <h2 className="text-lg font-black mb-3 text-black">曲を選択</h2>
+                                <div className="relative mb-3 flex-shrink-0">
+                                    <input 
+                                        type="text" 
+                                        placeholder="曲名で検索..."
+                                        value={searchTerm}
+                                        onChange={e => setSearchTerm(e.target.value)}
+                                        className="w-full bg-gray-50 border-2 border-black rounded-lg py-2 px-3 pl-8 text-sm font-bold focus:outline-none focus:border-[#52b788] text-black"
+                                    />
+                                    <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                
+                                <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4">
+                                    {songs.filter(s => String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 100).map((s, i) => {
+                                        const id = getSongId(s);
+                                        const isSelected = isTitleAlreadySelected(id);
+                                        return (
+                                            <div key={i} onClick={() => selectSong(id)} className={`flex items-center gap-3 border-2 rounded-lg p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
+                                                <img src={s.jacket} className="w-10 h-10 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
+                                                <div className="flex-grow min-w-0 text-left">
+                                                    <div className="text-xs font-black truncate text-black">{s.title}</div>
+                                                    <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(s.level)} {s.difficult}</div>
+                                                </div>
+                                                {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                                
+                                <button onClick={() => setIsSongModalOpen(false)} className="mt-3 w-full bg-gray-200 text-black font-black py-3 rounded-xl border-2 border-black active:translate-y-0.5 flex-shrink-0">
+                                    閉じる
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )
         };
 
         const App = () => {
@@ -589,6 +971,80 @@
             const [isNavOpen, setIsNavOpen] = useState(false);
             const [pageIndex, setPageIndex] = useState(1);
 
+            // Firebase State
+            const [user, setUser] = useState(null);
+            const [favorites, setFavorites] = useState([]); 
+            const [personalMemos, setPersonalMemos] = useState({});
+            const [setlists, setSetlists] = useState([]);
+            const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+            
+            const [firebase, setFirebase] = useState(null);
+
+            const getSongId = (song) => `${song.title}_${song.difficult}`;
+
+            const songMap = useMemo(() => {
+                const map = {};
+                songs.forEach(s => {
+                    map[getSongId(s)] = s;
+                });
+                return map;
+            }, [songs]);
+
+            // Firebase Init & Auth Observer
+            useEffect(() => {
+                const initFirebase = async () => {
+                    const { initializeApp, getAuth, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
+                    const app = initializeApp(firebaseConfig);
+                    const auth = getAuth(app);
+                    const db = getFirestore(app);
+                    
+                    setFirebase({ auth, db });
+
+                    onAuthStateChanged(auth, (currentUser) => {
+                        setUser(currentUser);
+                        if (!currentUser) {
+                            setFavorites([]);
+                            setPersonalMemos({});
+                            setSetlists([]);
+                        }
+                    });
+                };
+
+                const interval = setInterval(() => {
+                    if (window.FirebaseSDK) {
+                        initFirebase();
+                        clearInterval(interval);
+                    }
+                }, 100);
+            }, []);
+
+            // Firestore Data Sync
+            useEffect(() => {
+                if (!user || !firebase) return;
+                const { doc, onSnapshot } = window.FirebaseSDK;
+
+                // Sync Favorites & Memos
+                const unsubProfile = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        setFavorites(data.favorites || []);
+                        setPersonalMemos(data.memos || {});
+                    }
+                }, (err) => console.error("Firestore Profile Sync Error:", err));
+
+                // Sync Setlists
+                const unsubSetlists = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), (docSnap) => {
+                    if (docSnap.exists()) {
+                        setSetlists(docSnap.data().items || []);
+                    }
+                }, (err) => console.error("Firestore Setlist Sync Error:", err));
+
+                return () => {
+                    unsubProfile();
+                    unsubSetlists();
+                };
+            }, [user, firebase]);
+
             useEffect(() => {
                 const fetchData = async () => {
                     try {
@@ -596,7 +1052,7 @@
                         const data = await response.json();
                         setSongs(data);
                     } catch (err) {
-                        console.error("Fetch Error:", err);
+                        console.error("GAS Fetch Error:", err);
                     } finally {
                         setIsLoading(false);
                     }
@@ -606,23 +1062,74 @@
 
             useEffect(() => {
                 setPageIndex(1);
-                setSearchTerm("");
-                setSelectedLevels([]);
-                setDangerFilter("all");
-                setSortOrder("desc");
-                setRankSection("section1");
-                setIsFilterOpen(false);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, [currentPage]);
+            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder, showOnlyFavorites, currentPage]);
 
-            useEffect(() => {
-                setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder]);
+            // Authentication Functions
+            const login = async () => {
+                const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
+                const provider = new TwitterAuthProvider();
+                try {
+                    await signInWithPopup(firebase.auth, provider);
+                } catch (error) {
+                    console.error("X Login Error:", error);
+                }
+            };
 
-            const toggleLevel = (lv) => setSelectedLevels(prev => prev.includes(lv) ? prev.filter(item => item !== lv) : [...prev, lv]);
-            const toggleLevelRange = (rangeList) => {
-                const allInRangeSelected = rangeList.every(lv => selectedLevels.includes(lv));
-                setSelectedLevels(prev => allInRangeSelected ? prev.filter(lv => !rangeList.includes(lv)) : [...new Set([...prev, ...rangeList])]);
+            const logout = async () => {
+                const { signOut } = window.FirebaseSDK;
+                try {
+                    await signOut(firebase.auth);
+                    setCurrentPage("main");
+                } catch (error) {
+                    console.error("Logout Error:", error);
+                }
+            };
+
+            // Firestore Update Functions
+            const updateFirestoreProfile = async (newFavs, newMemos) => {
+                if (!user || !firebase) return;
+                const { doc, setDoc } = window.FirebaseSDK;
+                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), {
+                    favorites: newFavs,
+                    memos: newMemos
+                }, { merge: true });
+            };
+
+            const toggleFavorite = async (songId) => {
+                const newFavs = favorites.includes(songId) 
+                    ? favorites.filter(id => id !== songId) 
+                    : [...favorites, songId];
+                setFavorites(newFavs);
+                await updateFirestoreProfile(newFavs, personalMemos);
+            };
+
+            const savePersonalMemo = async (songId, memo) => {
+                const newMemos = { ...personalMemos, [songId]: memo };
+                setPersonalMemos(newMemos);
+                await updateFirestoreProfile(favorites, newMemos);
+            };
+
+            const saveSetlist = async (newSetlist) => {
+                if (!user || !firebase) return;
+                const { doc, setDoc } = window.FirebaseSDK;
+                const newItems = setlists.find(s => s.id === newSetlist.id)
+                    ? setlists.map(s => s.id === newSetlist.id ? newSetlist : s)
+                    : [newSetlist, ...setlists];
+                
+                setSetlists(newItems);
+                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
+                    items: newItems
+                });
+            };
+
+            const deleteSetlist = async (id) => {
+                if (!user || !firebase) return;
+                const { doc, setDoc } = window.FirebaseSDK;
+                const newItems = setlists.filter(s => s.id !== id);
+                setSetlists(newItems);
+                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
+                    items: newItems
+                });
             };
 
             const isLevelFilterActive = useMemo(() => selectedLevels.length > 0, [selectedLevels]);
@@ -659,12 +1166,15 @@
                         return lvStr === targetLv;
                     });
                     
+                    const songId = getSongId(s);
+                    const matchesFav = !showOnlyFavorites || favorites.includes(songId);
+
                     if (currentPage === "main") {
                         const matchesSearch = String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase());
-                        return matchesLv && matchesSearch;
+                        return matchesLv && matchesSearch && matchesFav;
                     }
                     
-                    return matchesLv;
+                    return matchesLv && matchesFav;
                 });
 
                 if (currentPage === "ranking") {
@@ -677,7 +1187,7 @@
                 }
 
                 return result;
-            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection]);
+            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, favorites]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * ITEMS_PER_PAGE;
@@ -726,9 +1236,33 @@
                                     <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-warning-octagon text-base"></i> 要注意曲リスト
                                     </button>
+                                    {user && (
+                                        <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
+                                            <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    <div className="fixed top-4 right-4 z-50">
+                        <button 
+                            onClick={user ? logout : login} 
+                            className={`auth-btn ${user ? 'logged-in' : ''}`}
+                        >
+                            {user ? (
+                                <>
+                                    <i className="ph-bold ph-sign-out text-lg"></i>
+                                    ログアウト
+                                </>
+                            ) : (
+                                <>
+                                    <i className="ph-bold ph-user-circle text-lg text-[#52b788]"></i>
+                                    ログイン
+                                </>
+                            )}
+                        </button>
                     </div>
 
                     <header className="mb-10 text-center pt-8">
@@ -746,23 +1280,19 @@
                                         <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
                                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
                                     </div>
-                                    
                                     <div className="mb-2">
                                         <div className="toggle-btn-group">
                                             <button onClick={() => setRankSection("section1")} className={`toggle-btn-small ${rankSection === "section1" ? 'active' : ''}`}>第1区間</button>
                                             <button onClick={() => setRankSection("section2")} className={`toggle-btn-small ${rankSection === "section2" ? 'active' : ''}`}>第2区間</button>
                                         </div>
                                     </div>
-
                                     <div className="mb-3">
                                         <div className="toggle-btn-group">
                                             <button onClick={() => setSortOrder("desc")} className={`toggle-btn-small ${sortOrder === "desc" ? 'active' : ''}`}>
-                                                <i className="ph-bold ph-sort-descending"></i>
-                                                多い順
+                                                <i className="ph-bold ph-sort-descending"></i> 多い順
                                             </button>
                                             <button onClick={() => setSortOrder("asc")} className={`toggle-btn-small ${sortOrder === "asc" ? 'active' : ''}`}>
-                                                <i className="ph-bold ph-sort-ascending"></i>
-                                                少ない順
+                                                <i className="ph-bold ph-sort-ascending"></i> 少ない順
                                             </button>
                                         </div>
                                     </div>
@@ -778,82 +1308,77 @@
                                     <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
                                         <div className="text-[13px] font-black leading-relaxed mb-4">
                                             <p>特に注意が必要な楽曲のみをまとめました。</p>
-                                            <p>Tipsには運営からのコメントを記載しています。</p>
                                         </div>
-                                        <div className="space-y-3 pl-1">
-                                            <p className="text-[12px] font-bold flex items-start gap-2 leading-tight">
-                                                <span className="text-[#ffb703] shrink-0">■</span>
-                                                <span>要警戒... 癖のある配置、難しい配置が流れてくる楽曲など</span>
-                                            </p>
-                                            <p className="text-[12px] font-bold flex items-start gap-2 leading-tight">
-                                                <span className="text-[#e63946] shrink-0">■</span>
-                                                <span>危険... 初見殺しや精度難によって、大量失点の可能性がある楽曲など</span>
-                                            </p>
+                                        <div className="space-y-3 pl-1 text-[12px] font-bold">
+                                            <p><span className="text-[#ffb703]">■</span> 要警戒... 癖のある配置など</p>
+                                            <p><span className="text-[#e63946]">■</span> 危険... 大量失点の可能性がある楽曲など</p>
                                         </div>
                                     </div>
                                     <div className="mb-2 px-1">
                                         <div className="toggle-btn-group">
-                                            <button onClick={() => setDangerFilter("all")} className={`toggle-btn-small ${dangerFilter === "all" ? 'active' : ''}`}>
-                                                全表示
-                                            </button>
-                                            <button onClick={() => setDangerFilter("1")} className={`toggle-btn-small ${dangerFilter === "1" ? 'active' : ''}`}>
-                                                要警戒のみ
-                                            </button>
-                                            <button onClick={() => setDangerFilter("2")} className={`toggle-btn-small ${dangerFilter === "2" ? 'active' : ''}`}>
-                                                危険のみ
-                                            </button>
+                                            <button onClick={() => setDangerFilter("all")} className={`toggle-btn-small ${dangerFilter === "all" ? 'active' : ''}`}>全表示</button>
+                                            <button onClick={() => setDangerFilter("1")} className={`toggle-btn-small ${dangerFilter === "1" ? 'active' : ''}`}>要警戒のみ</button>
+                                            <button onClick={() => setDangerFilter("2")} className={`toggle-btn-small ${dangerFilter === "2" ? 'active' : ''}`}>危険のみ</button>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
-                            <div className="px-1 flex flex-col gap-3">
-                                {currentPage === "main" && (
-                                    <>
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                placeholder="曲名を探す..."
-                                                className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 text-sm font-bold focus:outline-none shadow-[4px_4px_0px_#000]"
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                            />
-                                            <i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400"></i>
-                                        </div>
-                                        
-                                        {!isLoading && (
-                                            <div className="flex justify-center">
-                                                <div className="hit-counter">
-                                                    <span>{allFilteredSongs.length} 譜面</span>
-                                                </div>
+                            {currentPage !== "setlist" && (
+                                <div className="px-1 flex flex-col gap-3">
+                                    {currentPage === "main" && (
+                                        <>
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    placeholder="曲名を探す..."
+                                                    className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 text-sm font-bold focus:outline-none shadow-[4px_4px_0px_#000]"
+                                                    value={searchTerm}
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                />
+                                                <i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400"></i>
                                             </div>
-                                        )}
-                                    </>
-                                )}
-
-                                <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isLevelFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
-                                    <div className="flex items-center gap-3">
-                                        <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
-                                        <span>レベルで絞り込む{isLevelFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
-                                    </div>
-                                    <i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i>
-                                </button>
-                                <div className={`filter-area ${isFilterOpen ? 'show' : ''}`}>
-                                    <div className="space-y-6 text-black">
-                                        <div className="flex justify-end items-center border-b-2 border-gray-100 pb-2">
-                                            {isLevelFilterActive && (
-                                                <button onClick={() => setSelectedLevels([])} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
-                                                    <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
+                                            {!isLoading && (
+                                                <div className="flex justify-center">
+                                                    <div className="hit-counter">
+                                                        <span>{allFilteredSongs.length} 譜面</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {user && (
+                                                <button 
+                                                    onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                                                    className={`fav-filter-toggle ${showOnlyFavorites ? 'active' : ''}`}
+                                                >
+                                                    お気に入りのみ表示
                                                 </button>
                                             )}
+                                        </>
+                                    )}
+                                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isLevelFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
+                                        <div className="flex items-center gap-3">
+                                            <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
+                                            <span>レベルで絞り込む{isLevelFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
                                         </div>
-                                        <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                        <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2 mb-2">{LV18_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                        <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2 mb-2">{LV19_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                        <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2 mb-2">{LV20_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                        <i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i>
+                                    </button>
+                                    <div className={`filter-area ${isFilterOpen ? 'show' : ''}`}>
+                                        <div className="space-y-6 text-black">
+                                            <div className="flex justify-end border-b-2 border-gray-100 pb-2">
+                                                {isLevelFilterActive && (
+                                                    <button onClick={() => setSelectedLevels([])} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
+                                                        <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                            <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                            <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                            <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </header>
 
@@ -865,32 +1390,38 @@
                             </div>
                         ) : (
                             <>
-                                {currentPage === "ranking" ? (
+                                {currentPage === "setlist" && (
+                                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                        <SetlistManager 
+                                            songs={songs}
+                                            songMap={songMap}
+                                            setlists={setlists}
+                                            onSave={saveSetlist}
+                                            onDelete={deleteSetlist}
+                                            getSongId={getSongId}
+                                            formatLevel={formatLevel}
+                                            getBorderColor={getBorderColor}
+                                        />
+                                    </div>
+                                )}
+
+                                {currentPage === "ranking" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         {paginatedSongs.map((song, idx) => {
                                             const globalIdx = (pageIndex - 1) * ITEMS_PER_PAGE + idx;
-                                            
                                             let currentRank = globalIdx + 1;
                                             if (globalIdx > 0) {
                                                 let backtrackIdx = globalIdx;
-                                                while (backtrackIdx > 0 && allFilteredSongs[backtrackIdx]._displayCombo === allFilteredSongs[backtrackIdx - 1]._displayCombo) {
-                                                    backtrackIdx--;
-                                                }
+                                                while (backtrackIdx > 0 && allFilteredSongs[backtrackIdx]._displayCombo === allFilteredSongs[backtrackIdx - 1]._displayCombo) backtrackIdx--;
                                                 currentRank = backtrackIdx + 1;
                                             }
-
                                             const isTopThree = currentRank <= 3;
-
                                             return (
                                                 <div key={idx} className="ranking-row">
                                                     <div className={`rank-number ${isTopThree ? `rank-${currentRank}` : ''}`}>#{currentRank}</div>
                                                     <div className="flex-grow min-w-0 px-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="text-sm font-black truncate leading-tight">{song.title}</p>
-                                                        </div>
-                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter">
-                                                            Lv {formatLevel(song.level)}　{song.difficult}
-                                                        </p>
+                                                        <p className="text-sm font-black truncate leading-tight">{song.title}</p>
+                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter">Lv {formatLevel(song.level)} {song.difficult}</p>
                                                     </div>
                                                     <div className="text-right">
                                                         <span className="text-xl font-black text-black">{song._displayCombo}</span>
@@ -900,25 +1431,35 @@
                                             );
                                         })}
                                     </div>
-                                ) : (
-                                    paginatedSongs.map((song, idx) => (
-                                        <SongCard 
-                                            key={idx} 
-                                            song={song} 
-                                            showDangerBadge={currentPage === "danger"} 
-                                            showTips={currentPage === "danger"} 
-                                        />
-                                    ))
+                                )}
+                                
+                                {currentPage !== "ranking" && currentPage !== "setlist" && (
+                                    paginatedSongs.map((song, idx) => {
+                                        const songId = getSongId(song);
+                                        return (
+                                            <SongCard 
+                                                key={idx} 
+                                                song={song} 
+                                                showDangerBadge={currentPage === "danger"} 
+                                                showTips={currentPage === "danger"} 
+                                                isLoggedIn={!!user}
+                                                isFavorite={favorites.includes(songId)}
+                                                onToggleFavorite={() => toggleFavorite(songId)}
+                                                personalMemo={personalMemos[songId]}
+                                                onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
+                                            />
+                                        );
+                                    })
                                 )}
 
-                                {paginatedSongs.length === 0 && (
+                                {currentPage !== "setlist" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
                                         <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
                                     </div>
                                 )}
 
-                                {totalPages > 1 && (
+                                {currentPage !== "setlist" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
                                             <i className="ph-bold ph-caret-left"></i> 前へ
