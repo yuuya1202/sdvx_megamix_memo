@@ -404,7 +404,7 @@
             font-weight: 900;
             font-size: 13px;
         }
-        .auth-btn:active {
+        .auth-btn:active:not(:disabled) {
             transform: translate(2px, 2px);
             box-shadow: 1px 1px 0px #000;
         }
@@ -413,6 +413,10 @@
             border-color: #666;
             color: #666;
             box-shadow: 3px 3px 0px #666;
+        }
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: wait;
         }
 
         .fav-btn {
@@ -479,6 +483,31 @@
             border-color: #fbbf24;
             color: #b45309;
             box-shadow: 4px 4px 0px #fbbf24;
+        }
+
+        /* Error Message Container */
+        .error-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e63946;
+            color: white;
+            padding: 14px 24px;
+            border: 3px solid black;
+            border-radius: 16px;
+            box-shadow: 6px 6px 0px black;
+            z-index: 1000;
+            font-weight: 900;
+            font-size: 13px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes toastPop {
+            from { transform: translate(-50%, 20px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
         }
     </style>
 </head>
@@ -973,6 +1002,8 @@
 
             // Firebase State
             const [user, setUser] = useState(null);
+            const [isAuthLoading, setIsAuthLoading] = useState(false);
+            const [authError, setAuthError] = useState(null);
             const [favorites, setFavorites] = useState([]); 
             const [personalMemos, setPersonalMemos] = useState({});
             const [setlists, setSetlists] = useState([]);
@@ -1002,6 +1033,7 @@
 
                     onAuthStateChanged(auth, (currentUser) => {
                         setUser(currentUser);
+                        setIsAuthLoading(false);
                         if (!currentUser) {
                             setFavorites([]);
                             setPersonalMemos({});
@@ -1066,16 +1098,28 @@
 
             // Authentication Functions
             const login = async () => {
+                if (!firebase || isAuthLoading) return;
+                setIsAuthLoading(true);
+                setAuthError(null);
                 const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
                 const provider = new TwitterAuthProvider();
                 try {
                     await signInWithPopup(firebase.auth, provider);
                 } catch (error) {
                     console.error("X Login Error:", error);
+                    if (error.code === 'auth/unauthorized-domain') {
+                        setAuthError("このドメインが承認されていません。Firebaseコンソールの [Authentication] > [設定] > [承認済みドメイン] に現在のドメインを追加してください。");
+                    } else if (error.code === 'auth/popup-blocked') {
+                        setAuthError("ポップアップがブロックされました。ブラウザの設定で許可してください。");
+                    } else {
+                        setAuthError("ログインに失敗しました。Xの設定を確認してください。");
+                    }
+                    setIsAuthLoading(false);
                 }
             };
 
             const logout = async () => {
+                if (!firebase) return;
                 const { signOut } = window.FirebaseSDK;
                 try {
                     await signOut(firebase.auth);
@@ -1130,6 +1174,22 @@
                 await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
                     items: newItems
                 });
+            };
+
+            // Filter Helper Functions
+            const toggleLevel = (lv) => {
+                setSelectedLevels(prev => 
+                    prev.includes(lv) ? prev.filter(l => l !== lv) : [...prev, lv]
+                );
+            };
+
+            const toggleLevelRange = (range) => {
+                const allSelected = range.every(lv => selectedLevels.includes(lv));
+                if (allSelected) {
+                    setSelectedLevels(prev => prev.filter(lv => !range.includes(lv)));
+                } else {
+                    setSelectedLevels(prev => [...new Set([...prev, ...range])]);
+                }
             };
 
             const isLevelFilterActive = useMemo(() => selectedLevels.length > 0, [selectedLevels]);
@@ -1216,6 +1276,17 @@
 
             return (
                 <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
+                    {/* Error Toast */}
+                    {authError && (
+                        <div className="error-toast" onClick={() => setAuthError(null)}>
+                            <div className="flex flex-col items-center gap-2">
+                                <i className="ph-bold ph-warning-circle text-2xl"></i>
+                                <p>{authError}</p>
+                                <span className="text-[10px] opacity-70 mt-1">[タップで閉じる]</span>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="fixed top-4 left-4 z-50">
                         <div className="nav-dropdown">
                             <button 
@@ -1249,9 +1320,15 @@
                     <div className="fixed top-4 right-4 z-50">
                         <button 
                             onClick={user ? logout : login} 
+                            disabled={isAuthLoading}
                             className={`auth-btn ${user ? 'logged-in' : ''}`}
                         >
-                            {user ? (
+                            {isAuthLoading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-gray-400 border-t-black rounded-full animate-spin"></div>
+                                    <span>...</span>
+                                </>
+                            ) : user ? (
                                 <>
                                     <i className="ph-bold ph-sign-out text-lg"></i>
                                     ログアウト
