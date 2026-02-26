@@ -520,7 +520,7 @@
                             <div className="grid grid-cols-3 gap-1.5 mb-4">
                                 <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">コンボ数</p><p className="stat-value">{song.combo || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
                             </div>
 
                             <div className="flex items-center mb-2 text-black">
@@ -529,7 +529,7 @@
                             <div className="grid grid-cols-3 gap-1.5 mb-5">
                                 <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">コンボ数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -721,7 +721,7 @@
                                         <i className="ph-bold ph-music-notes text-base"></i> メインページ
                                     </button>
                                     <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-trophy text-base"></i> コンボ数ランキング
+                                        <i className="ph-bold ph-trophy text-base"></i> チェイン数ランキング
                                     </button>
                                     <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-warning-octagon text-base"></i> 要注意曲リスト
@@ -744,7 +744,7 @@
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                     <div className="flex items-center gap-2 mb-4">
                                         <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
-                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">コンボ数ランキング</h2>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
                                     </div>
                                     
                                     <div className="mb-2">
@@ -894,7 +894,7 @@
                                                     </div>
                                                     <div className="text-right">
                                                         <span className="text-xl font-black text-black">{song._displayCombo}</span>
-                                                        <span className="text-[10px] font-black ml-1 uppercase text-[#132a13]">Notes</span>
+                                                        <span className="text-[10px] font-black ml-1 uppercase text-[#132a13]">CHAIN</span>
                                                     </div>
                                                 </div>
                                             );
