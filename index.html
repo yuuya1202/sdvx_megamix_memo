@@ -752,8 +752,8 @@
                                 <span className="section-label">第1区間</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1.5 mb-4">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">{song.start_pos || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-label">{song.end_pos || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
                             </div>
 
@@ -761,8 +761,8 @@
                                 <span className="section-label">第2区間</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">{song.start_pos2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-label">{song.end_pos2 || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                             </div>
 
@@ -1033,7 +1033,7 @@
                                 <div className="relative mb-3 flex-shrink-0">
                                     <input 
                                         type="text" 
-                                        placeholder="曲名で検索..."
+                                        placeholder="曲名・読みで検索..."
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
                                         className="w-full bg-gray-50 border-2 border-black rounded-lg py-2 px-3 pl-8 text-sm font-bold focus:outline-none focus:border-[#52b788] text-black"
@@ -1042,7 +1042,10 @@
                                 </div>
                                 
                                 <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4">
-                                    {songs.filter(s => String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 100).map((s, i) => {
+                                    {songs.filter(s => 
+                                        String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase())
+                                    ).slice(0, 100).map((s, i) => {
                                         const id = getSongId(s);
                                         const isSelected = isTitleAlreadySelected(id);
                                         return (
@@ -1315,7 +1318,9 @@
                     const matchesFav = !showOnlyFavorites || favorites.includes(songId);
 
                     if (currentPage === "main") {
-                        const matchesSearch = String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase());
+                        const matchesSearch = 
+                            String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
                         return matchesLv && matchesSearch && matchesFav;
                     }
                     
@@ -1501,7 +1506,7 @@
                                             <div className="relative">
                                                 <input
                                                     type="text"
-                                                    placeholder="曲名を探す..."
+                                                    placeholder="曲名・読みで探す..."
                                                     className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 text-sm font-bold focus:outline-none shadow-[4px_4px_0px_#000]"
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
