@@ -624,6 +624,39 @@
             );
         };
 
+        const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="modal-overlay" onClick={onCancel}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="mb-4">
+                            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-orange-100">
+                                <i className="ph-bold ph-trash text-3xl text-orange-600"></i>
+                            </div>
+                            <h2 className="text-xl font-black mb-2">セトリの削除</h2>
+                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
+                                このセトリを削除してもよろしいですか？
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3 mt-8">
+                            <button 
+                                onClick={onConfirm}
+                                className="w-full bg-orange-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                            >
+                                削除する
+                            </button>
+                            <button 
+                                onClick={onCancel}
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                            >
+                                キャンセル
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, personalMemo, onSavePersonalMemo }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
@@ -779,9 +812,6 @@
                                             onChange={(e) => setLocalMemo(e.target.value)}
                                             onBlur={handleMemoSave}
                                         />
-                                        <div className="text-[9px] text-gray-400 font-bold px-1 text-right">
-                                            ※入力欄から離れると自動保存されます
-                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -806,6 +836,10 @@
             const [isSongModalOpen, setIsSongModalOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
             const [openSetlists, setOpenSetlists] = useState({});
+            
+            // Delete confirmation state
+            const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+            const [deletingId, setDeletingId] = useState(null);
 
             const handleCreate = () => {
                 setEditingSetlist({ id: Date.now().toString(), name: "", songs: [null, null, null, null, null] });
@@ -849,6 +883,19 @@
                 setView("list");
             };
 
+            const requestDelete = (id) => {
+                setDeletingId(id);
+                setIsDeleteModalOpen(true);
+            };
+
+            const confirmDelete = () => {
+                if (deletingId) {
+                    onDelete(deletingId);
+                    setDeletingId(null);
+                    setIsDeleteModalOpen(false);
+                }
+            };
+
             const canSave = editingSetlist && editingSetlist.name.trim() !== "" && editingSetlist.songs.every(id => id !== null);
 
             if (view === "list") {
@@ -871,13 +918,13 @@
                             </div>
                         ) : (
                             <div className="flex flex-col gap-4 mt-2">
-                                {setlists.map(sl => (
+                                {setlists.map((sl, idx) => (
                                     <div key={sl.id} className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] transition-all">
                                         <div 
                                             className="flex items-center justify-between cursor-pointer" 
                                             onClick={() => setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}
                                         >
-                                            <h3 className="text-base font-black text-black">{sl.name}</h3>
+                                            <h3 className="text-base font-black text-black">#{idx + 1}　{sl.name}</h3>
                                             <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}>
                                                 <i className="ph-bold ph-caret-circle-down text-2xl text-black"></i>
                                             </div>
@@ -885,12 +932,12 @@
                                         
                                         <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
                                             <div className="flex flex-col gap-2 mb-4">
-                                                {sl.songs.map((songId, idx) => {
+                                                {sl.songs.map((songId, sIdx) => {
                                                     const song = songMap[songId];
                                                     if (!song) return null;
                                                     return (
-                                                        <div key={idx} className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
-                                                            <div className="font-black text-gray-400 text-sm w-4 text-center">{idx + 1}.</div>
+                                                        <div key={sIdx} className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
+                                                            <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
                                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                                             <div className="flex-grow min-w-0">
                                                                 <div className="text-sm font-bold truncate text-black">{song.title}</div>
@@ -904,7 +951,7 @@
                                                 <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-yellow-400 text-black font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
                                                     <i className="ph-bold ph-pencil-simple"></i> 編集
                                                 </button>
-                                                <button onClick={(e) => { e.stopPropagation(); onDelete(sl.id); }} className="flex-1 bg-red-400 text-white font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
+                                                <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className="flex-1 bg-red-400 text-white font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
                                                     <i className="ph-bold ph-trash"></i> 削除
                                                 </button>
                                             </div>
@@ -913,6 +960,12 @@
                                 ))}
                             </div>
                         )}
+
+                        <DeleteConfirmModal 
+                            isOpen={isDeleteModalOpen}
+                            onConfirm={confirmDelete}
+                            onCancel={() => { setIsDeleteModalOpen(false); setDeletingId(null); }}
+                        />
                     </div>
                 );
             }
