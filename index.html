@@ -746,9 +746,6 @@
                                             onChange={(e) => setLocalMemo(e.target.value)}
                                             onBlur={handleMemoSave}
                                         />
-                                        <div className="text-[9px] text-gray-400 font-bold px-1 text-right">
-                                            ※入力欄から離れると自動保存されます
-                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -826,7 +823,7 @@
                                 <i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i>
                                 <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
                             </div>
-                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
+                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
                                 <i className="ph-bold ph-plus"></i> 新規
                             </button>
                         </div>
@@ -1033,6 +1030,8 @@
                             setFavorites([]);
                             setPersonalMemos({});
                             setSetlists([]);
+                            // Reset favorite filter on logout to avoid empty screen bug
+                            setShowOnlyFavorites(false);
                         }
                     });
                 };
@@ -1224,7 +1223,8 @@
                     });
                     
                     const songId = getSongId(s);
-                    const matchesFav = !showOnlyFavorites || favorites.includes(songId);
+                    // Ensure favorites check only happens if logged in, otherwise ignore the toggle if it's somehow ON
+                    const matchesFav = (!user || !showOnlyFavorites) || favorites.includes(songId);
 
                     if (currentPage === "main") {
                         const matchesSearch = String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase());
@@ -1244,7 +1244,7 @@
                 }
 
                 return result;
-            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, favorites]);
+            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, favorites, user]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * ITEMS_PER_PAGE;
