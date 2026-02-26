@@ -1415,9 +1415,16 @@
 
                     <div className="fixed top-4 right-4 z-50">
                         {user ? (
-                            <div className="bg-white border-2 border-black px-4 py-2 rounded-xl shadow-[3px_3px_0px_#000] flex items-center gap-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span className="text-[11px] font-black text-black uppercase tracking-wider">ログイン中</span>
+                            <div className="bg-white border-2 border-black px-3 py-2 rounded-xl shadow-[3px_3px_0px_#000] flex items-center gap-2">
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} className="w-5 h-5 rounded-full border border-black" alt="avatar" />
+                                ) : (
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                )}
+                                <div className="flex flex-col items-start leading-none">
+                                    <span className="text-[9px] font-black text-black truncate max-w-[80px] mb-0.5">{user.displayName || "USER"}</span>
+                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">ログイン中</span>
+                                </div>
                             </div>
                         ) : (
                             <button 
