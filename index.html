@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDVX MEGAMIX_Memo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+        body {
+            background-color: #1b4332;
+            color: #222;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .pop-card {
+            background: white;
+            border: 3px solid #000;
+            box-shadow: 6px 6px 0px #000;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .pop-card:active {
+            transform: translate(3px, 3px);
+            box-shadow: 2px 2px 0px #000;
+        }
+        .pop-card.active {
+            border-color: #52b788;
+            box-shadow: 6px 6px 0px #52b788;
+        }
+
+        .danger-badge {
+            position: absolute;
+            top: -12px;
+            left: 10px;
+            padding: 2px 10px;
+            border: 2px solid #000;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            z-index: 10;
+            box-shadow: 2px 2px 0px #000;
+        }
+        .danger-badge-1 { background: #ffb703; color: #000; }
+        .danger-badge-2 { background: #e63946; color: #fff; }
+
+        .memo-area {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease-out;
+            background: #fdfdfd;
+            border-radius: 12px;
+            position: relative;
+        }
+        .memo-area.open {
+            max-height: 2000px; 
+            opacity: 1;
+            margin-top: 12px;
+            padding: 12px 12px 10px 12px;
+            border: 2px solid #000;
+        }
+
+        .filter-area {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .filter-area.show {
+            max-height: 1500px;
+            opacity: 1;
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 3px solid #000;
+            border-radius: 1rem;
+            background-color: #ffffff;
+        }
+
+        .filter-trigger {
+            border: 3px solid #000;
+            background: white;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.2s;
+        }
+        .filter-trigger.is-active {
+            background: #40916c;
+            color: white;
+        }
+        .filter-trigger.open {
+            background: #40916c;
+            color: white;
+        }
+
+        .filter-btn {
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0px #000;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+            background: white;
+        }
+        .filter-btn.active {
+            background: #52b788;
+            color: white;
+        }
+
+        .toggle-btn-group {
+            display: flex;
+            background: #2d6a4f;
+            padding: 4px;
+            border-radius: 14px;
+            border: 2px solid #000;
+            gap: 4px;
+        }
+        .toggle-btn-small {
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 900;
+            color: white;
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .toggle-btn-small.active {
+            background: white;
+            color: #1b4332;
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .batch-btn {
+            border: 1px solid #000;
+            padding: 1px 8px;
+            border-radius: 6px;
+            font-size: 9px;
+            background: #f8f8f8;
+            transition: all 0.1s;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #1b4332;
+            text-decoration: underline;
+            text-decoration-thickness: 3px;
+            text-decoration-color: #52b788;
+            text-underline-offset: 4px;
+        }
+
+        .stat-box {
+            background: white;
+            border: 2px solid #000;
+            padding: 6px 2px;
+            border-radius: 8px;
+            text-align: center;
+            color: #000;
+        }
+        .stat-label {
+            font-size: 10px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 3px;
+            color: #000;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1.1;
+            color: #000;
+        }
+
+        .link-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 12px 6px;
+            background: white;
+            border: 2px solid #000;
+            border-radius: 10px;
+            font-weight: 900;
+            font-size: 13.5px;
+            color: #000;
+            transition: all 0.1s;
+            box-shadow: 3px 3px 0px #000;
+            line-height: 1;
+        }
+        .link-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000;
+        }
+        .link-button.chart { background: #e9edc9; }
+        .link-button.video { background: #fec5bb; }
+
+        .ranking-row {
+            background: white;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+        }
+        .rank-number {
+            width: 48px;
+            font-size: 20px;
+            font-weight: 900;
+            font-style: italic;
+            color: #132a13;
+        }
+        .rank-1 { color: #ffd700; text-shadow: 2px 2px 0px #000; }
+        .rank-2 { color: #c0c0c0; text-shadow: 2px 2px 0px #000; }
+        .rank-3 { color: #cd7f32; text-shadow: 2px 2px 0px #000; }
+
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .nav-btn {
+            background: white;
+            border: 2px solid #000;
+            padding: 8px 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 3px 3px 0px #000;
+            transition: all 0.2s;
+            height: 42px;
+            min-width: 60px;
+        }
+        .nav-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000;
+        }
+
+        .dropdown-panel {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 8px;
+            min-width: 220px;
+            width: max-content;
+            background: white;
+            border: 2px solid #000;
+            border-radius: 12px;
+            box-shadow: 4px 4px 0px #000;
+            overflow: hidden;
+            z-index: 60;
+            animation: dropdownFade 0.2s ease-out;
+        }
+        @keyframes dropdownFade {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .dropdown-item {
+            width: 100%;
+            text-align: left;
+            padding: 14px 20px;
+            font-size: 13px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.1s;
+            white-space: nowrap;
+        }
+        .dropdown-item.active {
+            background: #d8f3dc;
+            color: #1b4332;
+        }
+
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            padding-bottom: 40px;
+        }
+        .page-btn {
+            background: white;
+            border: 2px solid #000;
+            box-shadow: 3px 3px 0px #000;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.1s;
+        }
+        .page-btn:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000;
+        }
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .page-info {
+            background: #2d6a4f;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 10px;
+            border: 2px solid #000;
+            font-weight: 900;
+            font-size: 12px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white;
+            border: 4px solid #000;
+            box-shadow: 8px 8px 0px #000;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 320px;
+            padding: 24px;
+            text-align: center;
+            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .hit-counter {
+            background: #6b7280; 
+            color: white;
+            font-size: 11px;
+            font-weight: 900;
+            padding: 3px 12px;
+            border-radius: 99px;
+            display: inline-flex;
+            align-items: center;
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0px #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx7_U9VEerpLL3tKpW8fTAOFnETZFzIdbu2ZTyFRwkHASWIRCFNHZldo24VPL2laIjS3Q/exec";
+        const ITEMS_PER_PAGE = 30;
+
+        const LV17_LIST = ["17.0", "17.5"];
+        const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
+        const LV19_LIST = Array.from({length: 10}, (_, i) => `19.${i}`);
+        const LV20_LIST = Array.from({length: 10}, (_, i) => `20.${i}`);
+
+        const formatLevel = (lv) => {
+            const lvStr = String(lv || "");
+            if (["17", "18", "19", "20"].includes(lvStr)) return lvStr + ".0";
+            return lvStr;
+        };
+
+        const getBorderColor = (difficult) => {
+            const diff = String(difficult || "").toUpperCase();
+            switch(diff) {
+                case "MXM": return "#000000";
+                case "EXH": return "#ef4444";
+                case "GRV": return "#d97706";
+                case "HVN": return "#0891b2";
+                case "INF": return "#f472b6"; 
+                case "VVD": return "#ff00ff"; 
+                case "XCD": return "#2563eb";
+                case "ULT": return "#ffff00"; 
+                default: return "#000000";
+            }
+        };
+
+        const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="modal-overlay" onClick={onCancel}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="mb-4">
+                            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black ${type === 'video' ? 'bg-[#fec5bb]' : 'bg-[#e9edc9]'}`}>
+                                <i className={`ph-bold ${type === 'video' ? 'ph-youtube-logo' : 'ph-file-text'} text-3xl text-black`}></i>
+                            </div>
+                            <h2 className="text-xl font-black mb-2">確認</h2>
+                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
+                                外部サイトへ移動してもよろしいですか？
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3 mt-8">
+                            <button 
+                                onClick={onConfirm}
+                                className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                            >
+                                はい、移動します
+                            </button>
+                            <button 
+                                onClick={onCancel}
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                            >
+                                いいえ、戻る
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SongCard = ({ song, showDangerBadge, showTips }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
+            
+            const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
+            const borderColor = useMemo(() => getBorderColor(song.difficult), [song.difficult]);
+
+            const handleLinkClick = (e, url, type) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setModalInfo({ isOpen: true, url, type });
+            };
+
+            const confirmNavigation = () => {
+                window.open(modalInfo.url, '_blank', 'noopener,noreferrer');
+                setModalInfo({ ...modalInfo, isOpen: false });
+            };
+
+            const renderDangerBadge = () => {
+                if (!showDangerBadge) return null; 
+                const level = String(song.danger_level);
+                if (level === "1") return <div className="danger-badge danger-badge-1">要警戒</div>;
+                if (level === "2") return <div className="danger-badge danger-badge-2">危険</div>;
+                return null;
+            };
+
+            return (
+                <>
+                    <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl p-3 mb-4 cursor-pointer ${isOpen ? 'active' : ''}`}>
+                        {renderDangerBadge()}
+                        <div className="flex items-center gap-4">
+                            <div className="flex-shrink-0 w-[72px] h-[72px] relative overflow-hidden rounded-lg">
+                                {song.jacket ? (
+                                    <img 
+                                        src={song.jacket} 
+                                        alt="jacket" 
+                                        className="border-[3px] w-full h-full object-cover rounded-lg" 
+                                        style={{ borderColor: borderColor }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                    />
+                                ) : (
+                                    <div 
+                                        className="border-[3px] w-full h-full bg-gray-100 flex items-center justify-center rounded-lg"
+                                        style={{ borderColor: borderColor }}
+                                    >
+                                        <i className="ph-bold ph-music-note text-gray-400 text-xl"></i>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex-grow min-w-0">
+                                <h3 className="text-lg font-black truncate leading-tight mb-1">{song.title}</h3>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+                                    <div className="flex items-baseline gap-1 font-black text-black leading-none">
+                                        <span className="text-[10px] uppercase tracking-tight text-black font-black">Lv</span>
+                                        <span className="text-xl tracking-tight leading-none">{displayLevel}</span>
+                                    </div>
+                                    <div className="flex items-baseline gap-1 font-black text-black leading-none">
+                                        <span className="text-[10px] uppercase tracking-tight text-black font-black">BPM</span>
+                                        <span className="text-xl tracking-tight leading-none">{song.bpm || "???"}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl"></i></div>
+                        </div>
+                        <div className={`memo-area ${isOpen ? 'open' : ''}`}>
+                            <div className="flex items-center mb-2 text-black">
+                                <span className="section-label">第1区間</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-1.5 mb-4">
+                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">コンボ数</p><p className="stat-value">{song.combo || "-"}</p></div>
+                            </div>
+
+                            <div className="flex items-center mb-2 text-black">
+                                <span className="section-label">第2区間</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-1.5 mb-5">
+                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">コンボ数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                {song.site_link ? (
+                                    <button className="link-button chart" onClick={(e) => handleLinkClick(e, song.site_link, 'chart')}>
+                                        <i className="ph-bold ph-file-text text-lg"></i>画像で確認
+                                    </button>
+                                ) : (
+                                    <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>画像なし</div>
+                                )}
+                                
+                                {song.movie_link ? (
+                                    <button className="link-button video" onClick={(e) => handleLinkClick(e, song.movie_link, 'video')}>
+                                        <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
+                                    </button>
+                                ) : (
+                                    <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
+                                )}
+                            </div>
+
+                            {showTips && (
+                                <>
+                                    <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
+                                        <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i>
+                                        <span>Tips</span>
+                                    </div>
+                                    <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px]">
+                                        <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">
+                                            {song.memo || "メモはありません"}
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    <LinkConfirmModal 
+                        isOpen={modalInfo.isOpen}
+                        onConfirm={confirmNavigation}
+                        onCancel={() => setModalInfo({ ...modalInfo, isOpen: false })}
+                        type={modalInfo.type}
+                    />
+                </>
+            );
+        };
+
+        const App = () => {
+            const [songs, setSongs] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
+            const [searchTerm, setSearchTerm] = useState("");
+            const [selectedLevels, setSelectedLevels] = useState([]); 
+            const [dangerFilter, setDangerFilter] = useState("all"); 
+            const [sortOrder, setSortOrder] = useState("desc");
+            const [rankSection, setRankSection] = useState("section1"); 
+            const [isFilterOpen, setIsFilterOpen] = useState(false);
+            const [currentPage, setCurrentPage] = useState("main"); 
+            const [isNavOpen, setIsNavOpen] = useState(false);
+            const [pageIndex, setPageIndex] = useState(1);
+
+            useEffect(() => {
+                const fetchData = async () => {
+                    try {
+                        const response = await fetch(GAS_URL);
+                        const data = await response.json();
+                        setSongs(data);
+                    } catch (err) {
+                        console.error("Fetch Error:", err);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+                fetchData();
+            }, []);
+
+            useEffect(() => {
+                setPageIndex(1);
+                setSearchTerm("");
+                setSelectedLevels([]);
+                setDangerFilter("all");
+                setSortOrder("desc");
+                setRankSection("section1");
+                setIsFilterOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, [currentPage]);
+
+            useEffect(() => {
+                setPageIndex(1);
+            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder]);
+
+            const toggleLevel = (lv) => setSelectedLevels(prev => prev.includes(lv) ? prev.filter(item => item !== lv) : [...prev, lv]);
+            const toggleLevelRange = (rangeList) => {
+                const allInRangeSelected = rangeList.every(lv => selectedLevels.includes(lv));
+                setSelectedLevels(prev => allInRangeSelected ? prev.filter(lv => !rangeList.includes(lv)) : [...new Set([...prev, ...rangeList])]);
+            };
+
+            const isLevelFilterActive = useMemo(() => selectedLevels.length > 0, [selectedLevels]);
+
+            const processedSongs = useMemo(() => {
+                return songs.map(s => {
+                    let displayCombo = 0;
+                    if (rankSection === "section1") {
+                        displayCombo = parseInt(s.combo) || 0;
+                    } else if (rankSection === "section2") {
+                        displayCombo = parseInt(s.combo2) || 0;
+                    }
+                    return { ...s, _displayCombo: displayCombo };
+                });
+            }, [songs, rankSection]);
+
+            const allFilteredSongs = useMemo(() => {
+                let baseList = processedSongs;
+
+                if (currentPage === "danger") {
+                    baseList = processedSongs.filter(s => ["1", "2"].includes(String(s.danger_level)));
+                    if (dangerFilter !== "all") {
+                        baseList = baseList.filter(s => String(s.danger_level) === dangerFilter);
+                    }
+                }
+
+                const result = baseList.filter(s => {
+                    const lvStr = String(s.level || "");
+                    const matchesLv = selectedLevels.length === 0 || selectedLevels.some(targetLv => {
+                        if (["17.0", "18.0", "19.0", "20.0"].includes(targetLv)) {
+                            const base = targetLv.split('.')[0];
+                            return lvStr === base || lvStr === targetLv;
+                        }
+                        return lvStr === targetLv;
+                    });
+                    
+                    if (currentPage === "main") {
+                        const matchesSearch = String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase());
+                        return matchesLv && matchesSearch;
+                    }
+                    
+                    return matchesLv;
+                });
+
+                if (currentPage === "ranking") {
+                    const listWithCombo = result.filter(s => s._displayCombo > 0);
+                    return listWithCombo.sort((a, b) => {
+                        const comboA = a._displayCombo;
+                        const comboB = b._displayCombo;
+                        return sortOrder === "desc" ? comboB - comboA : comboA - comboB;
+                    });
+                }
+
+                return result;
+            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection]);
+
+            const paginatedSongs = useMemo(() => {
+                const start = (pageIndex - 1) * ITEMS_PER_PAGE;
+                return allFilteredSongs.slice(start, start + ITEMS_PER_PAGE);
+            }, [allFilteredSongs, pageIndex]);
+
+            const totalPages = Math.ceil(allFilteredSongs.length / ITEMS_PER_PAGE);
+
+            const handlePageChange = (newIndex) => {
+                if (newIndex >= 1 && newIndex <= totalPages) {
+                    setPageIndex(newIndex);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+
+            const FilterButton = ({ lv, label }) => (
+                <button onClick={() => toggleLevel(lv)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedLevels.includes(lv) ? 'active' : ''}`}>{label || lv}</button>
+            );
+
+            const LevelSectionHeader = ({ title, list }) => (
+                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                    <div className="text-[10px] font-black text-black uppercase leading-none">Level {title}</div>
+                    <button onClick={() => toggleLevelRange(list)} className="batch-btn">全選択/解除</button>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
+                    <div className="fixed top-4 left-4 z-50">
+                        <div className="nav-dropdown">
+                            <button 
+                                onClick={() => setIsNavOpen(!isNavOpen)} 
+                                className="nav-btn"
+                            >
+                                <i className="ph-bold ph-list text-xl"></i>
+                                <i className={`ph-bold ph-caret-down text-[10px] transition-transform duration-200 ${isNavOpen ? 'rotate-180' : ''}`}></i>
+                            </button>
+                            {isNavOpen && (
+                                <div className="dropdown-panel" onClick={() => setIsNavOpen(false)}>
+                                    <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-music-notes text-base"></i> メインページ
+                                    </button>
+                                    <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-trophy text-base"></i> コンボ数ランキング
+                                    </button>
+                                    <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-warning-octagon text-base"></i> 要注意曲リスト
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <header className="mb-10 text-center pt-8">
+                        <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
+                            SOUND VOLTEX
+                        </div>
+                        <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-6 text-white">
+                            MEGAMIX<span className="text-[#52b788]">.</span>MEMO
+                        </h1>
+
+                        <div className="space-y-6">
+                            {currentPage === "ranking" && (
+                                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">コンボ数ランキング</h2>
+                                    </div>
+                                    
+                                    <div className="mb-2">
+                                        <div className="toggle-btn-group">
+                                            <button onClick={() => setRankSection("section1")} className={`toggle-btn-small ${rankSection === "section1" ? 'active' : ''}`}>第1区間</button>
+                                            <button onClick={() => setRankSection("section2")} className={`toggle-btn-small ${rankSection === "section2" ? 'active' : ''}`}>第2区間</button>
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <div className="toggle-btn-group">
+                                            <button onClick={() => setSortOrder("desc")} className={`toggle-btn-small ${sortOrder === "desc" ? 'active' : ''}`}>
+                                                <i className="ph-bold ph-sort-descending"></i>
+                                                多い順
+                                            </button>
+                                            <button onClick={() => setSortOrder("asc")} className={`toggle-btn-small ${sortOrder === "asc" ? 'active' : ''}`}>
+                                                <i className="ph-bold ph-sort-ascending"></i>
+                                                少ない順
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {currentPage === "danger" && (
+                                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <i className="ph-fill ph-warning-octagon text-3xl text-orange-400"></i>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">要注意曲リスト</h2>
+                                    </div>
+                                    <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
+                                        <div className="text-[13px] font-black leading-relaxed mb-4">
+                                            <p>特に注意が必要な楽曲のみをまとめました。</p>
+                                            <p>Tipsには運営からのコメントを記載しています。</p>
+                                        </div>
+                                        <div className="space-y-3 pl-1">
+                                            <p className="text-[12px] font-bold flex items-start gap-2 leading-tight">
+                                                <span className="text-[#ffb703] shrink-0">■</span>
+                                                <span>要警戒... 癖のある配置、難しい配置が流れてくる楽曲など</span>
+                                            </p>
+                                            <p className="text-[12px] font-bold flex items-start gap-2 leading-tight">
+                                                <span className="text-[#e63946] shrink-0">■</span>
+                                                <span>危険... 初見殺しや精度難によって、大量失点の可能性がある楽曲など</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="mb-2 px-1">
+                                        <div className="toggle-btn-group">
+                                            <button onClick={() => setDangerFilter("all")} className={`toggle-btn-small ${dangerFilter === "all" ? 'active' : ''}`}>
+                                                全表示
+                                            </button>
+                                            <button onClick={() => setDangerFilter("1")} className={`toggle-btn-small ${dangerFilter === "1" ? 'active' : ''}`}>
+                                                要警戒のみ
+                                            </button>
+                                            <button onClick={() => setDangerFilter("2")} className={`toggle-btn-small ${dangerFilter === "2" ? 'active' : ''}`}>
+                                                危険のみ
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="px-1 flex flex-col gap-3">
+                                {currentPage === "main" && (
+                                    <>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="曲名を探す..."
+                                                className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 text-sm font-bold focus:outline-none shadow-[4px_4px_0px_#000]"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                            />
+                                            <i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400"></i>
+                                        </div>
+                                        
+                                        {!isLoading && (
+                                            <div className="flex justify-center">
+                                                <div className="hit-counter">
+                                                    <span>{allFilteredSongs.length} 譜面</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isLevelFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
+                                    <div className="flex items-center gap-3">
+                                        <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
+                                        <span>レベルで絞り込む{isLevelFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
+                                    </div>
+                                    <i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i>
+                                </button>
+                                <div className={`filter-area ${isFilterOpen ? 'show' : ''}`}>
+                                    <div className="space-y-6 text-black">
+                                        <div className="flex justify-end items-center border-b-2 border-gray-100 pb-2">
+                                            {isLevelFilterActive && (
+                                                <button onClick={() => setSelectedLevels([])} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
+                                                    <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                        <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2 mb-2">{LV18_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                        <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2 mb-2">{LV19_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                        <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2 mb-2">{LV20_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="pb-10">
+                        {isLoading ? (
+                            <div className="flex flex-col items-center py-20">
+                                <div className="w-9 h-9 border-4 border-white/10 border-l-[#52b788] rounded-full animate-spin mb-4"></div>
+                                <p className="font-black text-[10px] uppercase tracking-widest text-white/50">Loading Data...</p>
+                            </div>
+                        ) : (
+                            <>
+                                {currentPage === "ranking" ? (
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                        {paginatedSongs.map((song, idx) => {
+                                            const globalIdx = (pageIndex - 1) * ITEMS_PER_PAGE + idx;
+                                            
+                                            let currentRank = globalIdx + 1;
+                                            if (globalIdx > 0) {
+                                                let backtrackIdx = globalIdx;
+                                                while (backtrackIdx > 0 && allFilteredSongs[backtrackIdx]._displayCombo === allFilteredSongs[backtrackIdx - 1]._displayCombo) {
+                                                    backtrackIdx--;
+                                                }
+                                                currentRank = backtrackIdx + 1;
+                                            }
+
+                                            const isTopThree = currentRank <= 3;
+
+                                            return (
+                                                <div key={idx} className="ranking-row">
+                                                    <div className={`rank-number ${isTopThree ? `rank-${currentRank}` : ''}`}>#{currentRank}</div>
+                                                    <div className="flex-grow min-w-0 px-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-sm font-black truncate leading-tight">{song.title}</p>
+                                                        </div>
+                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter">
+                                                            Lv {formatLevel(song.level)}　{song.difficult}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-xl font-black text-black">{song._displayCombo}</span>
+                                                        <span className="text-[10px] font-black ml-1 uppercase text-[#132a13]">Notes</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    paginatedSongs.map((song, idx) => (
+                                        <SongCard 
+                                            key={idx} 
+                                            song={song} 
+                                            showDangerBadge={currentPage === "danger"} 
+                                            showTips={currentPage === "danger"} 
+                                        />
+                                    ))
+                                )}
+
+                                {paginatedSongs.length === 0 && (
+                                    <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
+                                        <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
+                                        <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
+                                    </div>
+                                )}
+
+                                {totalPages > 1 && (
+                                    <div className="pagination-container">
+                                        <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
+                                            <i className="ph-bold ph-caret-left"></i> 前へ
+                                        </button>
+                                        <div className="page-info">{pageIndex} / {totalPages}</div>
+                                        <button onClick={() => handlePageChange(pageIndex + 1)} disabled={pageIndex >= totalPages} className="page-btn">
+                                            次へ <i className="ph-bold ph-caret-right"></i>
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
