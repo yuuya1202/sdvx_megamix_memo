@@ -13,14 +13,14 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // indexedDBLocalPersistence を追加 (browserSessionPersistence から変更)
-        import { getAuth, TwitterAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, setPersistence, indexedDBLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, TwitterAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query, setPersistence, indexedDBLocalPersistence };
+        window.FirebaseSDK = { initializeApp, getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query };
     </script>
 
     <style>
@@ -235,7 +235,7 @@
             margin-bottom: 10px;
         }
         .rank-number {
-            width: 64px;
+            width: 64px; /* 拡張 (48px -> 64px) 3桁表示に対応 */
             font-size: 20px;
             font-weight: 900;
             font-style: italic;
@@ -711,7 +711,7 @@
                                     <img 
                                         src={song.jacket} 
                                         alt="jacket" 
-                                        className="border-[3px] w-full h-full object-cover rounded-lg"
+                                        className="border-[3px] w-full h-full object-cover rounded-lg" 
                                         style={{ borderColor: borderColor }}
                                         onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                     />
@@ -1110,30 +1110,12 @@
             // Firebase Init & Auth Observer
             useEffect(() => {
                 const initFirebase = async () => {
-                    const { initializeApp, getAuth, onAuthStateChanged, getFirestore, getRedirectResult, setPersistence, indexedDBLocalPersistence } = window.FirebaseSDK;
+                    const { initializeApp, getAuth, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
                     const db = getFirestore(app);
                     
                     setFirebase({ auth, db });
-
-                    // 初期化時に永続性を LOCAL に設定 (ブラウザを閉じても維持される設定)
-                    try {
-                        await setPersistence(auth, indexedDBLocalPersistence);
-                    } catch (e) {
-                        console.error("Persistence error", e);
-                    }
-
-                    // Check for redirect results
-                    try {
-                        const result = await getRedirectResult(auth);
-                        if (result) {
-                            console.log("Logged in via redirect");
-                        }
-                    } catch (error) {
-                        console.error("Redirect Login Error:", error);
-                        setAuthError("ログイン中にエラーが発生しました。");
-                    }
 
                     onAuthStateChanged(auth, (currentUser) => {
                         setUser(currentUser);
@@ -1212,23 +1194,25 @@
                 if (!firebase || isAuthLoading) return;
                 setIsAuthLoading(true);
                 setAuthError(null);
+                const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
+                const provider = new TwitterAuthProvider();
                 
-                const { TwitterAuthProvider, signInWithRedirect } = window.FirebaseSDK;
-                
-                try {
-                    const provider = new TwitterAuthProvider();
-                    
-                    // パラメータを強化: ログアウト後の「Login」クリック時のみここを通る
-                    // force_login: 'true' により、X側のセッションがあっても画面を表示させる
-                    provider.setCustomParameters({
-                        force_login: 'true',
-                        prompt: 'login'
-                    });
+                // 強制的に再認証（ログイン画面）を表示するパラメータを追加
+                provider.setCustomParameters({
+                    force_login: 'true'
+                });
 
-                    await signInWithRedirect(firebase.auth, provider);
+                try {
+                    await signInWithPopup(firebase.auth, provider);
                 } catch (error) {
                     console.error("X Login Error:", error);
-                    setAuthError("ログイン画面への遷移に失敗しました。");
+                    if (error.code === 'auth/unauthorized-domain') {
+                        setAuthError("このドメインが承認されていません。Firebaseコンソールの [Authentication] > [設定] > [承認済みドメイン] に現在のドメインを追加してください。");
+                    } else if (error.code === 'auth/popup-blocked') {
+                        setAuthError("ポップアップがブロックされました。ブラウザの設定で許可してください。");
+                    } else {
+                        setAuthError("ログインに失敗しました。Xの設定を確認してください。");
+                    }
                     setIsAuthLoading(false);
                 }
             };
@@ -1420,7 +1404,8 @@
                                 <div className="dropdown-panel" onClick={() => setIsNavOpen(false)}>
                                     <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-music-notes text-base"></i> メインページ
-                                    </button>                                    <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
+                                    </button>
+                                    <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-trophy text-base"></i> チェイン数ランキング
                                     </button>
                                     <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
@@ -1651,8 +1636,8 @@
                                             <SongCard 
                                                 key={idx} 
                                                 song={song} 
-                                                showDangerBadge={currentPage === "danger"}
-                                                showTips={currentPage === "danger"}
+                                                showDangerBadge={currentPage === "danger"} 
+                                                showTips={currentPage === "danger"} 
                                                 isLoggedIn={!!user}
                                                 isFavorite={favorites.includes(songId)}
                                                 onToggleFavorite={() => toggleFavorite(songId)}
