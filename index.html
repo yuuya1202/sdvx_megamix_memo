@@ -1196,6 +1196,12 @@
                 setAuthError(null);
                 const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
                 const provider = new TwitterAuthProvider();
+                
+                // 毎回アカウント入力を求めるように設定
+                provider.setCustomParameters({
+                    force_login: 'true'
+                });
+
                 try {
                     await signInWithPopup(firebase.auth, provider);
                 } catch (error) {
