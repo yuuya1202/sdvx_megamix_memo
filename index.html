@@ -1202,11 +1202,13 @@
                 fetchData();
             }, []);
 
-            // Handle filter reset when page changes
+            // Handle filter reset and SCROLL TO TOP when page changes
             useEffect(() => {
                 setSelectedLevels([]);
                 setIsFilterOpen(false);
                 setPageIndex(1);
+                // ページ切り替え時に最上部へスクロール
+                window.scrollTo(0, 0);
             }, [currentPage]);
 
             useEffect(() => {
@@ -1387,6 +1389,7 @@
             const handlePageChange = (newIndex) => {
                 if (newIndex >= 1 && newIndex <= totalPages) {
                     setPageIndex(newIndex);
+                    // ページ遷移（前へ・次へ）時も最上部へスクロール
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             };
