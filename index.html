@@ -27,30 +27,34 @@
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
 
         body {
-            /* 背景画像の設定 */
-            background-image: url('https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true'); 
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            /* body自体の背景は色のみに。画像は擬似要素で制御します */
             background-color: #1b4332;
             color: #222;
             font-family: 'M PLUS Rounded 1c', sans-serif;
             -webkit-tap-highlight-color: transparent;
             position: relative;
             min-height: 100vh;
+            margin: 0;
         }
 
-        /* 視認性を確保するためのオーバーレイレイヤー */
+        /* 背景画像とオーバーレイを統合した固定レイヤー */
         body::before {
             content: "";
-            position: fixed;
+            position: fixed; /* 画面に対して固定 */
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* 透過度を0.8から0.6に変更して、画像をよりはっきり表示 */
-            background: rgba(19, 42, 19, 0.6); 
-            z-index: -1;
+            /* linear-gradientを画像の上に重ねて記述することで、
+               画像自体の明るさを抑えつつ、画面サイズにフィットさせます 
+            */
+            background: 
+                linear-gradient(rgba(19, 42, 19, 0.6), rgba(19, 42, 19, 0.6)),
+                url('https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true');
+            background-size: cover;      /* 画面を覆う */
+            background-position: center; /* 中央合わせ */
+            background-repeat: no-repeat;
+            z-index: -1; /* コンテンツの背後に配置 */
         }
         
         .pop-card {
