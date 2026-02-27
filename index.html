@@ -229,17 +229,19 @@
             border: 2px solid #000;
             box-shadow: 4px 4px 0px #000;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             padding: 10px 12px;
             border-radius: 16px;
             margin-bottom: 10px;
         }
         .rank-number {
-            width: 48px;
+            width: 64px; /* 拡張 (48px -> 64px) 3桁表示に対応 */
             font-size: 20px;
             font-weight: 900;
             font-style: italic;
             color: #132a13;
+            flex-shrink: 0;
+            padding-top: 2px;
         }
         .rank-1 { color: #ffd700; text-shadow: 2px 2px 0px #000; }
         .rank-2 { color: #c0c0c0; text-shadow: 2px 2px 0px #000; }
@@ -723,7 +725,7 @@
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className="text-lg font-black truncate leading-tight mb-1">{song.title}</h3>
+                                <h3 className="text-lg font-black leading-tight mb-1 break-words">{song.title}</h3>
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className="text-[10px] uppercase tracking-tight text-black font-black">Lv</span>
@@ -939,7 +941,7 @@
                                                             <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
                                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                                             <div className="flex-grow min-w-0">
-                                                                <div className="text-sm font-bold truncate text-black">{song.title}</div>
+                                                                <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
                                                                 <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
                                                             </div>
                                                         </div>
@@ -996,7 +998,7 @@
                                         <div onClick={() => openSongModal(idx)} className="border-4 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                             <div className="flex-grow min-w-0">
-                                                <div className="text-sm font-black truncate text-black">{song.title}</div>
+                                                <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                 <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(song.level)} {song.difficult}</div>
                                             </div>
                                             <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
@@ -1051,7 +1053,7 @@
                                             <div key={i} onClick={() => selectSong(id)} className={`flex items-center gap-3 border-2 rounded-lg p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
                                                 <img src={s.jacket} className="w-10 h-10 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                                 <div className="flex-grow min-w-0 text-left">
-                                                    <div className="text-xs font-black truncate text-black">{s.title}</div>
+                                                    <div className="text-xs font-black text-black break-words leading-tight">{s.title}</div>
                                                     <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(s.level)} {s.difficult}</div>
                                                 </div>
                                                 {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
@@ -1176,9 +1178,16 @@
                 fetchData();
             }, []);
 
+            // Handle filter reset when page changes
+            useEffect(() => {
+                setSelectedLevels([]);
+                setIsFilterOpen(false);
+                setPageIndex(1);
+            }, [currentPage]);
+
             useEffect(() => {
                 setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder, showOnlyFavorites, currentPage]);
+            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder, showOnlyFavorites]);
 
             // Authentication Functions
             const login = async () => {
@@ -1601,10 +1610,10 @@
                                                 <div key={idx} className="ranking-row">
                                                     <div className={`rank-number ${isTopThree ? `rank-${currentRank}` : ''}`}>#{currentRank}</div>
                                                     <div className="flex-grow min-w-0 px-2">
-                                                        <p className="text-sm font-black truncate leading-tight">{song.title}</p>
-                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter">Lv {formatLevel(song.level)} {song.difficult}</p>
+                                                        <p className="text-sm font-black leading-tight break-words">{song.title}</p>
+                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5">Lv {formatLevel(song.level)} {song.difficult}</p>
                                                     </div>
-                                                    <div className="text-right">
+                                                    <div className="text-right flex-shrink-0">
                                                         <span className="text-xl font-black text-black">{song._displayCombo}</span>
                                                         <span className="text-[10px] font-black ml-1 uppercase text-[#132a13]">CHAIN</span>
                                                     </div>
