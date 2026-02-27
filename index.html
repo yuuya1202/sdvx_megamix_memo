@@ -17,10 +17,10 @@
     <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, TwitterAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query };
+        window.FirebaseSDK = { initializeApp, getAuth, TwitterAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query };
     </script>
 
     <style>
@@ -763,8 +763,7 @@
                                 <span className="section-label">第2区間</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                             </div>
 
@@ -1110,12 +1109,24 @@
             // Firebase Init & Auth Observer
             useEffect(() => {
                 const initFirebase = async () => {
-                    const { initializeApp, getAuth, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
+                    const { initializeApp, getAuth, onAuthStateChanged, getFirestore, getRedirectResult } = window.FirebaseSDK;
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
                     const db = getFirestore(app);
                     
                     setFirebase({ auth, db });
+
+                    // Check for redirect results first
+                    try {
+                        const result = await getRedirectResult(auth);
+                        if (result) {
+                            // Successfully signed in via redirect
+                            console.log("Logged in via redirect");
+                        }
+                    } catch (error) {
+                        console.error("Redirect Login Error:", error);
+                        setAuthError("ログイン中にエラーが発生しました。");
+                    }
 
                     onAuthStateChanged(auth, (currentUser) => {
                         setUser(currentUser);
@@ -1194,7 +1205,7 @@
                 if (!firebase || isAuthLoading) return;
                 setIsAuthLoading(true);
                 setAuthError(null);
-                const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
+                const { TwitterAuthProvider, signInWithRedirect } = window.FirebaseSDK;
                 const provider = new TwitterAuthProvider();
                 
                 // 強制的に再ログイン（アカウント選択）を求める設定を追加
@@ -1203,16 +1214,11 @@
                 });
 
                 try {
-                    await signInWithPopup(firebase.auth, provider);
+                    // ポップアップではなくリダイレクト方式に変更
+                    await signInWithRedirect(firebase.auth, provider);
                 } catch (error) {
                     console.error("X Login Error:", error);
-                    if (error.code === 'auth/unauthorized-domain') {
-                        setAuthError("このドメインが承認されていません。Firebaseコンソールの [Authentication] > [設定] > [承認済みドメイン] に現在のドメインを追加してください。");
-                    } else if (error.code === 'auth/popup-blocked') {
-                        setAuthError("ポップアップがブロックされました。ブラウザの設定で許可してください。");
-                    } else {
-                        setAuthError("ログインに失敗しました。Xの設定を確認してください。");
-                    }
+                    setAuthError("ログイン画面への遷移に失敗しました。");
                     setIsAuthLoading(false);
                 }
             };
