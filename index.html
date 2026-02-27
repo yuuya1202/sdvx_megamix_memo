@@ -27,10 +27,30 @@
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
 
         body {
-            background-color: #1b4332;
+            /* 背景画像の設定（提供されたURL） */
+            background-image: url('https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #1b4332; /* 画像が読み込めない時のフォールバック */
             color: #222;
             font-family: 'M PLUS Rounded 1c', sans-serif;
             -webkit-tap-highlight-color: transparent;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* 視認性を確保するためのオーバーレイレイヤー */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 背景画像が見えるように透過度を調整（0.7〜0.85くらいがおすすめ） */
+            background: rgba(19, 42, 19, 0.8); 
+            z-index: -1;
         }
         
         .pop-card {
@@ -235,7 +255,7 @@
             margin-bottom: 10px;
         }
         .rank-number {
-            width: 64px; /* 拡張 (48px -> 64px) 3桁表示に対応 */
+            width: 64px; 
             font-size: 20px;
             font-weight: 900;
             font-style: italic;
@@ -1015,7 +1035,7 @@
                     </div>
 
                     <div className="flex gap-3">
-                        <button onClick={() => setView("list")} className="flex-1 bg-gray-200 text-black font-black py-3 rounded-xl border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                        <button onClick={() => setView("list")} className="flex-1 bg-gray-200 text-black font-black py-3 rounded-xl border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all">
                             キャンセル
                         </button>
                         <button 
