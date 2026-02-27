@@ -1197,7 +1197,7 @@
                 const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
                 const provider = new TwitterAuthProvider();
                 
-                // 毎回アカウント入力を求めるように設定
+                // 強制的に再ログイン（アカウント選択）を求める設定を追加
                 provider.setCustomParameters({
                     force_login: 'true'
                 });
@@ -1404,8 +1404,7 @@
                                 <div className="dropdown-panel" onClick={() => setIsNavOpen(false)}>
                                     <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-music-notes text-base"></i> メインページ
-                                    </button>
-                                    <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
+                                    </button>                                    <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-trophy text-base"></i> チェイン数ランキング
                                     </button>
                                     <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
