@@ -17,42 +17,21 @@
     <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // GoogleAuthProvider に変更
+        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query };
+        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query };
     </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
 
         body {
-            /* body自体の背景は色のみに。画像は擬似要素で制御します */
             background-color: #1b4332;
             color: #222;
             font-family: 'M PLUS Rounded 1c', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            position: relative;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        /* 背景画像とオーバーレイを統合した固定レイヤー */
-        body::before {
-            content: "";
-            position: fixed; /* 画面に対して固定 */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* rgba(19, 42, 19, 0.75) に変更して、画像を暗く調整 */
-            background: 
-                linear-gradient(rgba(19, 42, 19, 0.75), rgba(19, 42, 19, 0.75)),
-                url('https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true');
-            background-size: cover;      /* 画面を覆う */
-            background-position: center; /* 中央合わせ */
-            background-repeat: no-repeat;
-            z-index: -1; /* コンテンツの背後に配置 */
         }
         
         .pop-card {
@@ -395,10 +374,6 @@
             text-align: center;
             animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes modalPop {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
 
         .hit-counter {
             background: #6b7280; 
@@ -427,20 +402,6 @@
             height: 42px;
             font-weight: 900;
             font-size: 13px;
-        }
-        .auth-btn:active:not(:disabled) {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px #000;
-        }
-        .auth-btn.logged-in {
-            background: #fdfdfd;
-            border-color: #666;
-            color: #666;
-            box-shadow: 3px 3px 0px #666;
-        }
-        .auth-btn:disabled {
-            opacity: 0.6;
-            cursor: wait;
         }
 
         .fav-btn {
@@ -474,17 +435,6 @@
             box-shadow: inset 2px 2px 0px rgba(0,0,0,0.05);
             background: #f9fafb;
         }
-        .memo-textarea:focus {
-            outline: none;
-            border-color: #52b788;
-            background: #fff;
-        }
-        .memo-textarea:disabled {
-            background: #e5e7eb;
-            color: #9ca3af;
-            cursor: not-allowed;
-            border-color: #9ca3af;
-        }
 
         .fav-filter-toggle {
             display: flex;
@@ -509,7 +459,6 @@
             box-shadow: 4px 4px 0px #fbbf24;
         }
 
-        /* Error Message Container */
         .error-toast {
             position: fixed;
             bottom: 20px;
@@ -529,9 +478,18 @@
             text-align: center;
             animation: toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes toastPop {
-            from { transform: translate(-50%, 20px); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
+
+        /* 起動時・ログイン処理用オーバーレイ */
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #1b4332;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
         }
     </style>
 </head>
@@ -582,6 +540,7 @@
             }
         };
 
+        // --- Modals ---
         const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type }) => {
             if (!isOpen) return null;
             return (
@@ -592,23 +551,11 @@
                                 <i className={`ph-bold ${type === 'video' ? 'ph-youtube-logo' : 'ph-file-text'} text-3xl text-black`}></i>
                             </div>
                             <h2 className="text-xl font-black mb-2">確認</h2>
-                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
-                                外部サイトへ移動してもよろしいですか？
-                            </p>
+                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">外部サイトへ移動してもよろしいですか？</p>
                         </div>
                         <div className="flex flex-col gap-3 mt-8">
-                            <button 
-                                onClick={onConfirm}
-                                className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-                            >
-                                はい、移動します
-                            </button>
-                            <button 
-                                onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-                            >
-                                いいえ、戻る
-                            </button>
+                            <button onClick={onConfirm} className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">はい、移動します</button>
+                            <button onClick={onCancel} className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">いいえ、戻る</button>
                         </div>
                     </div>
                 </div>
@@ -625,23 +572,11 @@
                                 <i className="ph-bold ph-sign-out text-3xl text-red-600"></i>
                             </div>
                             <h2 className="text-xl font-black mb-2">ログアウト</h2>
-                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
-                                ログアウトしてもよろしいですか？
-                            </p>
+                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">ログアウトしてもよろしいですか？</p>
                         </div>
                         <div className="flex flex-col gap-3 mt-8">
-                            <button 
-                                onClick={onConfirm}
-                                className="w-full bg-red-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-                            >
-                                ログアウトする
-                            </button>
-                            <button 
-                                onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-                            >
-                                キャンセル
-                            </button>
+                            <button onClick={onConfirm} className="w-full bg-red-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">ログアウトする</button>
+                            <button onClick={onCancel} className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">キャンセル</button>
                         </div>
                     </div>
                 </div>
@@ -658,23 +593,11 @@
                                 <i className="ph-bold ph-trash text-3xl text-orange-600"></i>
                             </div>
                             <h2 className="text-xl font-black mb-2">セトリの削除</h2>
-                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
-                                このセトリを削除してもよろしいですか？
-                            </p>
+                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">このセトリを削除してもよろしいですか？</p>
                         </div>
                         <div className="flex flex-col gap-3 mt-8">
-                            <button 
-                                onClick={onConfirm}
-                                className="w-full bg-orange-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-                            >
-                                削除する
-                            </button>
-                            <button 
-                                onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-                            >
-                                キャンセル
-                            </button>
+                            <button onClick={onConfirm} className="w-full bg-orange-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">削除する</button>
+                            <button onClick={onCancel} className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">キャンセル</button>
                         </div>
                     </div>
                 </div>
@@ -686,9 +609,7 @@
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
             
-            useEffect(() => {
-                setLocalMemo(personalMemo || "");
-            }, [personalMemo]);
+            useEffect(() => { setLocalMemo(personalMemo || ""); }, [personalMemo]);
 
             const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
             const borderColor = useMemo(() => getBorderColor(song.difficult), [song.difficult]);
@@ -699,73 +620,38 @@
                 setModalInfo({ isOpen: true, url, type });
             };
 
-            const confirmNavigation = () => {
-                window.open(modalInfo.url, '_blank', 'noopener,noreferrer');
-                setModalInfo({ ...modalInfo, isOpen: false });
-            };
-
-            const renderDangerBadge = () => {
-                if (!showDangerBadge) return null; 
-                const level = String(song.danger_level);
-                if (level === "1") return <div className="danger-badge danger-badge-1">要警戒</div>;
-                if (level === "2") return <div className="danger-badge danger-badge-2">危険</div>;
-                return null;
-            };
-
-            const handleFavoriteClick = (e) => {
-                e.stopPropagation();
-                if (!isLoggedIn) return;
-                onToggleFavorite();
-            };
-
-            const handleMemoSave = () => {
-                if (!isLoggedIn) return;
-                onSavePersonalMemo(localMemo);
-            };
-
             return (
                 <>
                     <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl p-3 mb-4 cursor-pointer ${isOpen ? 'active' : ''}`}>
-                        {renderDangerBadge()}
+                        {showDangerBadge && (song.danger_level === "1" || song.danger_level === "2") && (
+                            <div className={`danger-badge ${song.danger_level === "1" ? "danger-badge-1" : "danger-badge-2"}`}>
+                                {song.danger_level === "1" ? "要警戒" : "危険"}
+                            </div>
+                        )}
                         <div className="flex items-center gap-4">
                             <div className="flex-shrink-0 w-[72px] h-[72px] relative overflow-hidden rounded-lg">
                                 {song.jacket ? (
-                                    <img 
-                                        src={song.jacket} 
-                                        alt="jacket" 
-                                        className="border-[3px] w-full h-full object-cover rounded-lg" 
-                                        style={{ borderColor: borderColor }}
-                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                    />
+                                    <img src={song.jacket} className="border-[3px] w-full h-full object-cover rounded-lg" style={{ borderColor }} onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                 ) : (
-                                    <div 
-                                        className="border-[3px] w-full h-full bg-gray-100 flex items-center justify-center rounded-lg"
-                                        style={{ borderColor: borderColor }}
-                                    >
-                                        <i className="ph-bold ph-music-note text-gray-400 text-xl"></i>
-                                    </div>
+                                    <div className="border-[3px] w-full h-full bg-gray-100 flex items-center justify-center rounded-lg" style={{ borderColor }}><i className="ph-bold ph-music-note text-gray-400 text-xl"></i></div>
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
                                 <h3 className="text-lg font-black leading-tight mb-1 break-words">{song.title}</h3>
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
-                                        <span className="text-[10px] uppercase tracking-tight text-black font-black">Lv</span>
+                                        <span className="text-[10px] uppercase font-black">Lv</span>
                                         <span className="text-xl tracking-tight leading-none">{displayLevel}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
-                                        <span className="text-[10px] uppercase tracking-tight text-black font-black">BPM</span>
+                                        <span className="text-[10px] uppercase font-black">BPM</span>
                                         <span className="text-xl tracking-tight leading-none">{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                {/* 要注意曲リスト以外の場合のみお気に入りボタンを表示 */}
-                                {isLoggedIn && !showDangerBadge && (
-                                    <button 
-                                        onClick={handleFavoriteClick} 
-                                        className={`fav-btn ${isFavorite ? 'active' : ''}`}
-                                    >
+                                {isLoggedIn && (
+                                    <button onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }} className={`fav-btn ${isFavorite ? 'active' : ''}`}>
                                         <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-xl`}></i>
                                     </button>
                                 )}
@@ -773,334 +659,147 @@
                             </div>
                         </div>
                         <div className={`memo-area ${isOpen ? 'open' : ''}`}>
-                            <div className="flex items-center mb-2 text-black">
-                                <span className="section-label">第1区間</span>
-                            </div>
+                            <div className="flex items-center mb-2 text-black"><span className="section-label">第1区間</span></div>
                             <div className="grid grid-cols-3 gap-1.5 mb-4">
                                 <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
                             </div>
-
-                            <div className="flex items-center mb-2 text-black">
-                                <span className="section-label">第2区間</span>
-                            </div>
+                            <div className="flex items-center mb-2 text-black"><span className="section-label">第2区間</span></div>
                             <div className="grid grid-cols-3 gap-1.5 mb-5">
                                 <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                             </div>
-
                             <div className="grid grid-cols-2 gap-3 mb-6">
-                                {song.site_link ? (
-                                    <button className="link-button chart" onClick={(e) => handleLinkClick(e, song.site_link, 'chart')}>
-                                        <i className="ph-bold ph-file-text text-lg"></i>画像で確認
-                                    </button>
-                                ) : (
-                                    <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>画像なし</div>
-                                )}
-                                
-                                {song.movie_link ? (
-                                    <button className="link-button video" onClick={(e) => handleLinkClick(e, song.movie_link, 'video')}>
-                                        <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
-                                    </button>
-                                ) : (
-                                    <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
-                                )}
+                                <button disabled={!song.site_link} className={`link-button chart ${!song.site_link ? 'opacity-30 grayscale' : ''}`} onClick={(e) => handleLinkClick(e, song.site_link, 'chart')}><i className="ph-bold ph-file-text text-lg"></i>画像で確認</button>
+                                <button disabled={!song.movie_link} className={`link-button video ${!song.movie_link ? 'opacity-30 grayscale' : ''}`} onClick={(e) => handleLinkClick(e, song.movie_link, 'video')}><i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認</button>
                             </div>
-
                             {showTips && (
-                                <>
-                                    <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
-                                        <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i>
-                                        <span>Tips</span>
+                                <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px] mb-4">
+                                    <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase text-black">
+                                        <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i><span>Tips</span>
                                     </div>
-                                    <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px] mb-4">
-                                        <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">
-                                            {song.memo || "メモはありません"}
-                                        </p>
-                                    </div>
-                                </>
+                                    <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">{song.memo || "メモはありません"}</p>
+                                </div>
                             )}
-
-                            {/* 要注意曲リスト以外の場合のみ自分用メモを表示 */}
-                            {isLoggedIn && !showDangerBadge && (
+                            {isLoggedIn && (
                                 <div className="mt-4 pt-4 border-t-2 border-gray-100" onClick={e => e.stopPropagation()}>
-                                    <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
-                                        <i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i>
-                                        <span>自分用メモ</span>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <textarea 
-                                            className="memo-textarea" 
-                                            value={localMemo}
-                                            onChange={(e) => setLocalMemo(e.target.value)}
-                                            onBlur={handleMemoSave}
-                                        />
-                                    </div>
+                                    <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase text-black"><i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i><span>自分用メモ</span></div>
+                                    <textarea className="memo-textarea" value={localMemo} onChange={(e) => setLocalMemo(e.target.value)} onBlur={() => onSavePersonalMemo(localMemo)} />
                                 </div>
                             )}
                         </div>
                     </div>
-
-                    <LinkConfirmModal 
-                        isOpen={modalInfo.isOpen}
-                        onConfirm={confirmNavigation}
-                        onCancel={() => setModalInfo({ ...modalInfo, isOpen: false })}
-                        type={modalInfo.type}
-                    />
+                    <LinkConfirmModal isOpen={modalInfo.isOpen} onConfirm={() => { window.open(modalInfo.url, '_blank'); setModalInfo({...modalInfo, isOpen: false}); }} onCancel={() => setModalInfo({...modalInfo, isOpen: false})} type={modalInfo.type} />
                 </>
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
-            const [view, setView] = useState("list"); // "list" | "edit"
+        // --- Setlist Manager ---
+        const SetlistManager = ({ songs, songMap, setlists, onSave, onDelete, getSongId, formatLevel }) => {
+            const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
-            const [selectingSlot, setSelectingSlot] = useState(null); // 0-4
-            
+            const [selectingSlot, setSelectingSlot] = useState(null);
             const [isSongModalOpen, setIsSongModalOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
             const [openSetlists, setOpenSetlists] = useState({});
-            
-            // Delete confirmation state
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
             const [deletingId, setDeletingId] = useState(null);
 
-            const handleCreate = () => {
-                setEditingSetlist({ id: Date.now().toString(), name: "", songs: [null, null, null, null, null] });
-                setView("edit");
-            };
-
-            const handleEdit = (sl) => {
-                setEditingSetlist({ ...sl, songs: [...sl.songs] });
-                setView("edit");
-            };
-
-            const openSongModal = (slotIndex) => {
-                setSelectingSlot(slotIndex);
-                setSearchTerm("");
-                setIsSongModalOpen(true);
-            };
-
-            const isTitleAlreadySelected = (songIdToCheck) => {
-                if (!editingSetlist) return false;
-                const songToCheck = songMap[songIdToCheck];
-                if (!songToCheck) return false;
-                
-                return editingSetlist.songs.some((selectedId, index) => {
-                    if (index === selectingSlot) return false;
-                    if (!selectedId) return false;
-                    const selectedSong = songMap[selectedId];
-                    return selectedSong && selectedSong.title === songToCheck.title;
-                });
-            };
-
-            const selectSong = (songId) => {
-                if (isTitleAlreadySelected(songId)) return;
-                const newSongs = [...editingSetlist.songs];
-                newSongs[selectingSlot] = songId;
-                setEditingSetlist({ ...editingSetlist, songs: newSongs });
-                setIsSongModalOpen(false);
-            };
-
-            const handleSave = () => {
-                onSave(editingSetlist);
-                // 保存時に展開されているセトリをすべて閉じる
-                setOpenSetlists({});
-                setView("list");
-            };
-
-            const requestDelete = (id) => {
-                setDeletingId(id);
-                setIsDeleteModalOpen(true);
-            };
-
-            const confirmDelete = () => {
-                if (deletingId) {
-                    onDelete(deletingId);
-                    setDeletingId(null);
-                    setIsDeleteModalOpen(false);
-                }
-            };
-
-            const canSave = editingSetlist && editingSetlist.name.trim() !== "" && editingSetlist.songs.every(id => id !== null);
-
-            if (view === "list") {
-                return (
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-between mb-2 mt-2">
-                            <div className="flex items-center gap-2">
-                                <i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i>
-                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
-                            </div>
-                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
-                                <i className="ph-bold ph-plus"></i> 新規
-                            </button>
-                        </div>
-                        
-                        {setlists.length === 0 ? (
-                            <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md text-white text-center mt-2">
-                                <i className="ph-bold ph-music-notes text-4xl text-white/50 mb-2 block"></i>
-                                <p className="text-sm font-bold">作成されたセトリがありません</p>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-4 mt-2">
-                                {setlists.map((sl, idx) => (
-                                    <div key={sl.id} className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] transition-all">
-                                        <div 
-                                            className="flex items-center justify-between cursor-pointer" 
-                                            onClick={() => setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}
-                                        >
-                                            <h3 className="text-base font-black text-black">#{idx + 1}　{sl.name}</h3>
-                                            <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}>
-                                                <i className="ph-bold ph-caret-circle-down text-2xl text-black"></i>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+            if (view === "list") return (
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between mb-2 mt-2">
+                        <div className="flex items-center gap-2"><i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i><h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2></div>
+                        <button onClick={() => { setEditingSetlist({ id: Date.now().toString(), name: "", songs: [null, null, null, null, null] }); setView("edit"); }} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] text-xs flex items-center gap-1"><i className="ph-bold ph-plus"></i> 新規</button>
+                    </div>
+                    {setlists.length === 0 ? (
+                        <div className="bg-white/10 p-10 rounded-2xl border border-white/10 text-white text-center"><i className="ph-bold ph-music-notes text-4xl text-white/50 mb-2 block"></i><p className="text-sm font-bold">作成されたセトリがありません</p></div>
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            {setlists.map((sl, idx) => (
+                                <div key={sl.id} className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000]">
+                                    <div className="flex items-center justify-between cursor-pointer" onClick={() => setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}>
+                                        <h3 className="text-base font-black">#{idx + 1}　{sl.name}</h3>
+                                        <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl"></i></div>
+                                    </div>
+                                    {openSetlists[sl.id] && (
+                                        <div className="mt-4 animate-in fade-in zoom-in-95 duration-200">
                                             <div className="flex flex-col gap-2 mb-4">
-                                                {sl.songs.map((songId, sIdx) => {
-                                                    const song = songMap[songId];
-                                                    if (!song) return null;
-                                                    return (
-                                                        <div key={sIdx} className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
-                                                            <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
-                                                            <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
-                                                            <div className="flex-grow min-w-0">
-                                                                <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
-                                                                <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
-                                                            </div>
+                                                {sl.songs.map((sid, i) => {
+                                                    const s = songMap[sid];
+                                                    return s ? (
+                                                        <div key={i} className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
+                                                            <div className="font-black text-gray-400 text-xs w-4">{i+1}</div>
+                                                            <img src={s.jacket} className="w-10 h-10 border-2 border-black rounded object-cover" />
+                                                            <div className="flex-grow min-w-0"><div className="text-xs font-black truncate">{s.title}</div><div className="text-[10px] font-black text-gray-500">Lv {formatLevel(s.level)} {s.difficult}</div></div>
                                                         </div>
-                                                    )
+                                                    ) : null;
                                                 })}
                                             </div>
                                             <div className="flex gap-2">
-                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-yellow-400 text-black font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
-                                                    <i className="ph-bold ph-pencil-simple"></i> 編集
-                                                </button>
-                                                <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className="flex-1 bg-red-400 text-white font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
-                                                    <i className="ph-bold ph-trash"></i> 削除
-                                                </button>
+                                                <button onClick={() => { setEditingSetlist({...sl, songs: [...sl.songs]}); setView("edit"); }} className="flex-1 bg-yellow-400 font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] text-xs">編集</button>
+                                                <button onClick={() => { setDeletingId(sl.id); setIsDeleteModalOpen(true); }} className="flex-1 bg-red-400 text-white font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] text-xs">削除</button>
                                             </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        <DeleteConfirmModal 
-                            isOpen={isDeleteModalOpen}
-                            onConfirm={confirmDelete}
-                            onCancel={() => { setIsDeleteModalOpen(false); setDeletingId(null); }}
-                        />
-                    </div>
-                );
-            }
-
-            return (
-                <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
-                    <h3 className="text-xl font-black mb-4 text-black border-b-4 border-[#52b788] pb-2 inline-block">セトリ作成</h3>
-                    
-                    <div className="mb-6">
-                        <label className="block text-xs font-black uppercase text-gray-500 mb-1">セトリ名</label>
-                        <input 
-                            type="text" 
-                            value={editingSetlist.name} 
-                            onChange={e => setEditingSetlist({...editingSetlist, name: e.target.value})}
-                            className="w-full bg-gray-50 border-4 border-black rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:border-[#52b788] focus:bg-white transition-all text-black"
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-3 mb-8">
-                        <label className="block text-xs font-black uppercase text-gray-500 mb-[-4px]">TRACKS</label>
-                        {editingSetlist.songs.map((songId, idx) => {
-                            const song = songId ? songMap[songId] : null;
-                            return (
-                                <div key={idx} className="relative">
-                                    <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
-                                        {idx + 1}
-                                    </div>
-                                    {song ? (
-                                        <div onClick={() => openSongModal(idx)} className="border-4 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
-                                            <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
-                                            <div className="flex-grow min-w-0">
-                                                <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(song.level)} {song.difficult}</div>
-                                            </div>
-                                            <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
-                                        </div>
-                                    ) : (
-                                        <div onClick={() => openSongModal(idx)} className="border-4 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 active:translate-y-0.5 transition-all">
-                                            <i className="ph-bold ph-plus-circle text-2xl text-gray-400 mr-2"></i>
-                                            <span className="text-gray-500 font-bold text-sm">曲を選択する</span>
                                         </div>
                                     )}
                                 </div>
-                            )
+                            ))}
+                        </div>
+                    )}
+                    <DeleteConfirmModal isOpen={isDeleteModalOpen} onConfirm={() => { onDelete(deletingId); setIsDeleteModalOpen(false); }} onCancel={() => setIsDeleteModalOpen(false)} />
+                </div>
+            );
+
+            return (
+                <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
+                    <h3 className="text-xl font-black mb-4 border-b-4 border-[#52b788] pb-1 inline-block">セトリ作成</h3>
+                    <div className="mb-6"><label className="block text-xs font-black text-gray-500 mb-1">セトリ名</label><input type="text" value={editingSetlist.name} onChange={e => setEditingSetlist({...editingSetlist, name: e.target.value})} className="w-full bg-gray-50 border-4 border-black rounded-xl py-3 px-4 font-bold focus:outline-none" /></div>
+                    <div className="flex flex-col gap-3 mb-8">
+                        {editingSetlist.songs.map((sid, i) => {
+                            const s = sid ? songMap[sid] : null;
+                            return (
+                                <div key={i} onClick={() => { setSelectingSlot(i); setSearchTerm(""); setIsSongModalOpen(true); }} className="border-4 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 gap-3">
+                                    <div className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs">{i+1}</div>
+                                    {s ? (
+                                        <>
+                                            <img src={s.jacket} className="w-10 h-10 border-2 border-black rounded object-cover" />
+                                            <div className="flex-grow min-w-0"><div className="text-xs font-black truncate">{s.title}</div></div>
+                                        </>
+                                    ) : <div className="text-gray-300 font-bold text-sm">曲を選択...</div>}
+                                </div>
+                            );
                         })}
                     </div>
-
                     <div className="flex gap-3">
-                        <button onClick={() => setView("list")} className="flex-1 bg-gray-200 text-black font-black py-3 rounded-xl border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all">
-                            キャンセル
-                        </button>
-                        <button 
-                            onClick={handleSave} 
-                            disabled={!canSave}
-                            className={`flex-1 font-black py-3 rounded-xl border-4 border-black shadow-[3px_3px_0px_#000] transition-all ${canSave ? 'bg-[#52b788] text-white active:translate-x-1 active:translate-y-1 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none border-gray-300 translate-x-1 translate-y-1'}`}
-                        >
-                            保存する
-                        </button>
+                        <button onClick={() => setView("list")} className="flex-1 bg-gray-200 font-black py-3 rounded-xl border-4 border-black shadow-[3px_3px_0px_#000]">戻る</button>
+                        <button onClick={() => { onSave(editingSetlist); setView("list"); }} disabled={!editingSetlist.name || editingSetlist.songs.includes(null)} className="flex-1 bg-[#52b788] text-white font-black py-3 rounded-xl border-4 border-black shadow-[3px_3px_0px_#000] disabled:opacity-30">保存</button>
                     </div>
-
                     {isSongModalOpen && (
                         <div className="modal-overlay" onClick={() => setIsSongModalOpen(false)}>
-                            <div className="modal-content" style={{ padding: '16px', maxWidth: '380px', width: '100%', height: '80vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-                                <h2 className="text-lg font-black mb-3 text-black">曲を選択</h2>
-                                <div className="relative mb-3 flex-shrink-0">
-                                    <input 
-                                        type="text" 
-                                        placeholder="曲名・読みで検索..."
-                                        value={searchTerm}
-                                        onChange={e => setSearchTerm(e.target.value)}
-                                        className="w-full bg-gray-50 border-2 border-black rounded-lg py-2 px-3 pl-8 text-sm font-bold focus:outline-none focus:border-[#52b788] text-black"
-                                    />
-                                    <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <div className="modal-content h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                                <input type="text" placeholder="検索..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full border-2 border-black rounded-lg p-3 mb-4 font-bold" />
+                                <div className="flex-grow overflow-y-auto space-y-2 pr-1 pb-4">
+                                    {songs.filter(s => s.title.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 50).map((s, i) => (
+                                        <div key={i} onClick={() => { const ns = [...editingSetlist.songs]; ns[selectingSlot] = getSongId(s); setEditingSetlist({...editingSetlist, songs: ns}); setIsSongModalOpen(false); }} className="flex items-center gap-3 border-2 border-black rounded-lg p-2 bg-white cursor-pointer active:translate-y-0.5">
+                                            <img src={s.jacket} className="w-10 h-10 border-2 border-black rounded" />
+                                            <div className="text-xs font-black text-left leading-tight">{s.title}</div>
+                                        </div>
+                                    ))}
                                 </div>
-                                
-                                <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4">
-                                    {songs.filter(s => 
-                                        String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase())
-                                    ).slice(0, 100).map((s, i) => {
-                                        const id = getSongId(s);
-                                        const isSelected = isTitleAlreadySelected(id);
-                                        return (
-                                            <div key={i} onClick={() => selectSong(id)} className={`flex items-center gap-3 border-2 rounded-lg p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
-                                                <img src={s.jacket} className="w-10 h-10 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
-                                                <div className="flex-grow min-w-0 text-left">
-                                                    <div className="text-xs font-black text-black break-words leading-tight">{s.title}</div>
-                                                    <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(s.level)} {s.difficult}</div>
-                                                </div>
-                                                {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                                
-                                <button onClick={() => setIsSongModalOpen(false)} className="mt-3 w-full bg-gray-200 text-black font-black py-3 rounded-xl border-2 border-black active:translate-y-0.5 flex-shrink-0">
-                                    閉じる
-                                </button>
+                                <button onClick={() => setIsSongModalOpen(false)} className="mt-4 w-full bg-gray-100 font-black py-3 rounded-xl border-2 border-black">閉じる</button>
                             </div>
                         </div>
                     )}
                 </div>
-            )
+            );
         };
 
+        // --- Main App ---
         const App = () => {
             const [songs, setSongs] = useState([]);
             const [isLoading, setIsLoading] = useState(true);
+            const [isInitialAuthCheck, setIsInitialAuthCheck] = useState(true); 
             const [searchTerm, setSearchTerm] = useState("");
             const [selectedLevels, setSelectedLevels] = useState([]); 
             const [dangerFilter, setDangerFilter] = useState("all"); 
@@ -1112,345 +811,166 @@
             const [pageIndex, setPageIndex] = useState(1);
             const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-            // Firebase State
             const [user, setUser] = useState(null);
-            const [isAuthLoading, setIsAuthLoading] = useState(false);
+            const [isAuthProcessing, setIsAuthProcessing] = useState(false);
             const [authError, setAuthError] = useState(null);
             const [favorites, setFavorites] = useState([]); 
             const [personalMemos, setPersonalMemos] = useState({});
             const [setlists, setSetlists] = useState([]);
             const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-            
             const [firebase, setFirebase] = useState(null);
 
-            const getSongId = (song) => `${song.title}_${song.difficult}`;
-
+            const getSongId = (s) => `${s.title}_${s.difficult}`;
             const songMap = useMemo(() => {
                 const map = {};
-                songs.forEach(s => {
-                    map[getSongId(s)] = s;
-                });
+                songs.forEach(s => map[getSongId(s)] = s);
                 return map;
             }, [songs]);
 
-            // Firebase Init & Auth Observer
+            // Firebase Logic
             useEffect(() => {
-                const initFirebase = async () => {
-                    const { initializeApp, getAuth, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
+                const init = async () => {
+                    const { initializeApp, getAuth, onAuthStateChanged, getFirestore, getRedirectResult } = window.FirebaseSDK;
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
                     const db = getFirestore(app);
-                    
                     setFirebase({ auth, db });
 
-                    onAuthStateChanged(auth, (currentUser) => {
-                        setUser(currentUser);
-                        setIsAuthLoading(false);
-                        if (!currentUser) {
-                            setFavorites([]);
-                            setPersonalMemos({});
-                            setSetlists([]);
-                        }
+                    try {
+                        const result = await getRedirectResult(auth);
+                        if (result) console.log("Login Success via Redirect");
+                    } catch (e) {
+                        console.error("Auth Error:", e);
+                        setAuthError("ログイン中にエラーが発生しました。");
+                    } finally {
+                        setIsInitialAuthCheck(false);
+                    }
+
+                    onAuthStateChanged(auth, (u) => {
+                        setUser(u);
+                        if (!u) { setFavorites([]); setPersonalMemos({}); setSetlists([]); }
                     });
                 };
 
-                const interval = setInterval(() => {
-                    if (window.FirebaseSDK) {
-                        initFirebase();
-                        clearInterval(interval);
-                    }
-                }, 100);
+                const timer = setInterval(() => { if (window.FirebaseSDK) { init(); clearInterval(timer); } }, 100);
             }, []);
 
-            // Firestore Data Sync
+            // Data Sync
             useEffect(() => {
                 if (!user || !firebase) return;
                 const { doc, onSnapshot } = window.FirebaseSDK;
-
-                // Sync Favorites & Memos
-                const unsubProfile = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        setFavorites(data.favorites || []);
-                        setPersonalMemos(data.memos || {});
-                    }
-                }, (err) => console.error("Firestore Profile Sync Error:", err));
-
-                // Sync Setlists
-                const unsubSetlists = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), (docSnap) => {
-                    if (docSnap.exists()) {
-                        setSetlists(docSnap.data().items || []);
-                    }
-                }, (err) => console.error("Firestore Setlist Sync Error:", err));
-
-                return () => {
-                    unsubProfile();
-                    unsubSetlists();
-                };
+                const unsub1 = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), snap => {
+                    if (snap.exists()) { setFavorites(snap.data().favorites || []); setPersonalMemos(snap.data().memos || {}); }
+                }, (err) => console.error(err));
+                const unsub2 = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), snap => {
+                    if (snap.exists()) setSetlists(snap.data().items || []);
+                }, (err) => console.error(err));
+                return () => { unsub1(); unsub2(); };
             }, [user, firebase]);
 
             useEffect(() => {
-                const fetchData = async () => {
-                    try {
-                        const response = await fetch(GAS_URL);
-                        const data = await response.json();
-                        setSongs(data);
-                    } catch (err) {
-                        console.error("GAS Fetch Error:", err);
-                    } finally {
-                        setIsLoading(false);
-                    }
-                };
-                fetchData();
+                fetch(GAS_URL).then(r => r.json()).then(d => { setSongs(d); setIsLoading(false); });
             }, []);
 
-            // Handle filter reset and SCROLL TO TOP when page changes
-            useEffect(() => {
-                setSelectedLevels([]);
-                setIsFilterOpen(false);
-                setPageIndex(1);
-                // ページ切り替え時に最上部へスクロール
-                window.scrollTo(0, 0);
-            }, [currentPage]);
+            useEffect(() => { setPageIndex(1); }, [currentPage, searchTerm, selectedLevels, dangerFilter, sortOrder, rankSection, showOnlyFavorites]);
 
-            useEffect(() => {
-                setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder, showOnlyFavorites]);
-
-            // Authentication Functions
             const login = async () => {
-                if (!firebase || isAuthLoading) return;
-                setIsAuthLoading(true);
-                setAuthError(null);
-                const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
-                const provider = new TwitterAuthProvider();
-                
-                // 強制的に再認証（ログイン画面）を表示するパラメータを追加
-                provider.setCustomParameters({
-                    force_login: 'true'
-                });
-
+                if (!firebase) return;
+                setIsAuthProcessing(true);
+                // GoogleAuthProvider に変更
+                const { GoogleAuthProvider, signInWithRedirect } = window.FirebaseSDK;
+                const provider = new GoogleAuthProvider();
+                // Google のアカウント選択を強制するパラメータに変更
+                provider.setCustomParameters({ prompt: 'select_account' });
                 try {
-                    await signInWithPopup(firebase.auth, provider);
-                } catch (error) {
-                    console.error("X Login Error:", error);
-                    if (error.code === 'auth/unauthorized-domain') {
-                        setAuthError("このドメインが承認されていません。Firebaseコンソールの [Authentication] > [設定] > [承認済みドメイン] に現在のドメインを追加してください。");
-                    } else if (error.code === 'auth/popup-blocked') {
-                        setAuthError("ポップアップがブロックされました。ブラウザの設定で許可してください。");
-                    } else {
-                        setAuthError("ログインに失敗しました。Xの設定を確認してください。");
-                    }
-                    setIsAuthLoading(false);
+                    await signInWithRedirect(firebase.auth, provider);
+                } catch (e) {
+                    console.error(e);
+                    setAuthError("ログイン開始に失敗しました。");
+                    setIsAuthProcessing(false);
                 }
             };
 
             const logout = async () => {
                 if (!firebase) return;
-                const { signOut } = window.FirebaseSDK;
-                try {
-                    await signOut(firebase.auth);
-                    setCurrentPage("main");
-                    setIsLogoutModalOpen(false);
-                } catch (error) {
-                    console.error("Logout Error:", error);
-                }
+                await window.FirebaseSDK.signOut(firebase.auth);
+                setCurrentPage("main");
+                setIsLogoutModalOpen(false);
             };
 
-            // Firestore Update Functions
-            const updateFirestoreProfile = async (newFavs, newMemos) => {
-                if (!user || !firebase) return;
-                const { doc, setDoc } = window.FirebaseSDK;
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), {
-                    favorites: newFavs,
-                    memos: newMemos
-                }, { merge: true });
+            const toggleFav = async (sid) => {
+                if (!user) return;
+                const nf = favorites.includes(sid) ? favorites.filter(id => id !== sid) : [...favorites, sid];
+                setFavorites(nf);
+                await window.FirebaseSDK.setDoc(window.FirebaseSDK.doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), { favorites: nf, memos: personalMemos }, { merge: true });
             };
 
-            const toggleFavorite = async (songId) => {
-                const newFavs = favorites.includes(songId) 
-                    ? favorites.filter(id => id !== songId) 
-                    : [...favorites, songId];
-                setFavorites(newFavs);
-                await updateFirestoreProfile(newFavs, personalMemos);
+            const saveMemo = async (sid, m) => {
+                if (!user) return;
+                const nm = { ...personalMemos, [sid]: m };
+                setPersonalMemos(nm);
+                await window.FirebaseSDK.setDoc(window.FirebaseSDK.doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), { favorites, memos: nm }, { merge: true });
             };
 
-            const savePersonalMemo = async (songId, memo) => {
-                const newMemos = { ...personalMemos, [songId]: memo };
-                setPersonalMemos(newMemos);
-                await updateFirestoreProfile(favorites, newMemos);
+            const saveSet = async (s) => {
+                if (!user) return;
+                const ni = setlists.find(x => x.id === s.id) ? setlists.map(x => x.id === s.id ? s : x) : [s, ...setlists];
+                setSetlists(ni);
+                await window.FirebaseSDK.setDoc(window.FirebaseSDK.doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), { items: ni });
             };
 
-            const saveSetlist = async (newSetlist) => {
-                if (!user || !firebase) return;
-                const { doc, setDoc } = window.FirebaseSDK;
-                const newItems = setlists.find(s => s.id === newSetlist.id)
-                    ? setlists.map(s => s.id === newSetlist.id ? newSetlist : s)
-                    : [newSetlist, ...setlists];
-                
-                setSetlists(newItems);
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
-                    items: newItems
-                });
+            const delSet = async (id) => {
+                if (!user) return;
+                const ni = setlists.filter(x => x.id !== id);
+                setSetlists(ni);
+                await window.FirebaseSDK.setDoc(window.FirebaseSDK.doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), { items: ni });
             };
 
-            const deleteSetlist = async (id) => {
-                if (!user || !firebase) return;
-                const { doc, setDoc } = window.FirebaseSDK;
-                const newItems = setlists.filter(s => s.id !== id);
-                setSetlists(newItems);
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
-                    items: newItems
-                });
-            };
-
-            // Filter Helper Functions
-            const toggleLevel = (lv) => {
-                setSelectedLevels(prev => 
-                    prev.includes(lv) ? prev.filter(l => l !== lv) : [...prev, lv]
-                );
-            };
-
-            const toggleLevelRange = (range) => {
-                const allSelected = range.every(lv => selectedLevels.includes(lv));
-                if (allSelected) {
-                    setSelectedLevels(prev => prev.filter(lv => !range.includes(lv)));
-                } else {
-                    setSelectedLevels(prev => [...new Set([...prev, ...range])]);
-                }
-            };
-
-            const isLevelFilterActive = useMemo(() => {
-                return selectedLevels.length > 0;
-            }, [selectedLevels]);
-
-            const processedSongs = useMemo(() => {
-                return songs.map(s => {
-                    let displayCombo = 0;
-                    if (rankSection === "section1") {
-                        displayCombo = parseInt(s.combo) || 0;
-                    } else if (rankSection === "section2") {
-                        displayCombo = parseInt(s.combo2) || 0;
-                    }
-                    return { ...s, _displayCombo: displayCombo };
-                });
-            }, [songs, rankSection]);
-
-            const allFilteredSongs = useMemo(() => {
-                let baseList = processedSongs;
-
+            const allFiltered = useMemo(() => {
+                let list = songs.map(s => ({ ...s, _c: parseInt(rankSection === "section1" ? s.combo : s.combo2) || 0 }));
                 if (currentPage === "danger") {
-                    baseList = processedSongs.filter(s => ["1", "2"].includes(String(s.danger_level)));
-                    if (dangerFilter !== "all") {
-                        baseList = baseList.filter(s => String(s.danger_level) === dangerFilter);
-                    }
+                    list = list.filter(s => ["1", "2"].includes(String(s.danger_level)));
+                    if (dangerFilter !== "all") list = list.filter(s => String(s.danger_level) === dangerFilter);
                 }
-
-                const result = baseList.filter(s => {
-                    const lvStr = String(s.level || "");
-                    const matchesLv = selectedLevels.length === 0 || selectedLevels.some(targetLv => {
-                        if (["17.0", "18.0", "19.0", "20.0"].includes(targetLv)) {
-                            const base = targetLv.split('.')[0];
-                            return lvStr === base || lvStr === targetLv;
-                        }
-                        return lvStr === targetLv;
+                const res = list.filter(s => {
+                    const matchLv = selectedLevels.length === 0 || selectedLevels.some(l => {
+                        if (["17.0", "18.0", "19.0", "20.0"].includes(l)) return String(s.level).startsWith(l.split('.')[0]);
+                        return String(s.level) === l;
                     });
-                    
-                    const songId = getSongId(s);
-                    const matchesFav = !showOnlyFavorites || favorites.includes(songId);
-
-                    if (currentPage === "main") {
-                        const matchesSearch = 
-                            String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
-                        return matchesLv && matchesSearch && matchesFav;
-                    }
-                    
-                    return matchesLv && matchesFav;
+                    const matchFav = !showOnlyFavorites || favorites.includes(getSongId(s));
+                    const matchSearch = !searchTerm || s.title.toLowerCase().includes(searchTerm.toLowerCase());
+                    return matchLv && matchFav && (currentPage !== "main" || matchSearch);
                 });
+                if (currentPage === "ranking") res.sort((a,b) => sortOrder === "desc" ? b._c - a._c : a._c - b._c);
+                return res;
+            }, [songs, currentPage, selectedLevels, showOnlyFavorites, favorites, searchTerm, dangerFilter, rankSection, sortOrder]);
 
-                if (currentPage === "ranking") {
-                    const listWithCombo = result.filter(s => s._displayCombo > 0);
-                    return listWithCombo.sort((a, b) => {
-                        const comboA = a._displayCombo;
-                        const comboB = b._displayCombo;
-                        return sortOrder === "desc" ? comboB - comboA : comboA - comboB;
-                    });
-                }
+            const paginated = allFiltered.slice((pageIndex-1)*ITEMS_PER_PAGE, pageIndex*ITEMS_PER_PAGE);
+            const totalP = Math.ceil(allFiltered.length / ITEMS_PER_PAGE);
 
-                return result;
-            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, favorites]);
-
-            const paginatedSongs = useMemo(() => {
-                const start = (pageIndex - 1) * ITEMS_PER_PAGE;
-                return allFilteredSongs.slice(start, start + ITEMS_PER_PAGE);
-            }, [allFilteredSongs, pageIndex]);
-
-            const totalPages = Math.ceil(allFilteredSongs.length / ITEMS_PER_PAGE);
-
-            const handlePageChange = (newIndex) => {
-                if (newIndex >= 1 && newIndex <= totalPages) {
-                    setPageIndex(newIndex);
-                    // ページ遷移（前へ・次へ）時も最上部へスクロール
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-            };
-
-            const FilterButton = ({ lv, label }) => (
-                <button onClick={() => toggleLevel(lv)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedLevels.includes(lv) ? 'active' : ''}`}>{label || lv}</button>
-            );
-
-            const LevelSectionHeader = ({ title, list }) => (
-                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                    <div className="text-[10px] font-black text-black uppercase leading-none">Level {title}</div>
-                    <button onClick={() => toggleLevelRange(list)} className="batch-btn">全選択/解除</button>
-                </div>
-            );
+            if (isInitialAuthCheck) {
+                return (
+                    <div className="loading-screen">
+                        <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                        <p className="text-white font-black text-xs uppercase tracking-widest">Checking Auth Status...</p>
+                    </div>
+                );
+            }
 
             return (
                 <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
-                    {/* Error Toast */}
-                    {authError && (
-                        <div className="error-toast" onClick={() => setAuthError(null)}>
-                            <div className="flex flex-col items-center gap-2">
-                                <i className="ph-bold ph-warning-circle text-2xl"></i>
-                                <p>{authError}</p>
-                                <span className="text-[10px] opacity-70 mt-1">[タップで閉じる]</span>
-                            </div>
-                        </div>
-                    )}
+                    {authError && <div className="error-toast" onClick={() => setAuthError(null)}><i className="ph-bold ph-warning-circle text-2xl mb-1"></i><p>{authError}</p></div>}
+                    {isAuthProcessing && <div className="loading-screen bg-black/60 backdrop-blur-sm"><div className="w-10 h-10 border-4 border-white/20 border-t-[#52b788] rounded-full animate-spin"></div><p className="text-white font-black text-xs">Processing...</p></div>}
 
                     <div className="fixed top-4 left-4 z-50">
                         <div className="nav-dropdown">
-                            <button 
-                                onClick={() => setIsNavOpen(!isNavOpen)} 
-                                className="nav-btn"
-                            >
-                                <i className="ph-bold ph-list text-xl"></i>
-                                <i className={`ph-bold ph-caret-down text-[10px] transition-transform duration-200 ${isNavOpen ? 'rotate-180' : ''}`}></i>
-                            </button>
+                            <button onClick={() => setIsNavOpen(!isNavOpen)} className="nav-btn"><i className="ph-bold ph-list text-xl"></i><i className={`ph-bold ph-caret-down text-[10px] transition-transform ${isNavOpen ? 'rotate-180' : ''}`}></i></button>
                             {isNavOpen && (
                                 <div className="dropdown-panel" onClick={() => setIsNavOpen(false)}>
-                                    <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-music-notes text-base"></i> メインページ
-                                    </button>
-                                    <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-trophy text-base"></i> チェイン数ランキング
-                                    </button>
-                                    <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-warning-octagon text-base"></i> 要注意曲リスト
-                                    </button>
-                                    {user && (
-                                        <>
-                                            <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
-                                                <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
-                                            </button>
-                                            <div className="border-t-2 border-gray-100 my-1"></div>
-                                            <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
-                                                <i className="ph-bold ph-sign-out text-base"></i> ログアウト
-                                            </button>
-                                        </>
-                                    )}
+                                    <button onClick={() => setCurrentPage("main")} className={`dropdown-item ${currentPage === "main" ? "active" : ""}`}><i className="ph-bold ph-music-notes"></i> メイン</button>
+                                    <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item ${currentPage === "ranking" ? "active" : ""}`}><i className="ph-bold ph-trophy"></i> ランキング</button>
+                                    <button onClick={() => setCurrentPage("danger")} className={`dropdown-item ${currentPage === "danger" ? "active" : ""}`}><i className="ph-bold ph-warning-octagon"></i> 要注意曲</button>
+                                    {user && <><button onClick={() => setCurrentPage("setlist")} className={`dropdown-item ${currentPage === "setlist" ? "active" : ""}`}><i className="ph-bold ph-list-numbers"></i> セトリ管理</button><div className="border-t-2 border-gray-100 my-1"></div><button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item text-red-600"><i className="ph-bold ph-sign-out"></i> ログアウト</button></>}
                                 </div>
                             )}
                         </div>
@@ -1459,249 +979,76 @@
                     <div className="fixed top-4 right-4 z-50">
                         {user ? (
                             <div className="bg-white border-2 border-black px-3 py-2 rounded-xl shadow-[3px_3px_0px_#000] flex items-center gap-2">
-                                {user.photoURL ? (
-                                    <img src={user.photoURL} className="w-5 h-5 rounded-full border border-black" alt="avatar" />
-                                ) : (
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                )}
-                                <div className="flex flex-col items-start leading-none">
-                                    <span className="text-[9px] font-black text-black truncate max-w-[80px] mb-0.5">{user.displayName || "USER"}</span>
-                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">ログイン中</span>
-                                </div>
+                                {user.photoURL && <img src={user.photoURL} className="w-5 h-5 rounded-full border border-black" />}
+                                <div className="flex flex-col leading-none"><span className="text-[9px] font-black truncate max-w-[80px]">{user.displayName}</span><span className="text-[7px] font-bold text-gray-400">ONLINE</span></div>
                             </div>
                         ) : (
-                            <button 
-                                onClick={login} 
-                                disabled={isAuthLoading}
-                                className="auth-btn"
-                            >
-                                {isAuthLoading ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-gray-400 border-t-black rounded-full animate-spin"></div>
-                                        <span>...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="ph-bold ph-user-circle text-lg text-[#52b788]"></i>
-                                        ログイン
-                                    </>
-                                )}
-                            </button>
+                            <button onClick={login} disabled={isAuthProcessing} className="auth-btn"><i className="ph-bold ph-user-circle text-lg text-[#52b788]"></i> ログイン</button>
                         )}
                     </div>
 
                     <header className="mb-10 text-center pt-8">
-                        <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
-                            SOUND VOLTEX
-                        </div>
-                        <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-6 text-white">
-                            MEGAMIX<span className="text-[#52b788]">.</span>MEMO
-                        </h1>
-
-                        <div className="space-y-6">
-                            {currentPage === "ranking" && (
-                                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
-                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
-                                    </div>
-                                    <div className="mb-2">
-                                        <div className="toggle-btn-group">
-                                            <button onClick={() => setRankSection("section1")} className={`toggle-btn-small ${rankSection === "section1" ? 'active' : ''}`}>第1区間</button>
-                                            <button onClick={() => setRankSection("section2")} className={`toggle-btn-small ${rankSection === "section2" ? 'active' : ''}`}>第2区間</button>
-                                        </div>
-                                    </div>
-                                    <div className="mb-3">
-                                        <div className="toggle-btn-group">
-                                            <button onClick={() => setSortOrder("desc")} className={`toggle-btn-small ${sortOrder === "desc" ? 'active' : ''}`}>
-                                                <i className="ph-bold ph-sort-descending"></i> 多い順
-                                            </button>
-                                            <button onClick={() => setSortOrder("asc")} className={`toggle-btn-small ${sortOrder === "asc" ? 'active' : ''}`}>
-                                                <i className="ph-bold ph-sort-ascending"></i> 少ない順
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {currentPage === "danger" && (
-                                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <i className="ph-fill ph-warning-octagon text-3xl text-orange-400"></i>
-                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">要注意曲リスト</h2>
-                                    </div>
-                                    <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
-                                        <div className="text-[13px] font-black leading-relaxed mb-4">
-                                            <p>特に注意が必要な楽曲のみをまとめました。</p>
-                                        </div>
-                                        <div className="space-y-3 pl-1 text-[12px] font-bold">
-                                            <p><span className="text-[#ffb703]">■</span> 要警戒... 癖のある配置など</p>
-                                            <p><span className="text-[#e63946]">■</span> 危険... 大量失点の可能性がある楽曲など</p>
-                                        </div>
-                                    </div>
-                                    <div className="mb-2 px-1">
-                                        <div className="toggle-btn-group">
-                                            <button onClick={() => setDangerFilter("all")} className={`toggle-btn-small ${dangerFilter === "all" ? 'active' : ''}`}>全表示</button>
-                                            <button onClick={() => setDangerFilter("1")} className={`toggle-btn-small ${dangerFilter === "1" ? 'active' : ''}`}>要警戒のみ</button>
-                                            <button onClick={() => setDangerFilter("2")} className={`toggle-btn-small ${dangerFilter === "2" ? 'active' : ''}`}>危険のみ</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {currentPage !== "setlist" && (
-                                <div className="px-1 flex flex-col gap-3">
-                                    {currentPage === "main" && (
-                                        <>
-                                            <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    placeholder="曲名・読みで探す..."
-                                                    className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 text-sm font-bold focus:outline-none shadow-[4px_4px_0px_#000]"
-                                                    value={searchTerm}
-                                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                                />
-                                                <i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400"></i>
-                                            </div>
-                                            {!isLoading && (
-                                                <div className="hit-counter mx-auto mb-2">
-                                                    <span>{allFilteredSongs.length} 譜面</span>
-                                                </div>
-                                            )}
-                                            {user && (
-                                                <button 
-                                                    onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                                                    className={`fav-filter-toggle ${showOnlyFavorites ? 'active' : ''}`}
-                                                >
-                                                    お気に入りのみ表示
-                                                </button>
-                                            )}
-                                        </>
-                                    )}
-                                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isLevelFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
-                                        <div className="flex items-center gap-3">
-                                            <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
-                                            <span>レベルで絞り込む{isLevelFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
-                                        </div>
-                                        <i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i>
-                                    </button>
-                                    <div className={`filter-area ${isFilterOpen ? 'show' : ''}`}>
-                                        <div className="space-y-6 text-black">
-                                            <div className="flex justify-end border-b-2 border-gray-100 pb-2">
-                                                {isLevelFilterActive && (
-                                                    <button onClick={() => setSelectedLevels([])} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
-                                                        <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                            <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                            <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                            <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1">SOUND VOLTEX</div>
+                        <h1 className="text-5xl font-black italic tracking-tighter uppercase text-white">MEGAMIX<span className="text-[#52b788]">.</span>MEMO</h1>
                     </header>
 
-                    <main className="pb-10">
-                        {isLoading ? (
-                            <div className="flex flex-col items-center py-20">
-                                <div className="w-9 h-9 border-4 border-white/10 border-l-[#52b788] rounded-full animate-spin mb-4"></div>
-                                <p className="font-black text-[10px] uppercase tracking-widest text-white/50">Loading Data...</p>
-                            </div>
-                        ) : (
+                    <main className="pb-20">
+                        {isLoading ? <div className="text-center py-20"><div className="w-8 h-8 border-4 border-white/10 border-t-[#52b788] rounded-full animate-spin mx-auto mb-4"></div><p className="text-white/50 text-[10px] font-black uppercase">Loading...</p></div> : (
                             <>
-                                {currentPage === "setlist" && (
-                                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                                        <SetlistManager 
-                                            songs={songs}
-                                            songMap={songMap}
-                                            setlists={setlists}
-                                            onSave={saveSetlist}
-                                            onDelete={deleteSetlist}
-                                            getSongId={getSongId}
-                                            formatLevel={formatLevel}
-                                            getBorderColor={getBorderColor}
-                                        />
-                                    </div>
-                                )}
-
-                                {currentPage === "ranking" && (
-                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        {paginatedSongs.map((song, idx) => {
-                                            const globalIdx = (pageIndex - 1) * ITEMS_PER_PAGE + idx;
-                                            let currentRank = globalIdx + 1;
-                                            if (globalIdx > 0) {
-                                                let backtrackIdx = globalIdx;
-                                                while (backtrackIdx > 0 && allFilteredSongs[backtrackIdx]._displayCombo === allFilteredSongs[backtrackIdx - 1]._displayCombo) backtrackIdx--;
-                                                currentRank = backtrackIdx + 1;
-                                            }
-                                            const isTopThree = currentRank <= 3;
-                                            return (
-                                                <div key={idx} className="ranking-row">
-                                                    <div className={`rank-number ${isTopThree ? `rank-${currentRank}` : ''}`}>#{currentRank}</div>
-                                                    <div className="flex-grow min-w-0 px-2">
-                                                        <p className="text-sm font-black leading-tight break-words">{song.title}</p>
-                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5">Lv {formatLevel(song.level)} {song.difficult}</p>
-                                                    </div>
-                                                    <div className="text-right flex-shrink-0">
-                                                        <span className="text-xl font-black text-black">{song._displayCombo}</span>
-                                                        <span className="text-[10px] font-black ml-1 uppercase text-[#132a13]">CHAIN</span>
-                                                    </div>
+                                {currentPage === "setlist" ? <SetlistManager songs={songs} songMap={songMap} setlists={setlists} onSave={saveSet} onDelete={delSet} getSongId={getSongId} formatLevel={formatLevel} /> : (
+                                    <div className="space-y-6">
+                                        <div className="px-1 flex flex-col gap-3">
+                                            {currentPage === "main" && (
+                                                <>
+                                                    <div className="relative"><input type="text" placeholder="曲名で検索..." className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 font-bold shadow-[4px_4px_0px_#000]" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /><i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-300"></i></div>
+                                                    {user && <button onClick={() => setShowOnlyFavorites(!showOnlyFavorites)} className={`fav-filter-toggle ${showOnlyFavorites ? 'active' : ''}`}>{showOnlyFavorites ? "★ お気に入りのみ" : "☆ 全曲表示中"}</button>}
+                                                </>
+                                            )}
+                                            {currentPage === "ranking" && (
+                                                <div className="toggle-btn-group"><button onClick={() => setRankSection("section1")} className={`toggle-btn-small ${rankSection === "section1" ? 'active' : ''}`}>第1区間</button><button onClick={() => setRankSection("section2")} className={`toggle-btn-small ${rankSection === "section2" ? 'active' : ''}`}>第2区間</button></div>
+                                            )}
+                                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest"><span>LEVEL FILTER</span><i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i></button>
+                                            <div className={`filter-area ${isFilterOpen ? 'show' : ''}`}>
+                                                <div className="grid grid-cols-4 gap-2">
+                                                    {["17.0","17.5","18.0","18.1","18.2","18.3","18.4","18.5","19.0","19.1","19.2","19.3","19.4","19.5","20.0"].map(lv => (
+                                                        <button key={lv} onClick={() => setSelectedLevels(p => p.includes(lv) ? p.filter(x => x!==lv) : [...p, lv])} className={`filter-btn text-[10px] rounded-lg p-2 font-black ${selectedLevels.includes(lv) ? "active" : ""}`}>{lv}</button>
+                                                    ))}
+                                                    <button onClick={() => setSelectedLevels([])} className="col-span-4 bg-gray-100 text-[10px] font-black p-2 rounded-lg mt-2">リセット</button>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                                
-                                {currentPage !== "ranking" && currentPage !== "setlist" && (
-                                    paginatedSongs.map((song, idx) => {
-                                        const songId = getSongId(song);
-                                        return (
-                                            <SongCard 
-                                                key={idx} 
-                                                song={song} 
-                                                showDangerBadge={currentPage === "danger"} 
-                                                showTips={currentPage === "danger"} 
-                                                isLoggedIn={!!user}
-                                                isFavorite={favorites.includes(songId)}
-                                                onToggleFavorite={() => toggleFavorite(songId)}
-                                                personalMemo={personalMemos[songId]}
-                                                onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
-                                            />
-                                        );
-                                    })
-                                )}
+                                            </div>
+                                        </div>
 
-                                {currentPage !== "setlist" && paginatedSongs.length === 0 && (
-                                    <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
-                                        <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
-                                        <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
-                                    </div>
-                                )}
+                                        <div className="space-y-4">
+                                            {paginated.map((s, i) => {
+                                                if (currentPage === "ranking") {
+                                                    const rank = (pageIndex-1)*ITEMS_PER_PAGE + i + 1;
+                                                    return (
+                                                        <div key={i} className="ranking-row">
+                                                            <div className={`rank-number ${rank <= 3 ? `rank-${rank}` : ''}`}>#{rank}</div>
+                                                            <div className="flex-grow min-w-0 px-2"><p className="text-sm font-black truncate">{s.title}</p><p className="text-[10px] font-bold text-gray-500">Lv {formatLevel(s.level)} {s.difficult}</p></div>
+                                                            <div className="text-right flex-shrink-0"><span className="text-xl font-black">{s._c}</span><span className="text-[8px] font-black ml-1">CHAIN</span></div>
+                                                        </div>
+                                                    );
+                                                }
+                                                const sid = getSongId(s);
+                                                return <SongCard key={i} song={s} showDangerBadge={currentPage === "danger"} showTips={currentPage === "danger"} isLoggedIn={!!user} isFavorite={favorites.includes(sid)} onToggleFavorite={() => toggleFav(sid)} personalMemo={personalMemos[sid]} onSavePersonalMemo={m => saveMemo(sid, m)} />;
+                                            })}
+                                        </div>
 
-                                {currentPage !== "setlist" && totalPages > 1 && (
-                                    <div className="pagination-container">
-                                        <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
-                                            <i className="ph-bold ph-caret-left"></i> 前へ
-                                        </button>
-                                        <div className="page-info">{pageIndex} / {totalPages}</div>
-                                        <button onClick={() => handlePageChange(pageIndex + 1)} disabled={pageIndex >= totalPages} className="page-btn">
-                                            次へ <i className="ph-bold ph-caret-right"></i>
-                                        </button>
+                                        {totalP > 1 && (
+                                            <div className="pagination-container">
+                                                <button onClick={() => { setPageIndex(p => p-1); window.scrollTo(0,0); }} disabled={pageIndex === 1} className="page-btn"><i className="ph-bold ph-caret-left"></i></button>
+                                                <div className="page-info">{pageIndex} / {totalP}</div>
+                                                <button onClick={() => { setPageIndex(p => p+1); window.scrollTo(0,0); }} disabled={pageIndex === totalP} className="page-btn"><i className="ph-bold ph-caret-right"></i></button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </>
                         )}
                     </main>
 
-                    <LogoutConfirmModal 
-                        isOpen={isLogoutModalOpen}
-                        onConfirm={logout}
-                        onCancel={() => setIsLogoutModalOpen(false)}
-                    />
+                    <LogoutConfirmModal isOpen={isLogoutModalOpen} onConfirm={logout} onCancel={() => setIsLogoutModalOpen(false)} />
                 </div>
             );
         };
