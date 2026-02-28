@@ -600,13 +600,13 @@
                         <div className="flex flex-col gap-3 mt-8">
                             <button 
                                 onClick={onConfirm}
-                                className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 はい, 移動します
                             </button>
                             <button 
                                 onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 いいえ, 戻る
                             </button>
@@ -633,13 +633,13 @@
                         <div className="flex flex-col gap-3 mt-8">
                             <button 
                                 onClick={onConfirm}
-                                className="w-full bg-red-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-red-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 ログアウトする
                             </button>
                             <button 
                                 onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 キャンセル
                             </button>
@@ -666,13 +666,13 @@
                         <div className="flex flex-col gap-3 mt-8">
                             <button 
                                 onClick={onConfirm}
-                                className="w-full bg-orange-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-orange-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 削除する
                             </button>
                             <button 
                                 onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 キャンセル
                             </button>
@@ -1354,7 +1354,9 @@
                     });
                     
                     const songId = getSongId(s);
-                    const matchesFav = !showOnlyFavorites || favorites.includes(songId);
+                    // 修正: お気に入りフィルターはメインページのみ適用されるように
+                    const isFavFilterApplied = currentPage === "main" && showOnlyFavorites;
+                    const matchesFav = !isFavFilterApplied || favorites.includes(songId);
 
                     if (currentPage === "main") {
                         const matchesSearch = 
@@ -1664,7 +1666,8 @@
                                                 song={song} 
                                                 showDangerBadge={currentPage === "danger"} 
                                                 showTips={currentPage === "danger"} 
-                                                isLoggedIn={!!user}
+                                                // 修正: 要注意曲リスト(danger)表示時はお気に入り/メモを非表示にする
+                                                isLoggedIn={currentPage === "danger" ? false : !!user}
                                                 isFavorite={favorites.includes(songId)}
                                                 onToggleFavorite={() => toggleFavorite(songId)}
                                                 personalMemo={personalMemos[songId]}
