@@ -1653,7 +1653,9 @@
                                                     <div className={`rank-number ${isTopThree ? `rank-${currentRank}` : ''}`}>#{currentRank}</div>
                                                     <div className="flex-grow min-w-0 px-2">
                                                         <p className="text-sm font-black leading-tight break-words">{song.title}</p>
-                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5">Lv {formatLevel(song.level)} {song.difficult}</p>
+                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5">
+                                                            Lv {formatLevel(song.level)} <span style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                                        </p>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
                                                         <span className="text-xl font-black text-black">{song._displayCombo}</span>
