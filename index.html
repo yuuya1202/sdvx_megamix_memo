@@ -904,6 +904,10 @@
 
             const handleSave = () => {
                 onSave(editingSetlist);
+                // 保存時に編集していたセトリのプルダウンを閉じる
+                if (editingSetlist && editingSetlist.id) {
+                    setOpenSetlists(prev => ({ ...prev, [editingSetlist.id]: false }));
+                }
                 setView("list");
             };
 
