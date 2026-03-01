@@ -447,8 +447,8 @@
         .fav-btn {
             background: white;
             border: 2px solid #e5e7eb;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -466,8 +466,8 @@
         .mirror-btn {
             background: white;
             border: 2px solid #e5e7eb;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -785,25 +785,23 @@
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="flex flex-col gap-1.5" onClick={e => e.stopPropagation()}>
-                                    {isLoggedIn && (
-                                        <>
-                                            <button 
-                                                onClick={handleFavoriteClick} 
-                                                className={`fav-btn ${isFavorite ? 'active' : ''}`}
-                                            >
-                                                <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-lg`}></i>
-                                            </button>
-                                            <button 
-                                                onClick={handleMirrorClick} 
-                                                className={`mirror-btn ${isMirror ? 'active' : ''}`}
-                                            >
-                                                <i className={`ph-bold ph-arrows-left-right text-lg`}></i>
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
+                            <div className="flex flex-col items-center gap-1.5">
+                                {isLoggedIn && (
+                                    <div className="flex flex-row gap-1" onClick={e => e.stopPropagation()}>
+                                        <button 
+                                            onClick={handleFavoriteClick} 
+                                            className={`fav-btn ${isFavorite ? 'active' : ''}`}
+                                        >
+                                            <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-base`}></i>
+                                        </button>
+                                        <button 
+                                            onClick={handleMirrorClick} 
+                                            className={`mirror-btn ${isMirror ? 'active' : ''}`}
+                                        >
+                                            <i className={`ph-bold ph-arrows-left-right text-base`}></i>
+                                        </button>
+                                    </div>
+                                )}
                                 <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl text-black"></i></div>
                             </div>
                         </div>
