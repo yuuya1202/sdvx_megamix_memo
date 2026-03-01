@@ -792,7 +792,7 @@
                                             onClick={handleMirrorClick} 
                                             className={`mirror-btn ${isMirror ? 'active' : ''}`}
                                         >
-                                            <i className="ph-bold ph-flip-horizontal text-base"></i>
+                                            <i className="ph-bold ph-swap text-base"></i>
                                         </button>
                                     </div>
                                 )}
@@ -997,7 +997,7 @@
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
                                                                     {isMirrorActive && (
-                                                                        <i className="ph-bold ph-flip-horizontal text-indigo-500 text-sm" title="ミラー設定中"></i>
+                                                                        <i className="ph-bold ph-swap text-indigo-500 text-sm" title="ミラー設定中"></i>
                                                                     )}
                                                                 </div>
                                                                 <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
