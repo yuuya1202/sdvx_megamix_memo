@@ -462,6 +462,25 @@
             color: #fbbf24;
             box-shadow: 2px 2px 0px #fbbf24;
         }
+
+        .mirror-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #d1d5db;
+        }
+        .mirror-btn.active {
+            border-color: #6366f1;
+            background: #eef2ff;
+            color: #6366f1;
+            box-shadow: 2px 2px 0px #6366f1;
+        }
         
         .memo-textarea {
             width: 100%;
@@ -682,7 +701,7 @@
             );
         };
 
-        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, personalMemo, onSavePersonalMemo }) => {
+        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
@@ -717,6 +736,12 @@
                 e.stopPropagation();
                 if (!isLoggedIn) return;
                 onToggleFavorite();
+            };
+
+            const handleMirrorClick = (e) => {
+                e.stopPropagation();
+                if (!isLoggedIn) return;
+                onToggleMirror();
             };
 
             const handleMemoSave = () => {
@@ -761,15 +786,25 @@
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                                {isLoggedIn && (
-                                    <button 
-                                        onClick={handleFavoriteClick} 
-                                        className={`fav-btn ${isFavorite ? 'active' : ''}`}
-                                    >
-                                        <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-xl`}></i>
-                                    </button>
-                                )}
-                                <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl"></i></div>
+                                <div className="flex flex-col gap-1.5" onClick={e => e.stopPropagation()}>
+                                    {isLoggedIn && (
+                                        <>
+                                            <button 
+                                                onClick={handleFavoriteClick} 
+                                                className={`fav-btn ${isFavorite ? 'active' : ''}`}
+                                            >
+                                                <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-lg`}></i>
+                                            </button>
+                                            <button 
+                                                onClick={handleMirrorClick} 
+                                                className={`mirror-btn ${isMirror ? 'active' : ''}`}
+                                            >
+                                                <i className={`ph-bold ph-arrows-left-right text-lg`}></i>
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl text-black"></i></div>
                             </div>
                         </div>
                         <div className={`memo-area ${isOpen ? 'open' : ''}`}>
@@ -1118,6 +1153,7 @@
             const [isAuthLoading, setIsAuthLoading] = useState(false);
             const [authError, setAuthError] = useState(null);
             const [favorites, setFavorites] = useState([]); 
+            const [mirrors, setMirrors] = useState([]); 
             const [personalMemos, setPersonalMemos] = useState({});
             const [setlists, setSetlists] = useState([]);
             const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
@@ -1149,6 +1185,7 @@
                         setIsAuthLoading(false);
                         if (!currentUser) {
                             setFavorites([]);
+                            setMirrors([]);
                             setPersonalMemos({});
                             setSetlists([]);
                             // 修正: ログアウト時は「お気に入りのみ表示」を強制オフにする
@@ -1170,11 +1207,12 @@
                 if (!user || !firebase) return;
                 const { doc, onSnapshot } = window.FirebaseSDK;
 
-                // Sync Favorites & Memos
+                // Sync Favorites, Memos, Mirrors
                 const unsubProfile = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         setFavorites(data.favorites || []);
+                        setMirrors(data.mirrors || []);
                         setPersonalMemos(data.memos || {});
                     }
                 }, (err) => console.error("Firestore Profile Sync Error:", err));
@@ -1263,12 +1301,13 @@
             };
 
             // Firestore Update Functions
-            const updateFirestoreProfile = async (newFavs, newMemos) => {
+            const updateFirestoreProfile = async (newFavs, newMemos, newMirrors) => {
                 if (!user || !firebase) return;
                 const { doc, setDoc } = window.FirebaseSDK;
                 await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), {
                     favorites: newFavs,
-                    memos: newMemos
+                    memos: newMemos,
+                    mirrors: newMirrors
                 }, { merge: true });
             };
 
@@ -1277,13 +1316,21 @@
                     ? favorites.filter(id => id !== songId) 
                     : [...favorites, songId];
                 setFavorites(newFavs);
-                await updateFirestoreProfile(newFavs, personalMemos);
+                await updateFirestoreProfile(newFavs, personalMemos, mirrors);
+            };
+
+            const toggleMirror = async (songId) => {
+                const newMirrors = mirrors.includes(songId) 
+                    ? mirrors.filter(id => id !== songId) 
+                    : [...mirrors, songId];
+                setMirrors(newMirrors);
+                await updateFirestoreProfile(favorites, personalMemos, newMirrors);
             };
 
             const savePersonalMemo = async (songId, memo) => {
                 const newMemos = { ...personalMemos, [songId]: memo };
                 setPersonalMemos(newMemos);
-                await updateFirestoreProfile(favorites, newMemos);
+                await updateFirestoreProfile(favorites, newMemos, mirrors);
             };
 
             const saveSetlist = async (newSetlist) => {
@@ -1680,6 +1727,8 @@
                                                 isLoggedIn={currentPage === "danger" ? false : !!user}
                                                 isFavorite={favorites.includes(songId)}
                                                 onToggleFavorite={() => toggleFavorite(songId)}
+                                                isMirror={mirrors.includes(songId)}
+                                                onToggleMirror={() => toggleMirror(songId)}
                                                 personalMemo={personalMemos[songId]}
                                                 onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
                                             />
