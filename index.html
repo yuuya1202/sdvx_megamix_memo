@@ -549,20 +549,20 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* ミラーバッジ用スタイル */
-        .mirror-badge {
+        /* ミラータグのデザイン調整: ソフトで清潔感のあるピル型 */
+        .mirror-tag {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            background: #6366f1;
-            color: white;
+            background: #eef2ff;
+            color: #4f46e5;
             padding: 2px 8px;
-            border-radius: 6px;
+            border-radius: 9999px;
             font-size: 10px;
-            font-weight: 900;
-            text-transform: uppercase;
-            border: 1.5px solid #000;
-            box-shadow: 2px 2px 0px #000;
+            font-weight: 800;
+            letter-spacing: 0.025em;
+            line-height: 1;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -1013,7 +1013,7 @@
                                                                 <div className="flex items-center gap-2 flex-wrap">
                                                                     <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
                                                                     {isMirrorActive && (
-                                                                        <div className="mirror-badge">
+                                                                        <div className="mirror-tag">
                                                                             <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
                                                                             <span>ミラー</span>
                                                                         </div>
@@ -1079,7 +1079,7 @@
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                     {isMirrorActive && (
-                                                        <div className="mirror-badge">
+                                                        <div className="mirror-tag">
                                                             <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
                                                             <span>ミラー</span>
                                                         </div>
