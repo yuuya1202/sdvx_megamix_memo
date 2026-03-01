@@ -548,6 +548,22 @@
             from { transform: translate(-50%, 20px); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
         }
+
+        /* ミラーバッジ用スタイル */
+        .mirror-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #6366f1;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            border: 1.5px solid #000;
+            box-shadow: 2px 2px 0px #000;
+        }
     </style>
 </head>
 <body>
@@ -792,7 +808,7 @@
                                             onClick={handleMirrorClick} 
                                             className={`mirror-btn ${isMirror ? 'active' : ''}`}
                                         >
-                                            <i className="ph-bold ph-swap text-base"></i>
+                                            <i className={`ph-bold ph-arrows-left-right text-base`}></i>
                                         </button>
                                     </div>
                                 )}
@@ -994,10 +1010,13 @@
                                                             <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
                                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                                             <div className="flex-grow min-w-0">
-                                                                <div className="flex items-center gap-2">
+                                                                <div className="flex items-center gap-2 flex-wrap">
                                                                     <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
                                                                     {isMirrorActive && (
-                                                                        <i className="ph-bold ph-swap text-indigo-500 text-sm" title="ミラー設定中"></i>
+                                                                        <div className="mirror-badge">
+                                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                                            <span>ミラー</span>
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                                 <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
@@ -1047,6 +1066,7 @@
                         <label className="block text-xs font-black uppercase text-gray-500 mb-[-4px]">TRACKS</label>
                         {editingSetlist.songs.map((songId, idx) => {
                             const song = songId ? songMap[songId] : null;
+                            const isMirrorActive = songId && mirrors.includes(songId);
                             return (
                                 <div key={idx} className="relative">
                                     <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
@@ -1056,7 +1076,15 @@
                                         <div onClick={() => openSongModal(idx)} className="border-4 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                             <div className="flex-grow min-w-0">
-                                                <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
+                                                    {isMirrorActive && (
+                                                        <div className="mirror-badge">
+                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                            <span>ミラー</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(song.level)} {song.difficult}</div>
                                             </div>
                                             <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
