@@ -725,7 +725,7 @@
             );
         };
 
-        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo }) => {
+        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, tightMode = false }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
@@ -775,7 +775,7 @@
 
             return (
                 <>
-                    <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl p-3 mb-4 cursor-pointer ${isOpen ? 'active' : ''}`}>
+                    <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`}>
                         {renderDangerBadge()}
                         <div className="flex items-center gap-4">
                             <div className="flex-shrink-0 w-[72px] h-[72px] relative overflow-hidden rounded-lg">
@@ -834,7 +834,7 @@
                                 <span className="section-label">第1区間</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1.5 mb-4">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label uppercase text-[8px] opacity-30 absolute bottom-1 right-1">Pos</p><p className="stat-value">{song.start_pos || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
                             </div>
@@ -866,7 +866,7 @@
                                 )}
                             </div>
 
-                            {showTips && (
+                            {showTips && song.memo && (
                                 <>
                                     <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
                                         <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i>
@@ -874,7 +874,7 @@
                                     </div>
                                     <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px] mb-4">
                                         <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">
-                                            {song.memo || "メモはありません"}
+                                            {song.memo}
                                         </p>
                                     </div>
                                 </>
@@ -1208,6 +1208,9 @@
             const [pageIndex, setPageIndex] = useState(1);
             const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
+            const [randomSongs, setRandomSongs] = useState([]);
+            const [isGenerating, setIsGenerating] = useState(false);
+
             const [user, setUser] = useState(null);
             const [isAuthLoading, setIsAuthLoading] = useState(false);
             const [authError, setAuthError] = useState(null);
@@ -1431,6 +1434,29 @@
                 return selectedLevels.length > 0;
             }, [selectedLevels]);
 
+            const generateRandomSongs = () => {
+                setIsGenerating(true);
+                const filtered = songs.filter(s => {
+                    const lvStr = String(s.level || "");
+                    return selectedLevels.length === 0 || selectedLevels.some(targetLv => {
+                        if (["17.0", "18.0", "19.0", "20.0"].includes(targetLv)) {
+                            const base = targetLv.split('.')[0];
+                            return lvStr === base || lvStr === targetLv;
+                        }
+                        return lvStr === targetLv;
+                    });
+                });
+
+                if (filtered.length < 5) {
+                    setRandomSongs(filtered);
+                } else {
+                    const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+                    setRandomSongs(shuffled.slice(0, 5));
+                }
+                
+                setTimeout(() => setIsGenerating(false), 500);
+            };
+
             const processedSongs = useMemo(() => {
                 return songs.map(s => {
                     let displayCombo = 0;
@@ -1542,14 +1568,13 @@
                                     <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-warning-octagon text-base"></i> 要注意曲リスト
                                     </button>
+                                    <button onClick={() => setCurrentPage("random")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "random" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-shuffle text-base"></i> ランダム選曲
+                                    </button>
                                     {user && (
                                         <>
                                             <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
                                                 <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
-                                            </button>
-                                            <div className="border-t-2 border-gray-100 my-1"></div>
-                                            <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
-                                                <i className="ph-bold ph-sign-out text-base"></i> ログアウト
                                             </button>
                                         </>
                                     )}
@@ -1568,7 +1593,7 @@
                                 )}
                                 <div className="flex flex-col items-start leading-none">
                                     <span className="text-[9px] font-black text-black truncate max-w-[80px] mb-0.5">{user.displayName || "USER"}</span>
-                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">ログイン中</span>
+                                    <button onClick={() => setIsLogoutModalOpen(true)} className="text-[8px] font-black text-red-500 uppercase tracking-tighter hover:underline">ログアウト</button>
                                 </div>
                             </div>
                         ) : (
@@ -1641,6 +1666,29 @@
                                             <button onClick={() => setDangerFilter("2")} className={`toggle-btn-small ${dangerFilter === "2" ? 'active' : ''}`}>危険のみ</button>
                                         </div>
                                     </div>
+                                </div>
+                            )}
+
+                            {currentPage === "random" && (
+                                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <i className="ph-fill ph-shuffle text-3xl text-[#e9edc9]"></i>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ランダム選曲</h2>
+                                    </div>
+                                    <button 
+                                        onClick={generateRandomSongs} 
+                                        disabled={isGenerating}
+                                        className="w-full bg-[#e9edc9] text-black font-black py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-lg flex items-center justify-center gap-3"
+                                    >
+                                        {isGenerating ? (
+                                            <div className="w-5 h-5 border-3 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                        ) : (
+                                            <>
+                                                <i className="ph-bold ph-dice-five text-2xl"></i>
+                                                生成する
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
                             )}
 
@@ -1752,8 +1800,43 @@
                                         })}
                                     </div>
                                 )}
+
+                                {currentPage === "random" && (
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-2">
+                                        {randomSongs.length > 0 ? (
+                                            randomSongs.map((song, idx) => (
+                                                <div key={`random-group-${idx}`} className="mb-2">
+                                                    <div className="flex items-center gap-2 mb-1 ml-1">
+                                                        <div className="bg-black text-white text-[9px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
+                                                            TRACK {idx + 1}
+                                                        </div>
+                                                    </div>
+                                                    <SongCard 
+                                                        key={`random-${getSongId(song)}-${idx}`} 
+                                                        song={song} 
+                                                        isLoggedIn={!!user}
+                                                        isFavorite={favorites.includes(getSongId(song))}
+                                                        onToggleFavorite={() => toggleFavorite(getSongId(song))}
+                                                        isMirror={mirrors.includes(getSongId(song))}
+                                                        onToggleMirror={() => toggleMirror(getSongId(song))}
+                                                        personalMemo={personalMemos[getSongId(song)]}
+                                                        onSavePersonalMemo={(memo) => savePersonalMemo(getSongId(song), memo)}
+                                                        tightMode={true}
+                                                    />
+                                                </div>
+                                            ))
+                                        ) : (
+                                            !isGenerating && (
+                                                <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
+                                                    <i className="ph-bold ph-dice-five text-4xl text-white/30 mb-4 block"></i>
+                                                    <p className="font-black text-white/50 text-sm">レベルを選択して生成ボタンを押してください</p>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                )}
                                 
-                                {currentPage !== "ranking" && currentPage !== "setlist" && (
+                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && (
                                     paginatedSongs.map((song, idx) => {
                                         const songId = getSongId(song);
                                         return (
@@ -1774,14 +1857,14 @@
                                     })
                                 )}
 
-                                {currentPage !== "setlist" && paginatedSongs.length === 0 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
                                         <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && totalPages > 1 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
                                             <i className="ph-bold ph-caret-left"></i> 前へ
