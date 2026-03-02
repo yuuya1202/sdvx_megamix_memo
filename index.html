@@ -201,16 +201,20 @@
         .stat-box {
             background: white;
             border: 2px solid #000;
-            padding: 6px 2px;
+            padding: 8px 2px;
             border-radius: 8px;
             text-align: center;
             color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 52px;
         }
         .stat-label {
             font-size: 10px;
             font-weight: 900;
             line-height: 1;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
             color: #000;
         }
         .stat-value {
@@ -819,19 +823,19 @@
                             <div className="flex items-center mb-2 text-black">
                                 <span className="section-label">第1区間</span>
                             </div>
-                            <div className="grid grid-cols-3 gap-1.5 mb-4">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
+                            <div className="flex items-stretch gap-1.5 mb-4">
+                                <div className="stat-box flex-1"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
+                                <div className="stat-box flex-1"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
+                                <div className="stat-box flex-1"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
                             </div>
 
                             <div className="flex items-center mb-2 text-black">
                                 <span className="section-label">第2区間</span>
                             </div>
-                            <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
+                            <div className="flex items-stretch gap-1.5 mb-5">
+                                <div className="stat-box flex-1"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                <div className="stat-box flex-1"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                <div className="stat-box flex-1"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -1025,11 +1029,11 @@
                                                     )
                                                 })}
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-yellow-400 text-black font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
+                                            <div className="flex gap-3">
+                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-yellow-400 text-black font-black py-2.5 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
                                                     <i className="ph-bold ph-pencil-simple"></i> 編集
                                                 </button>
-                                                <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className="flex-1 bg-red-400 text-white font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
+                                                <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className="flex-1 bg-red-400 text-white font-black py-2.5 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
                                                     <i className="ph-bold ph-trash"></i> 削除
                                                 </button>
                                             </div>
