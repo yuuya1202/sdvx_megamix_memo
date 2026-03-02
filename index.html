@@ -1199,6 +1199,11 @@
                 return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), dangerFilter, showOnlyFavorites].join('|');
             }, [currentPage, pageIndex, searchTerm, selectedLevels, dangerFilter, showOnlyFavorites]);
 
+            // ページ更新・ページネーション時のスクロールトップ
+            useEffect(() => {
+                window.scrollTo({ top: 0, behavior: 'auto' });
+            }, [currentPage, pageIndex]);
+
             useEffect(() => {
                 const initFirebase = async () => {
                     const { initializeApp, getAuth, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
@@ -1273,7 +1278,6 @@
                 setSelectedLevels([]);
                 setIsFilterOpen(false);
                 setPageIndex(1);
-                window.scrollTo(0, 0);
             }, [currentPage]);
 
             useEffect(() => {
@@ -1461,7 +1465,6 @@
             const handlePageChange = (newIndex) => {
                 if (newIndex >= 1 && newIndex <= totalPages) {
                     setPageIndex(newIndex);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             };
 
