@@ -549,28 +549,34 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* ミラーアイコンのデザイン調整: 参照モード時 */
-        .mirror-icon-view {
-            width: 32px;
-            height: 32px;
+        /* ミラータグのデザイン調整: ソフトで清潔感のあるピル型 */
+        .mirror-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.025em;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        /* ミラーアイコン単体表示用 (セトリ詳細で使用) */
+        .mirror-icon-badge {
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
+            background: #eef2ff;
+            border: 1px solid #6366f1;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #eef2ff;
-            color: #4f46e5;
-            border: 2px solid #4f46e5;
-            box-shadow: 2px 2px 0px rgba(79, 70, 229, 0.2);
-        }
-
-        /* セトリ内のカードをさらに小さく詰め、余白を極小化 */
-        .setlist-song-container {
-            padding: 2px 4px;
-        }
-        .setlist-song-container .pop-card {
-            border-width: 2px;
-            box-shadow: 4px 4px 0px #000;
-            margin-bottom: 2px; /* 余白をさらに極小化 */
+            color: #6366f1;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -719,7 +725,7 @@
             );
         };
 
-        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, isCompact = false }) => {
+        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
@@ -769,10 +775,10 @@
 
             return (
                 <>
-                    <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl ${isCompact ? 'p-2' : 'p-3'} mb-4 cursor-pointer ${isOpen ? 'active' : ''}`}>
+                    <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl p-3 mb-4 cursor-pointer ${isOpen ? 'active' : ''}`}>
                         {renderDangerBadge()}
                         <div className="flex items-center gap-4">
-                            <div className={`flex-shrink-0 ${isCompact ? 'w-[56px] h-[56px]' : 'w-[72px] h-[72px]'} relative overflow-hidden rounded-lg`}>
+                            <div className="flex-shrink-0 w-[72px] h-[72px] relative overflow-hidden rounded-lg">
                                 {song.jacket ? (
                                     <img 
                                         src={song.jacket} 
@@ -791,20 +797,20 @@
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-black leading-tight mb-1 break-words`}>{song.title}</h3>
+                                <h3 className="text-lg font-black leading-tight mb-1 break-words">{song.title}</h3>
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className="text-[10px] uppercase tracking-tight text-black font-black">Lv</span>
-                                        <span className={`${isCompact ? 'text-lg' : 'text-xl'} tracking-tight leading-none`}>{displayLevel}</span>
+                                        <span className="text-xl tracking-tight leading-none">{displayLevel}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className="text-[10px] uppercase tracking-tight text-black font-black">BPM</span>
-                                        <span className={`${isCompact ? 'text-lg' : 'text-xl'} tracking-tight leading-none`}>{song.bpm || "???"}</span>
+                                        <span className="text-xl tracking-tight leading-none">{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-1.5">
-                                {isLoggedIn ? (
+                                {isLoggedIn && (
                                     <div className="flex flex-row gap-1" onClick={e => e.stopPropagation()}>
                                         <button 
                                             onClick={handleFavoriteClick} 
@@ -819,12 +825,6 @@
                                             <i className={`ph-bold ph-arrows-left-right text-base`}></i>
                                         </button>
                                     </div>
-                                ) : (
-                                    isMirror && (
-                                        <div className="mirror-icon-view">
-                                            <i className="ph-bold ph-arrows-left-right text-base"></i>
-                                        </div>
-                                    )
                                 )}
                                 <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl text-black"></i></div>
                             </div>
@@ -909,7 +909,7 @@
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, favorites, mirrors, personalMemos, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
+        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
             const [view, setView] = useState("list"); // "list" | "edit"
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null); // 0-4
@@ -981,6 +981,14 @@
 
             const canSave = editingSetlist && editingSetlist.name.trim() !== "" && editingSetlist.songs.every(id => id !== null);
 
+            // 共通のボタンクラス (コンパクト版)
+            const getButtonClass = (bgColor, textColor = "text-black") => `
+                flex-1 font-black py-2 rounded-xl border-3 border-black 
+                shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 
+                active:shadow-none transition-all text-xs flex justify-center items-center gap-1
+                ${bgColor} ${textColor}
+            `;
+
             if (view === "list") {
                 return (
                     <div className="flex flex-col gap-4">
@@ -1013,36 +1021,37 @@
                                             </div>
                                         </div>
                                         
-                                        <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[5000px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                            <div className="flex flex-col gap-0.5 mb-6 setlist-song-container">
+                                        <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                            <div className="flex flex-col gap-2 mb-4">
                                                 {sl.songs.map((songId, sIdx) => {
                                                     const song = songMap[songId];
                                                     if (!song) return null;
+                                                    const isMirrorActive = mirrors.includes(songId);
                                                     return (
-                                                        <div key={`${sl.id}-${songId}-${sIdx}`} className="relative px-2 pt-2">
-                                                            <div className="absolute left-[-2px] top-[-2px] w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-[10px] z-10 border-2 border-white shadow-sm">
-                                                                {sIdx + 1}
+                                                        <div key={sIdx} className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
+                                                            <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
+                                                            <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
+                                                            <div className="flex-grow min-w-0">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
+                                                                    {isMirrorActive && (
+                                                                        <div className="mirror-icon-badge">
+                                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
                                                             </div>
-                                                            <SongCard 
-                                                                song={song}
-                                                                showDangerBadge={false}
-                                                                showTips={true}
-                                                                isLoggedIn={false} // 参照のみのためfalse
-                                                                isFavorite={favorites.includes(songId)}
-                                                                isMirror={mirrors.includes(songId)}
-                                                                personalMemo={personalMemos[songId]}
-                                                                isCompact={true} // セトリ画面ではコンパクト表示
-                                                            />
                                                         </div>
                                                     )
                                                 })}
                                             </div>
                                             <div className="flex gap-3">
-                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-[#fbbf24] text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex justify-center items-center gap-2">
-                                                    <i className="ph-bold ph-pencil-simple text-base"></i> 編集
+                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className={getButtonClass("bg-yellow-400")}>
+                                                    <i className="ph-bold ph-pencil-simple"></i> 編集
                                                 </button>
-                                                <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className="flex-1 bg-[#ef4444] text-white font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex justify-center items-center gap-2">
-                                                    <i className="ph-bold ph-trash text-base"></i> 削除
+                                                <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className={getButtonClass("bg-red-500", "text-white")}>
+                                                    <i className="ph-bold ph-trash"></i> 削除
                                                 </button>
                                             </div>
                                         </div>
@@ -1107,11 +1116,11 @@
                         <button 
                             onClick={handleSave} 
                             disabled={!canSave}
-                            className={`flex-1 font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all ${canSave ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
+                            className={`flex-1 font-black py-2 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] transition-all text-xs ${canSave ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
                         >
                             保存する
                         </button>
-                        <button onClick={() => setView("list")} className="flex-1 bg-gray-200 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all">
+                        <button onClick={() => setView("list")} className="flex-1 bg-gray-200 text-black font-black py-2 rounded-xl border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs">
                             キャンセル
                         </button>
                     </div>
@@ -1196,6 +1205,7 @@
                 return map;
             }, [songs]);
 
+            // 表示条件やページが変わったことを示すトークン
             const viewToken = useMemo(() => {
                 return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), dangerFilter, showOnlyFavorites].join('|');
             }, [currentPage, pageIndex, searchTerm, selectedLevels, dangerFilter, showOnlyFavorites]);
@@ -1679,9 +1689,7 @@
                                             songs={songs}
                                             songMap={songMap}
                                             setlists={setlists}
-                                            favorites={favorites}
                                             mirrors={mirrors}
-                                            personalMemos={personalMemos}
                                             onSave={saveSetlist}
                                             onDelete={deleteSetlist}
                                             getSongId={getSongId}
