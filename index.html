@@ -1358,9 +1358,10 @@
             const saveSetlist = async (newSetlist) => {
                 if (!user || !firebase) return;
                 const { doc, setDoc } = window.FirebaseSDK;
+                // 新規セトリを最後尾に追加することで、作成順に #1, #2... となるように変更
                 const newItems = setlists.find(s => s.id === newSetlist.id)
                     ? setlists.map(s => s.id === newSetlist.id ? newSetlist : s)
-                    : [newSetlist, ...setlists];
+                    : [...setlists, newSetlist];
                 
                 setSetlists(newItems);
                 await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
