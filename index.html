@@ -1032,7 +1032,7 @@
                                                             <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
                                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                                             <div className="flex-grow min-w-0">
-                                                                <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
+                                                                <div className="text-lg font-black text-black break-words leading-tight">{song.title}</div>
                                                                 <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
                                                             </div>
                                                             {isMirrorActive && (
@@ -1094,7 +1094,7 @@
                                         <div onClick={() => openSongModal(idx)} className="border-4 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                             <div className="flex-grow min-w-0">
-                                                <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
+                                                <div className="text-lg font-black text-black break-words leading-tight">{song.title}</div>
                                                 <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(song.level)} {song.difficult}</div>
                                             </div>
                                             <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
