@@ -565,14 +565,14 @@
             white-space: nowrap;
         }
 
-        /* セトリ内のカードを少しだけ小さく見せるための微調整 */
+        /* セトリ内のカードをさらに小さく詰め、余白を極小化 */
         .setlist-song-container {
-            padding: 8px 4px;
+            padding: 4px 4px;
         }
         .setlist-song-container .pop-card {
             border-width: 2px;
             box-shadow: 4px 4px 0px #000;
-            margin-bottom: 12px; /* 余白を縮小 */
+            margin-bottom: 4px; /* 余白を極小化 */
         }
     </style>
 </head>
@@ -1040,11 +1040,11 @@
                                                     )
                                                 })}
                                             </div>
-                                            <div className="flex gap-2">
-                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-yellow-400 text-black font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
+                                            <div className="flex gap-3">
+                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-[#fbbf24] text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex justify-center items-center gap-2">
                                                     <i className="ph-bold ph-pencil-simple"></i> 編集
                                                 </button>
-                                                <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className="flex-1 bg-red-400 text-white font-black py-2 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex justify-center items-center gap-1">
+                                                <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className="flex-1 bg-[#ef4444] text-white font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex justify-center items-center gap-2">
                                                     <i className="ph-bold ph-trash"></i> 削除
                                                 </button>
                                             </div>
