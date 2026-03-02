@@ -67,6 +67,13 @@
             border-color: #52b788;
             box-shadow: 6px 6px 0px #52b788;
         }
+        /* ランダム用の静止カード（ホバーやクリック効果なし） */
+        .static-card {
+            background: white;
+            border: 3px solid #000;
+            box-shadow: 6px 6px 0px #000;
+            position: relative;
+        }
 
         .danger-badge {
             position: absolute;
@@ -725,7 +732,7 @@
             );
         };
 
-        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, tightMode = false }) => {
+        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, tightMode = false, minimalMode = false }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
@@ -773,9 +780,14 @@
                 onSavePersonalMemo(localMemo);
             };
 
+            // minimalMode のときはクリックでの展開やホバー効果を無効化
+            const cardClassName = minimalMode 
+                ? `static-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'}`
+                : `pop-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`;
+
             return (
                 <>
-                    <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`}>
+                    <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName}>
                         {renderDangerBadge()}
                         <div className="flex items-center gap-4">
                             <div className="flex-shrink-0 w-[72px] h-[72px] relative overflow-hidden rounded-lg">
@@ -810,93 +822,99 @@
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-1.5">
-                                {isLoggedIn && (
-                                    <div className="flex flex-row gap-1" onClick={e => e.stopPropagation()}>
-                                        <button 
-                                            onClick={handleFavoriteClick} 
-                                            className={`fav-btn ${isFavorite ? 'active' : ''}`}
-                                        >
-                                            <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-base`}></i>
-                                        </button>
-                                        <button 
-                                            onClick={handleMirrorClick} 
-                                            className={`mirror-btn ${isMirror ? 'active' : ''}`}
-                                        >
-                                            <i className={`ph-bold ph-arrows-left-right text-base`}></i>
-                                        </button>
-                                    </div>
+                                {!minimalMode && (
+                                    <>
+                                        {isLoggedIn && (
+                                            <div className="flex flex-row gap-1" onClick={e => e.stopPropagation()}>
+                                                <button 
+                                                    onClick={handleFavoriteClick} 
+                                                    className={`fav-btn ${isFavorite ? 'active' : ''}`}
+                                                >
+                                                    <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-base`}></i>
+                                                </button>
+                                                <button 
+                                                    onClick={handleMirrorClick} 
+                                                    className={`mirror-btn ${isMirror ? 'active' : ''}`}
+                                                >
+                                                    <i className={`ph-bold ph-arrows-left-right text-base`}></i>
+                                                </button>
+                                            </div>
+                                        )}
+                                        <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl text-black"></i></div>
+                                    </>
                                 )}
-                                <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl text-black"></i></div>
                             </div>
                         </div>
-                        <div className={`memo-area ${isOpen ? 'open' : ''}`}>
-                            <div className="flex items-center mb-2 text-black">
-                                <span className="section-label">第1区間</span>
-                            </div>
-                            <div className="grid grid-cols-3 gap-1.5 mb-4">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label uppercase text-[8px] opacity-30 absolute bottom-1 right-1">Pos</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
-                            </div>
-
-                            <div className="flex items-center mb-2 text-black">
-                                <span className="section-label">第2区間</span>
-                            </div>
-                            <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                {song.site_link ? (
-                                    <button className="link-button chart" onClick={(e) => handleLinkClick(e, song.site_link, 'chart')}>
-                                        <i className="ph-bold ph-file-text text-lg"></i>画像で確認
-                                    </button>
-                                ) : (
-                                    <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>画像なし</div>
-                                )}
-                                
-                                {song.movie_link ? (
-                                    <button className="link-button video" onClick={(e) => handleLinkClick(e, song.movie_link, 'video')}>
-                                        <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
-                                    </button>
-                                ) : (
-                                    <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
-                                )}
-                            </div>
-
-                            {showTips && song.memo && (
-                                <>
-                                    <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
-                                        <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i>
-                                        <span>Tips</span>
-                                    </div>
-                                    <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px] mb-4">
-                                        <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">
-                                            {song.memo}
-                                        </p>
-                                    </div>
-                                </>
-                            )}
-
-                            {isLoggedIn && (
-                                <div className="mt-4 pt-4 border-t-2 border-gray-100" onClick={e => e.stopPropagation()}>
-                                    <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
-                                        <i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i>
-                                        <span>自分用メモ</span>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <textarea 
-                                            className="memo-textarea" 
-                                            value={localMemo}
-                                            onChange={(e) => setLocalMemo(e.target.value)}
-                                            onBlur={handleMemoSave}
-                                        />
-                                    </div>
+                        {!minimalMode && (
+                            <div className={`memo-area ${isOpen ? 'open' : ''}`}>
+                                <div className="flex items-center mb-2 text-black">
+                                    <span className="section-label">第1区間</span>
                                 </div>
-                            )}
-                        </div>
+                                <div className="grid grid-cols-3 gap-1.5 mb-4">
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label uppercase text-[8px] opacity-30 absolute bottom-1 right-1">Pos</p><p className="stat-value">{song.start_pos || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-label">{song.end_pos || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
+                                </div>
+
+                                <div className="flex items-center mb-2 text-black">
+                                    <span className="section-label">第2区間</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-1.5 mb-5">
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 mb-6">
+                                    {song.site_link ? (
+                                        <button className="link-button chart" onClick={(e) => handleLinkClick(e, song.site_link, 'chart')}>
+                                            <i className="ph-bold ph-file-text text-lg"></i>画像で確認
+                                        </button>
+                                    ) : (
+                                        <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>画像なし</div>
+                                    )}
+                                    
+                                    {song.movie_link ? (
+                                        <button className="link-button video" onClick={(e) => handleLinkClick(e, song.movie_link, 'video')}>
+                                            <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
+                                        </button>
+                                    ) : (
+                                        <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
+                                    )}
+                                </div>
+
+                                {showTips && song.memo && (
+                                    <>
+                                        <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
+                                            <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i>
+                                            <span>Tips</span>
+                                        </div>
+                                        <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px] mb-4">
+                                            <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">
+                                                {song.memo}
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+
+                                {isLoggedIn && (
+                                    <div className="mt-4 pt-4 border-t-2 border-gray-100" onClick={e => e.stopPropagation()}>
+                                        <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
+                                            <i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i>
+                                            <span>自分用メモ</span>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <textarea 
+                                                className="memo-textarea" 
+                                                value={localMemo}
+                                                onChange={(e) => setLocalMemo(e.target.value)}
+                                                onBlur={handleMemoSave}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <LinkConfirmModal 
@@ -1818,14 +1836,15 @@
                                                     <SongCard 
                                                         key={`random-${getSongId(song)}-${idx}`} 
                                                         song={song} 
-                                                        isLoggedIn={!!user}
-                                                        isFavorite={favorites.includes(getSongId(song))}
-                                                        onToggleFavorite={() => toggleFavorite(getSongId(song))}
-                                                        isMirror={mirrors.includes(getSongId(song))}
-                                                        onToggleMirror={() => toggleMirror(getSongId(song))}
-                                                        personalMemo={personalMemos[getSongId(song)]}
-                                                        onSavePersonalMemo={(memo) => savePersonalMemo(getSongId(song), memo)}
+                                                        isLoggedIn={false}
+                                                        isFavorite={false}
+                                                        onToggleFavorite={() => {}}
+                                                        isMirror={false}
+                                                        onToggleMirror={() => {}}
+                                                        personalMemo={null}
+                                                        onSavePersonalMemo={() => {}}
                                                         tightMode={true}
+                                                        minimalMode={true}
                                                     />
                                                 </div>
                                             ))
