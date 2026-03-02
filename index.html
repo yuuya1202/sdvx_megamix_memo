@@ -572,7 +572,7 @@
         .setlist-song-container .pop-card {
             border-width: 2px;
             box-shadow: 4px 4px 0px #000;
-            margin-bottom: 24px;
+            margin-bottom: 12px; /* 余白を縮小 */
         }
     </style>
 </head>
@@ -721,7 +721,7 @@
             );
         };
 
-        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo }) => {
+        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, isCompact = false }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
@@ -771,10 +771,10 @@
 
             return (
                 <>
-                    <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl p-3 mb-4 cursor-pointer ${isOpen ? 'active' : ''}`}>
+                    <div onClick={() => setIsOpen(!isOpen)} className={`pop-card rounded-2xl ${isCompact ? 'p-2' : 'p-3'} mb-4 cursor-pointer ${isOpen ? 'active' : ''}`}>
                         {renderDangerBadge()}
                         <div className="flex items-center gap-4">
-                            <div className="flex-shrink-0 w-[72px] h-[72px] relative overflow-hidden rounded-lg">
+                            <div className={`flex-shrink-0 ${isCompact ? 'w-[56px] h-[56px]' : 'w-[72px] h-[72px]'} relative overflow-hidden rounded-lg`}>
                                 {song.jacket ? (
                                     <img 
                                         src={song.jacket} 
@@ -793,15 +793,15 @@
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className="text-lg font-black leading-tight mb-1 break-words">{song.title}</h3>
+                                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-black leading-tight mb-1 break-words`}>{song.title}</h3>
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className="text-[10px] uppercase tracking-tight text-black font-black">Lv</span>
-                                        <span className="text-xl tracking-tight leading-none">{displayLevel}</span>
+                                        <span className={`${isCompact ? 'text-lg' : 'text-xl'} tracking-tight leading-none`}>{displayLevel}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className="text-[10px] uppercase tracking-tight text-black font-black">BPM</span>
-                                        <span className="text-xl tracking-tight leading-none">{song.bpm || "???"}</span>
+                                        <span className={`${isCompact ? 'text-lg' : 'text-xl'} tracking-tight leading-none`}>{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1034,6 +1034,7 @@
                                                                 isFavorite={favorites.includes(songId)}
                                                                 isMirror={mirrors.includes(songId)}
                                                                 personalMemo={personalMemos[songId]}
+                                                                isCompact={true} // セトリ画面ではコンパクト表示
                                                             />
                                                         </div>
                                                     )
