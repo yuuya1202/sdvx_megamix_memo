@@ -1193,6 +1193,12 @@
                 return map;
             }, [songs]);
 
+            // 表示条件やページが変わったことを示すトークン
+            // これをSongCardのkeyに含めることで、条件変更時にコンポーネントを強制リセットする
+            const viewToken = useMemo(() => {
+                return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), dangerFilter, showOnlyFavorites].join('|');
+            }, [currentPage, pageIndex, searchTerm, selectedLevels, dangerFilter, showOnlyFavorites]);
+
             useEffect(() => {
                 const initFirebase = async () => {
                     const { initializeApp, getAuth, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
@@ -1715,7 +1721,9 @@
                                         const songId = getSongId(song);
                                         return (
                                             <SongCard 
-                                                key={idx} 
+                                                // keyに表示条件を含めることで、条件変更時にコンポーネントを強制的に再マウントし
+                                                // 内部のisOpenステートを初期値（false）に戻す
+                                                key={`${viewToken}-${songId}`} 
                                                 song={song} 
                                                 showDangerBadge={currentPage === "danger"} 
                                                 showTips={currentPage === "danger"} 
