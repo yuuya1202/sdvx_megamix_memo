@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -565,6 +564,12 @@
             line-height: 1;
             white-space: nowrap;
         }
+
+        /* セトリ内のカードを少しだけ小さく見せるための微調整 */
+        .setlist-song-container .pop-card {
+            border-width: 2px;
+            box-shadow: 4px 4px 0px #000;
+        }
     </style>
 </head>
 <body>
@@ -896,7 +901,7 @@
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
+        const SetlistManager = ({ songs, songMap, setlists, favorites, mirrors, personalMemos, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
             const [view, setView] = useState("list"); // "list" | "edit"
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null); // 0-4
@@ -1000,28 +1005,25 @@
                                             </div>
                                         </div>
                                         
-                                        <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                            <div className="flex flex-col gap-2 mb-4">
+                                        <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[5000px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                            <div className="flex flex-col gap-0.5 mb-6 setlist-song-container">
                                                 {sl.songs.map((songId, sIdx) => {
                                                     const song = songMap[songId];
                                                     if (!song) return null;
-                                                    const isMirrorActive = mirrors.includes(songId);
                                                     return (
-                                                        <div key={sIdx} className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
-                                                            <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
-                                                            <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
-                                                            <div className="flex-grow min-w-0">
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
-                                                                    {isMirrorActive && (
-                                                                        <div className="mirror-tag">
-                                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
-                                                                            <span>ミラー</span>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
+                                                        <div key={`${sl.id}-${songId}-${sIdx}`} className="relative">
+                                                            <div className="absolute left-[-4px] top-[-4px] w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-[10px] z-10 border-2 border-white shadow-sm">
+                                                                {sIdx + 1}
                                                             </div>
+                                                            <SongCard 
+                                                                song={song}
+                                                                showDangerBadge={false}
+                                                                showTips={true}
+                                                                isLoggedIn={false} // 参照のみのためfalse
+                                                                isFavorite={favorites.includes(songId)}
+                                                                isMirror={mirrors.includes(songId)}
+                                                                personalMemo={personalMemos[songId]}
+                                                            />
                                                         </div>
                                                     )
                                                 })}
@@ -1194,13 +1196,10 @@
                 return map;
             }, [songs]);
 
-            // 表示条件やページが変わったことを示すトークン
-            // これをSongCardのkeyに含めることで、条件変更時にコンポーネントを強制リセットする
             const viewToken = useMemo(() => {
                 return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), dangerFilter, showOnlyFavorites].join('|');
             }, [currentPage, pageIndex, searchTerm, selectedLevels, dangerFilter, showOnlyFavorites]);
 
-            // ページ更新・ページネーション時のスクロールトップ
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'auto' });
             }, [currentPage, pageIndex]);
@@ -1359,7 +1358,6 @@
             const saveSetlist = async (newSetlist) => {
                 if (!user || !firebase) return;
                 const { doc, setDoc } = window.FirebaseSDK;
-                // 新規セトリを最後尾に追加することで、作成順に #1, #2... となるように変更
                 const newItems = setlists.find(s => s.id === newSetlist.id)
                     ? setlists.map(s => s.id === newSetlist.id ? newSetlist : s)
                     : [...setlists, newSetlist];
@@ -1681,7 +1679,9 @@
                                             songs={songs}
                                             songMap={songMap}
                                             setlists={setlists}
+                                            favorites={favorites}
                                             mirrors={mirrors}
+                                            personalMemos={personalMemos}
                                             onSave={saveSetlist}
                                             onDelete={deleteSetlist}
                                             getSongId={getSongId}
@@ -1726,8 +1726,6 @@
                                         const songId = getSongId(song);
                                         return (
                                             <SongCard 
-                                                // keyに表示条件を含めることで、条件変更時にコンポーネントを強制的に再マウントし
-                                                // 内部のisOpenステートを初期値（false）に戻す
                                                 key={`${viewToken}-${songId}`} 
                                                 song={song} 
                                                 showDangerBadge={currentPage === "danger"} 
