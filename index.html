@@ -643,13 +643,13 @@
                         <div className="flex flex-col gap-3 mt-8">
                             <button 
                                 onClick={onConfirm}
-                                className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 はい, 移動します
                             </button>
                             <button 
                                 onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 いいえ, 戻る
                             </button>
@@ -676,13 +676,13 @@
                         <div className="flex flex-col gap-3 mt-8">
                             <button 
                                 onClick={onConfirm}
-                                className="w-full bg-red-500 text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-red-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 ログアウトする
                             </button>
                             <button 
                                 onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 キャンセル
                             </button>
@@ -709,13 +709,13 @@
                         <div className="flex flex-col gap-3 mt-8">
                             <button 
                                 onClick={onConfirm}
-                                className="w-full bg-orange-500 text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-orange-500 text-white font-black py-4 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 削除する
                             </button>
                             <button 
                                 onClick={onCancel}
-                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 キャンセル
                             </button>
@@ -843,8 +843,7 @@
                                 <span className="section-label">第2区間</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                             </div>
 
@@ -983,10 +982,10 @@
 
             // 共通のボタンクラス (コンパクト版・枠線強化・横幅固定)
             const getButtonClass = (bgColor, textColor = "text-black") => `
-                font-black py-2 rounded-xl border-4 border-black 
+                font-black py-2 rounded-xl border-3 border-black 
                 shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 
                 active:shadow-none transition-all text-xs flex justify-center items-center gap-1
-                w-28 ${bgColor} ${textColor}
+                w-32 ${bgColor} ${textColor}
             `;
 
             if (view === "list") {
@@ -997,7 +996,7 @@
                                 <i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i>
                                 <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
                             </div>
-                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
+                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-3 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
                                 <i className="ph-bold ph-plus"></i> 新規
                             </button>
                         </div>
@@ -1046,12 +1045,12 @@
                                                     )
                                                 })}
                                             </div>
-                                            <div className="flex gap-4 mt-6 justify-center">
+                                            <div className="flex gap-4 mt-4 justify-center">
                                                 <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className={getButtonClass("bg-yellow-400")}>
-                                                    <i className="ph-bold ph-pencil-simple"></i> 編集
+                                                    <i className="ph-bold ph-pencil-simple"></i> 編集する
                                                 </button>
                                                 <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className={getButtonClass("bg-red-500", "text-white")}>
-                                                    <i className="ph-bold ph-trash"></i> 削除
+                                                    <i className="ph-bold ph-trash"></i> 削除する
                                                 </button>
                                             </div>
                                         </div>
@@ -1116,11 +1115,11 @@
                         <button 
                             onClick={handleSave} 
                             disabled={!canSave}
-                            className={`w-32 font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all text-xs ${canSave ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
+                            className={`w-32 font-black py-2 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] transition-all text-xs ${canSave ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
                         >
                             保存する
                         </button>
-                        <button onClick={() => setView("list")} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs">
+                        <button onClick={() => setView("list")} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs">
                             キャンセル
                         </button>
                     </div>
@@ -1161,7 +1160,7 @@
                                 </div>
                                 
                                 <div className="flex justify-center flex-shrink-0 mt-3">
-                                    <button onClick={() => setIsSongModalOpen(false)} className="w-40 bg-gray-200 text-black font-black py-3 rounded-xl border-4 border-black active:translate-y-0.5 shadow-[3px_3px_0px_#000] active:shadow-none">
+                                    <button onClick={() => setIsSongModalOpen(false)} className="w-40 bg-gray-200 text-black font-black py-3 rounded-xl border-3 border-black active:translate-y-0.5 shadow-[3px_3px_0px_#000] active:shadow-none">
                                         閉じる
                                     </button>
                                 </div>
