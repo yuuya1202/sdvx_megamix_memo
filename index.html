@@ -549,20 +549,18 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* ミラータグのデザイン調整: ソフトで清潔感のあるピル型 */
-        .mirror-tag {
-            display: inline-flex;
+        /* ミラーアイコンのデザイン調整: 参照モード時 */
+        .mirror-icon-view {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
             background: #eef2ff;
             color: #4f46e5;
-            padding: 2px 8px;
-            border-radius: 9999px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.025em;
-            line-height: 1;
-            white-space: nowrap;
+            border: 2px solid #4f46e5;
+            box-shadow: 2px 2px 0px rgba(79, 70, 229, 0.2);
         }
 
         /* セトリ内のカードをさらに小さく詰め、余白を極小化 */
@@ -823,9 +821,8 @@
                                     </div>
                                 ) : (
                                     isMirror && (
-                                        <div className="mirror-tag scale-110">
-                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
-                                            <span>MIRROR</span>
+                                        <div className="mirror-icon-view">
+                                            <i className="ph-bold ph-arrows-left-right text-base"></i>
                                         </div>
                                     )
                                 )}
@@ -1042,10 +1039,10 @@
                                             </div>
                                             <div className="flex gap-3">
                                                 <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-1 bg-[#fbbf24] text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex justify-center items-center gap-2">
-                                                    <i className="ph-bold ph-pencil-simple"></i> 編集
+                                                    <i className="ph-bold ph-pencil-simple text-base"></i> 編集
                                                 </button>
                                                 <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className="flex-1 bg-[#ef4444] text-white font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex justify-center items-center gap-2">
-                                                    <i className="ph-bold ph-trash"></i> 削除
+                                                    <i className="ph-bold ph-trash text-base"></i> 削除
                                                 </button>
                                             </div>
                                         </div>
@@ -1081,7 +1078,6 @@
                         <label className="block text-xs font-black uppercase text-gray-500 mb-[-4px]">TRACKS</label>
                         {editingSetlist.songs.map((songId, idx) => {
                             const song = songId ? songMap[songId] : null;
-                            const isMirrorActive = songId && mirrors.includes(songId);
                             return (
                                 <div key={idx} className="relative">
                                     <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
@@ -1091,15 +1087,7 @@
                                         <div onClick={() => openSongModal(idx)} className="border-4 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                             <div className="flex-grow min-w-0">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                    {isMirrorActive && (
-                                                        <div className="mirror-tag">
-                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
-                                                            <span>ミラー</span>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                 <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(song.level)} {song.difficult}</div>
                                             </div>
                                             <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
