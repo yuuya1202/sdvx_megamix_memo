@@ -843,7 +843,8 @@
                                 <span className="section-label">第2区間</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                 <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                             </div>
 
@@ -1031,16 +1032,14 @@
                                                             <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
                                                             <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
                                                             <div className="flex-grow min-w-0">
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
-                                                                    {isMirrorActive && (
-                                                                        <div className="mirror-icon-badge">
-                                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                                                <div className="text-sm font-bold text-black break-words leading-tight">{song.title}</div>
                                                                 <div className="text-[10px] font-black uppercase text-gray-500">Lv {formatLevel(song.level)} {song.difficult}</div>
                                                             </div>
+                                                            {isMirrorActive && (
+                                                                <div className="mirror-icon-badge flex-shrink-0">
+                                                                    <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )
                                                 })}
@@ -1111,7 +1110,7 @@
                         })}
                     </div>
 
-                    <div className="flex gap-4 justify-center">
+                    <div className="flex gap-4 justify-center mt-4">
                         <button 
                             onClick={handleSave} 
                             disabled={!canSave}
