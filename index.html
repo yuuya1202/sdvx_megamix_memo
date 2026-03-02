@@ -1576,6 +1576,10 @@
                                             <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
                                                 <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
                                             </button>
+                                            <div className="border-t-2 border-gray-100 my-1"></div>
+                                            <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
+                                                <i className="ph-bold ph-sign-out text-base"></i> ログアウト
+                                            </button>
                                         </>
                                     )}
                                 </div>
@@ -1593,7 +1597,7 @@
                                 )}
                                 <div className="flex flex-col items-start leading-none">
                                     <span className="text-[9px] font-black text-black truncate max-w-[80px] mb-0.5">{user.displayName || "USER"}</span>
-                                    <button onClick={() => setIsLogoutModalOpen(true)} className="text-[8px] font-black text-red-500 uppercase tracking-tighter hover:underline">ログアウト</button>
+                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">ログイン中</span>
                                 </div>
                             </div>
                         ) : (
