@@ -71,7 +71,7 @@
         .static-card {
             background: white;
             border: 3px solid #000;
-            box-shadow: 6px 6px 0px #000;
+            box-shadow: 4px 4px 0px #000;
             position: relative;
         }
 
@@ -780,17 +780,17 @@
                 onSavePersonalMemo(localMemo);
             };
 
-            // minimalMode のときはクリックでの展開やホバー効果を無効化
+            // minimalMode のときはクリックでの展開やホバー効果を無効化し、サイズを抑える
             const cardClassName = minimalMode 
-                ? `static-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'}`
+                ? `static-card rounded-xl p-1.5 mb-1`
                 : `pop-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`;
 
             return (
                 <>
                     <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName}>
                         {renderDangerBadge()}
-                        <div className="flex items-center gap-4">
-                            <div className="flex-shrink-0 w-[72px] h-[72px] relative overflow-hidden rounded-lg">
+                        <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-4'}`}>
+                            <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : 'w-[72px] h-[72px]'} relative overflow-hidden rounded-lg`}>
                                 {song.jacket ? (
                                     <img 
                                         src={song.jacket} 
@@ -804,20 +804,20 @@
                                         className="border-[3px] w-full h-full bg-gray-100 flex items-center justify-center rounded-lg"
                                         style={{ borderColor: borderColor }}
                                     >
-                                        <i className="ph-bold ph-music-note text-gray-400 text-xl"></i>
+                                        <i className={`ph-bold ph-music-note text-gray-400 ${minimalMode ? 'text-lg' : 'text-xl'}`}></i>
                                     </div>
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className="text-lg font-black leading-tight mb-1 break-words">{song.title}</h3>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+                                <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words truncate`}>{song.title}</h3>
+                                <div className={`flex flex-wrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-4'} gap-y-0.5`}>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
-                                        <span className="text-[10px] uppercase tracking-tight text-black font-black">Lv</span>
-                                        <span className="text-xl tracking-tight leading-none">{displayLevel}</span>
+                                        <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
+                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none`}>{displayLevel}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
-                                        <span className="text-[10px] uppercase tracking-tight text-black font-black">BPM</span>
-                                        <span className="text-xl tracking-tight leading-none">{song.bpm || "???"}</span>
+                                        <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
+                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none`}>{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1700,7 +1700,7 @@
                                     <button 
                                         onClick={generateRandomSongs} 
                                         disabled={isGenerating}
-                                        className="w-full bg-[#e9edc9] text-black font-black py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-lg flex items-center justify-center gap-3"
+                                        className="w-full bg-[#e9edc9] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-3"
                                     >
                                         {isGenerating ? (
                                             <div className="w-5 h-5 border-3 border-black/30 border-t-black rounded-full animate-spin"></div>
@@ -1827,9 +1827,9 @@
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-2">
                                         {randomSongs.length > 0 ? (
                                             randomSongs.map((song, idx) => (
-                                                <div key={`random-group-${idx}`} className="mb-2">
-                                                    <div className="flex items-center gap-2 mb-1 ml-1">
-                                                        <div className="bg-black text-white text-[9px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
+                                                <div key={`random-group-${idx}`} className="mb-1">
+                                                    <div className="flex items-center gap-2 mb-0.5 ml-1">
+                                                        <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
                                                             TRACK {idx + 1}
                                                         </div>
                                                     </div>
