@@ -566,9 +566,13 @@
         }
 
         /* セトリ内のカードを少しだけ小さく見せるための微調整 */
+        .setlist-song-container {
+            padding: 8px 4px;
+        }
         .setlist-song-container .pop-card {
             border-width: 2px;
             box-shadow: 4px 4px 0px #000;
+            margin-bottom: 24px;
         }
     </style>
 </head>
@@ -802,7 +806,7 @@
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-1.5">
-                                {isLoggedIn && (
+                                {isLoggedIn ? (
                                     <div className="flex flex-row gap-1" onClick={e => e.stopPropagation()}>
                                         <button 
                                             onClick={handleFavoriteClick} 
@@ -817,6 +821,13 @@
                                             <i className={`ph-bold ph-arrows-left-right text-base`}></i>
                                         </button>
                                     </div>
+                                ) : (
+                                    isMirror && (
+                                        <div className="mirror-tag scale-110">
+                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                            <span>MIRROR</span>
+                                        </div>
+                                    )
                                 )}
                                 <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl text-black"></i></div>
                             </div>
@@ -1011,8 +1022,8 @@
                                                     const song = songMap[songId];
                                                     if (!song) return null;
                                                     return (
-                                                        <div key={`${sl.id}-${songId}-${sIdx}`} className="relative">
-                                                            <div className="absolute left-[-4px] top-[-4px] w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-[10px] z-10 border-2 border-white shadow-sm">
+                                                        <div key={`${sl.id}-${songId}-${sIdx}`} className="relative px-2 pt-2">
+                                                            <div className="absolute left-[-2px] top-[-2px] w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-[10px] z-10 border-2 border-white shadow-sm">
                                                                 {sIdx + 1}
                                                             </div>
                                                             <SongCard 
