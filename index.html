@@ -809,7 +809,7 @@
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words truncate`}>{song.title}</h3>
+                                <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
                                 <div className={`flex flex-wrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-4'} gap-y-0.5`}>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
@@ -1228,6 +1228,7 @@
 
             const [randomSongs, setRandomSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
+            const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false); // 生成ボタンが押されたかどうか
             const [randomPoolFilter, setRandomPoolFilter] = useState("all"); // "all" | "fav"
 
             const [user, setUser] = useState(null);
@@ -1456,6 +1457,7 @@
 
             const generateRandomSongs = () => {
                 setIsGenerating(true);
+                setHasGeneratedRandom(true);
                 const filtered = songs.filter(s => {
                     const songId = getSongId(s);
                     
@@ -1685,7 +1687,8 @@
                                     </div>
                                     <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
                                         <div className="text-[13px] font-black leading-relaxed mb-4">
-                                            <p>特に注意が必要な楽曲のみをまとめました.</p>
+                                            <p>特に注意が必要な楽曲をまとめました。</p>
+                                            <p>TIPSには運営からのコメントを記載しています。</p>
                                         </div>
                                         <div className="space-y-3 pl-1 text-[12px] font-bold">
                                             <p><span className="text-[#ffb703]">■</span> 要警戒... 癖のある配置など</p>
@@ -1869,7 +1872,8 @@
                                                 </div>
                                             ))
                                         ) : (
-                                            !isGenerating && (
+                                            // ボタンが一度でも押された後、かつロード中でない場合のみメッセージを表示
+                                            hasGeneratedRandom && !isGenerating && (
                                                 <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
                                                     <i className="ph-bold ph-dice-five text-4xl text-white/30 mb-4 block"></i>
                                                     <p className="font-black text-white/50 text-sm">条件に合う曲が見つかりませんでした</p>
