@@ -1478,8 +1478,9 @@
                     return matchesLv;
                 });
 
+                // 【修正箇所】対象曲が5曲未満の場合はエラーとするためリストを空にする
                 if (filtered.length < 5) {
-                    setRandomSongs(filtered);
+                    setRandomSongs([]);
                 } else {
                     const shuffled = [...filtered].sort(() => 0.5 - Math.random());
                     setRandomSongs(shuffled.slice(0, 5));
@@ -1876,8 +1877,8 @@
                                             hasGeneratedRandom && !isGenerating && (
                                                 <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
                                                     <i className="ph-bold ph-dice-five text-4xl text-white/30 mb-4 block"></i>
-                                                    <p className="font-black text-white/50 text-sm">条件に合う曲が見つかりませんでした</p>
-                                                    <p className="text-white/40 text-[10px] mt-1">レベルまたはお気に入り設定を確認してください</p>
+                                                    <p className="font-black text-white/50 text-sm">条件に合う曲が不足しています</p>
+                                                    <p className="text-white/40 text-[10px] mt-1">レベルまたはお気に入り設定を確認してください（5曲以上必要）</p>
                                                 </div>
                                             )
                                         )}
