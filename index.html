@@ -67,7 +67,7 @@
             border-color: #52b788;
             box-shadow: 6px 6px 0px #52b788;
         }
-        /* ランダム用の静止カード（ホバーやクリック効果なし） */
+        /* Static card for random selection */
         .static-card {
             background: white;
             border: 3px solid #000;
@@ -556,7 +556,6 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
-        /* ミラータグのデザイン調整: ソフトで清潔感のあるピル型 */
         .mirror-tag {
             display: inline-flex;
             align-items: center;
@@ -572,7 +571,6 @@
             white-space: nowrap;
         }
 
-        /* ミラーアイコン単体表示用 (セトリ詳細で使用) */
         .mirror-icon-badge {
             width: 20px;
             height: 20px;
@@ -606,6 +604,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbx7_U9VEerpLL3tKpW8fTAOFnETZFzIdbu2ZTyFRwkHASWIRCFNHZldo24VPL2laIjS3Q/exec";
         const ITEMS_PER_PAGE = 30;
         const APP_ID = "sdvx-megamix-memo";
+        const CONTACT_URL = "#"; 
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -639,8 +638,8 @@
                 <div className="modal-overlay" onClick={onCancel}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="mb-4">
-                            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black ${type === 'video' ? 'bg-[#fec5bb]' : 'bg-[#e9edc9]'}`}>
-                                <i className={`ph-bold ${type === 'video' ? 'ph-youtube-logo' : 'ph-file-text'} text-3xl text-black`}></i>
+                            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black ${type === 'video' ? 'bg-[#fec5bb]' : (type === 'contact' ? 'bg-[#d8f3dc]' : 'bg-[#e9edc9]')}`}>
+                                <i className={`ph-bold ${type === 'video' ? 'ph-youtube-logo' : (type === 'contact' ? 'ph-chat-centered-text' : 'ph-file-text')} text-3xl text-black`}></i>
                             </div>
                             <h2 className="text-xl font-black mb-2">確認</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
@@ -652,13 +651,13 @@
                                 onClick={onConfirm}
                                 className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                はい, 移動します
+                                移動する
                             </button>
                             <button 
                                 onClick={onCancel}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                いいえ, 戻る
+                                キャンセル
                             </button>
                         </div>
                     </div>
@@ -780,7 +779,6 @@
                 onSavePersonalMemo(localMemo);
             };
 
-            // minimalMode のときはクリックでの展開やホバー効果を無効化し、サイズを抑える
             const cardClassName = minimalMode 
                 ? `static-card rounded-xl p-1.5 mb-1`
                 : `pop-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`;
@@ -928,9 +926,9 @@
         };
 
         const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
-            const [view, setView] = useState("list"); // "list" | "edit"
+            const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
-            const [selectingSlot, setSelectingSlot] = useState(null); // 0-4
+            const [selectingSlot, setSelectingSlot] = useState(null);
             
             const [isSongModalOpen, setIsSongModalOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
@@ -999,7 +997,6 @@
 
             const canSave = editingSetlist && editingSetlist.name.trim() !== "" && editingSetlist.songs.every(id => id !== null);
 
-            // 共通のボタンクラス (コンパクト版・枠線 border-4・横幅固定)
             const getButtonClass = (bgColor, textColor = "text-black") => `
                 font-black py-2 rounded-xl border-4 border-black 
                 shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 
@@ -1222,15 +1219,16 @@
             const [rankSection, setRankSection] = useState("section1"); 
             const [isFilterOpen, setIsFilterOpen] = useState(false);
             const [currentPage, setCurrentPage] = useState("main"); 
-            const [termsTab, setTermsTab] = useState("terms"); // "terms" | "privacy"
+            const [termsTab, setTermsTab] = useState("terms"); 
             const [isNavOpen, setIsNavOpen] = useState(false);
             const [pageIndex, setPageIndex] = useState(1);
             const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+            const [contactModal, setContactModal] = useState(false);
 
             const [randomSongs, setRandomSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
-            const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false); // 生成ボタンが押されたかどうか
-            const [randomPoolFilter, setRandomPoolFilter] = useState("all"); // "all" | "fav"
+            const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
+            const [randomPoolFilter, setRandomPoolFilter] = useState("all");
 
             const [user, setUser] = useState(null);
             const [isAuthLoading, setIsAuthLoading] = useState(false);
@@ -1253,7 +1251,6 @@
                 return map;
             }, [songs]);
 
-            // 表示条件やページが変わったことを示すトークン
             const viewToken = useMemo(() => {
                 return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), dangerFilter, showOnlyFavorites].join('|');
             }, [currentPage, pageIndex, searchTerm, selectedLevels, dangerFilter, showOnlyFavorites]);
@@ -1462,12 +1459,9 @@
                 setHasGeneratedRandom(true);
                 const filtered = songs.filter(s => {
                     const songId = getSongId(s);
-                    
-                    // お気に入りフィルタの適用
                     const matchesFav = randomPoolFilter === "all" || (user && favorites.includes(songId));
                     if (!matchesFav) return false;
 
-                    // レベルフィルタの適用
                     const lvStr = String(s.level || "");
                     const matchesLv = selectedLevels.length === 0 || selectedLevels.some(targetLv => {
                         if (["17.0", "18.0", "19.0", "20.0"].includes(targetLv)) {
@@ -1480,7 +1474,6 @@
                     return matchesLv;
                 });
 
-                // 【修正箇所】対象曲が5曲未満の場合はエラーとするためリストを空にする
                 if (filtered.length < 5) {
                     setRandomSongs([]);
                 } else {
@@ -1612,7 +1605,10 @@
                                     )}
                                     <div className="border-t-2 border-gray-100 my-1"></div>
                                     <button onClick={() => setCurrentPage("terms")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "terms" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-file-text text-base"></i> 利用規約・プライバシー
+                                        <i className="ph-bold ph-file-text text-base"></i> ガイドライン
+                                    </button>
+                                    <button onClick={() => setContactModal(true)} className="dropdown-item hover:bg-gray-50">
+                                        <i className="ph-bold ph-chat-centered-text text-base"></i> お問い合わせ・不具合報告
                                     </button>
                                     {user && (
                                         <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
@@ -1720,7 +1716,7 @@
                                     <button 
                                         onClick={generateRandomSongs} 
                                         disabled={isGenerating}
-                                        className="w-full bg-[#e9edc9] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-3 mb-4"
+                                        className="w-full bg-[#e9edc9] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-3 mb-4"
                                     >
                                         {isGenerating ? (
                                             <div className="w-5 h-5 border-3 border-black/30 border-t-black rounded-full animate-spin"></div>
@@ -1826,19 +1822,26 @@
                                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                         <div className="flex items-center gap-2 mb-4">
                                             <i className="ph-fill ph-file-text text-3xl text-blue-400"></i>
-                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">規約・プライバシー</h2>
+                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ガイドライン</h2>
                                         </div>
                                         
+                                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md mb-4 text-white">
+                                            <p className="text-[11px] font-black leading-relaxed">
+                                                本内容に関するお問い合わせは「お問い合わせ・不具合報告」ページからお願いいたします。
+                                            </p>
+                                        </div>
+
                                         <div className="mb-4">
                                             <div className="toggle-btn-group">
                                                 <button onClick={() => setTermsTab("terms")} className={`toggle-btn-small ${termsTab === "terms" ? 'active' : ''}`}>利用規約</button>
-                                                <button onClick={() => setTermsTab("privacy")} className={`toggle-btn-small ${termsTab === "privacy" ? 'active' : ''}`}>プライバシー</button>
+                                                <button onClick={() => setTermsTab("privacy")} className={`toggle-btn-small ${termsTab === "privacy" ? 'active' : ''}`}>プライバシーポリシー</button>
+                                                <button onClick={() => setTermsTab("credits")} className={`toggle-btn-small ${termsTab === "credits" ? 'active' : ''}`}>クレジット</button>
                                             </div>
                                         </div>
 
                                         <div className="bg-white border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_#000]">
                                             <div className="space-y-4 text-sm font-bold leading-relaxed text-black">
-                                                {termsTab === "terms" ? (
+                                                {termsTab === "terms" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">利用規約</h3>
                                                         
@@ -1866,7 +1869,9 @@
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">情報の正確性について</h4>
                                                         <p>提供する情報の正確性には細心の注意を払っていますが、手動入力による誤りが含まれる可能性があります。情報の利用はユーザー自身の判断で行ってください。</p>
                                                     </div>
-                                                ) : (
+                                                )}
+                                                
+                                                {termsTab === "privacy" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">プライバシーポリシー</h3>
 
@@ -1884,13 +1889,38 @@
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">クッキー（Cookie）等の利用</h4>
                                                         <p>本サービスでは、ログイン状態の保持や利便性の向上のため、Cookieまたはそれに準ずる技術を利用する場合があります。</p>
+                                                    </div>
+                                                )}
 
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">お問い合わせ窓口</h4>
-                                                        <p>プライバシーポリシーに関するお問い合わせは、[お問い合わせ先]までお願いいたします。</p>
+                                                {termsTab === "credits" && (
+                                                    <div className="animate-in fade-in duration-300">
+                                                        <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">クレジット</h3>
+
+                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">開発・運営</h4>
+                                                        <ul className="list-disc list-inside space-y-1">
+                                                            <li>運営: 悠 (@AAAAA)</li>
+                                                            <li>作成: Yuya_M (@BBBBB)</li>
+                                                            <li>プロジェクトメンバー: メンバーA, メンバーB, メンバーC, メンバーD, メンバーE, メンバーF</li>
+                                                        </ul>
+
+                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用ライブラリ</h4>
+                                                        <p className="text-xs">本サービスは以下のオープンソースライブラリを使用しています。</p>
+                                                        <ul className="list-disc list-inside space-y-1 text-xs">
+                                                            <li>React (MIT License)</li>
+                                                            <li>Tailwind CSS (MIT License)</li>
+                                                            <li>Phosphor Icons (MIT License)</li>
+                                                            <li>Firebase SDK (Apache License 2.0)</li>
+                                                            <li>Babel (MIT License)</li>
+                                                        </ul>
+
+                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用フォント</h4>
+                                                        <ul className="list-disc list-inside space-y-1 text-xs">
+                                                            <li>M PLUS Rounded 1c (SIL Open Font License)</li>
+                                                        </ul>
                                                     </div>
                                                 )}
                                                 
-                                                <p className="mt-8 text-[10px] text-gray-400 text-center italic">※本文の内容は予告なく更新される場合があります。</p>
+                                                <p className="mt-8 text-[10px] text-gray-400 text-center italic">※記載内容は予告なく更新される場合があります。</p>
                                             </div>
                                         </div>
                                         <div className="mt-8 flex justify-center">
@@ -1957,7 +1987,6 @@
                                                 </div>
                                             ))
                                         ) : (
-                                            // ボタンが一度でも押された後、かつロード中でない場合のみメッセージを表示
                                             hasGeneratedRandom && !isGenerating && (
                                                 <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
                                                     <i className="ph-bold ph-dice-five text-4xl text-white/30 mb-4 block"></i>
@@ -2016,6 +2045,13 @@
                         isOpen={isLogoutModalOpen}
                         onConfirm={logout}
                         onCancel={() => setIsLogoutModalOpen(false)}
+                    />
+
+                    <LinkConfirmModal 
+                        isOpen={contactModal}
+                        onConfirm={() => { window.open(CONTACT_URL, '_blank', 'noopener,noreferrer'); setContactModal(false); }}
+                        onCancel={() => setContactModal(false)}
+                        type="contact"
                     />
                 </div>
             );
