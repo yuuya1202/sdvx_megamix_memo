@@ -583,6 +583,22 @@
             color: #6366f1;
             flex-shrink: 0;
         }
+
+        .contact-method-card {
+            background: #f8fafc;
+            border: 2px solid #000;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+        .contact-method-card:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 4px 4px 0px #000;
+        }
     </style>
 </head>
 <body>
@@ -604,7 +620,8 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbx7_U9VEerpLL3tKpW8fTAOFnETZFzIdbu2ZTyFRwkHASWIRCFNHZldo24VPL2laIjS3Q/exec";
         const ITEMS_PER_PAGE = 30;
         const APP_ID = "sdvx-megamix-memo";
-        const CONTACT_URL = "#"; 
+        const CONTACT_FORM_URL = "https://forms.gle/dummy"; // Google Form URL
+        const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX"; // Representative X URL
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -639,7 +656,7 @@
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="mb-4">
                             <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black ${type === 'video' ? 'bg-[#fec5bb]' : (type === 'contact' ? 'bg-[#d8f3dc]' : 'bg-[#e9edc9]')}`}>
-                                <i className={`ph-bold ${type === 'video' ? 'ph-youtube-logo' : (type === 'contact' ? 'ph-chat-centered-text' : 'ph-file-text')} text-3xl text-black`}></i>
+                                <i className={`ph-bold ${type === 'video' ? 'ph-youtube-logo' : (type === 'contact' ? 'ph-chat-centered-text' : (type === 'x' ? 'ph-x-logo' : 'ph-file-text'))} text-3xl text-black`}></i>
                             </div>
                             <h2 className="text-xl font-black mb-2">確認</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
@@ -1223,7 +1240,9 @@
             const [isNavOpen, setIsNavOpen] = useState(false);
             const [pageIndex, setPageIndex] = useState(1);
             const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-            const [contactModal, setContactModal] = useState(false);
+            
+            // New state for confirmation modal in contact page
+            const [contactLinkModal, setContactLinkModal] = useState({ isOpen: false, url: '', type: '' });
 
             const [randomSongs, setRandomSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
@@ -1607,7 +1626,7 @@
                                     <button onClick={() => setCurrentPage("terms")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "terms" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-file-text text-base"></i> ガイドライン
                                     </button>
-                                    <button onClick={() => setContactModal(true)} className="dropdown-item hover:bg-gray-50">
+                                    <button onClick={() => setCurrentPage("contact")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "contact" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-chat-centered-text text-base"></i> お問い合わせ・不具合報告
                                     </button>
                                     {user && (
@@ -1739,7 +1758,7 @@
                                 </div>
                             )}
 
-                            {currentPage !== "setlist" && currentPage !== "terms" && (
+                            {currentPage !== "setlist" && currentPage !== "terms" && currentPage !== "contact" && (
                                 <div className="px-1 flex flex-col gap-3">
                                     {currentPage === "main" && (
                                         <>
@@ -1815,6 +1834,61 @@
                                             formatLevel={formatLevel}
                                             getBorderColor={getBorderColor}
                                         />
+                                    </div>
+                                )}
+
+                                {currentPage === "contact" && (
+                                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <i className="ph-fill ph-chat-centered-text text-3xl text-[#52b788]"></i>
+                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">お問い合わせ</h2>
+                                        </div>
+
+                                        <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
+                                            <p className="text-[13px] font-black leading-relaxed">
+                                                本サービスに関するご質問、不具合報告、楽曲情報の誤り、または改善のご提案などがございましたら、以下のいずれかの方法でご連絡をお願いいたします。
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div className="contact-method-card">
+                                                <div className="flex items-center gap-2">
+                                                    <i className="ph-fill ph-x-logo text-xl text-black"></i>
+                                                    <h3 className="text-sm font-black text-black">代表者へX(旧Twitter)で連絡</h3>
+                                                </div>
+                                                <p className="text-xs font-bold text-gray-600 leading-relaxed">
+                                                    運営代表者のアカウントへ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。
+                                                </p>
+                                                <button 
+                                                    onClick={() => setContactLinkModal({ isOpen: true, url: REPRESENTATIVE_X_URL, type: 'x' })}
+                                                    className="link-button chart mt-2"
+                                                >
+                                                    <i className="ph-bold ph-paper-plane-tilt text-lg"></i>DMを送る
+                                                </button>
+                                            </div>
+
+                                            <div className="contact-method-card">
+                                                <div className="flex items-center gap-2">
+                                                    <i className="ph-fill ph-file-text text-xl text-black"></i>
+                                                    <h3 className="text-sm font-black text-black">専用フォームから送信</h3>
+                                                </div>
+                                                <p className="text-xs font-bold text-gray-600 leading-relaxed">
+                                                    Googleフォームよりお問い合わせ内容を送信いただけます。SNSアカウントをお持ちでない方はこちらをご利用ください。
+                                                </p>
+                                                <button 
+                                                    onClick={() => setContactLinkModal({ isOpen: true, url: CONTACT_FORM_URL, type: 'contact' })}
+                                                    className="link-button video mt-2"
+                                                >
+                                                    <i className="ph-bold ph-list-checks text-lg"></i>フォームを開く
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-10 flex justify-center">
+                                            <button onClick={() => setCurrentPage("main")} className="page-btn">
+                                                メインページに戻る
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
 
@@ -1897,11 +1971,11 @@
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">クレジット</h3>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">開発・運営</h4>
-                                                        <p>
-                                                            運営: 悠 (@AAAAA)<br>
-                                                            作成: Yuya_M (@BBBBB)<br>
-                                                            プロジェクトメンバー: メンバーA, メンバーB, メンバーC, メンバーD, メンバーE, メンバーF
-                                                        </p>
+                                                        <ul className="list-disc list-inside space-y-1">
+                                                            <li>制作: 田中 (@AAAAA)</li>
+                                                            <li>運営: [担当者名] (@BBBBB)</li>
+                                                            <li>プロジェクトメンバー: メンバーA, メンバーB, メンバーC, メンバーD, メンバーE, メンバーF</li>
+                                                        </ul>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用ライブラリ</h4>
                                                         <p className="text-xs">本サービスは以下のオープンソースライブラリを使用しています。</p>
@@ -1998,7 +2072,7 @@
                                     </div>
                                 )}
                                 
-                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && (
+                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && (
                                     paginatedSongs.map((song, idx) => {
                                         const songId = getSongId(song);
                                         return (
@@ -2019,14 +2093,14 @@
                                     })
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && paginatedSongs.length === 0 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
                                         <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && totalPages > 1 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
                                             <i className="ph-bold ph-caret-left"></i> 前へ
@@ -2048,10 +2122,10 @@
                     />
 
                     <LinkConfirmModal 
-                        isOpen={contactModal}
-                        onConfirm={() => { window.open(CONTACT_URL, '_blank', 'noopener,noreferrer'); setContactModal(false); }}
-                        onCancel={() => setContactModal(false)}
-                        type="contact"
+                        isOpen={contactLinkModal.isOpen}
+                        onConfirm={() => { window.open(contactLinkModal.url, '_blank', 'noopener,noreferrer'); setContactLinkModal({ ...contactLinkModal, isOpen: false }); }}
+                        onCancel={() => setContactLinkModal({ ...contactLinkModal, isOpen: false })}
+                        type={contactLinkModal.type}
                     />
                 </div>
             );
