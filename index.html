@@ -942,6 +942,33 @@
             );
         };
 
+        const SetlistLimitModal = ({ isOpen, onClose }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="mb-4">
+                            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-blue-100">
+                                <i className="ph-bold ph-info text-3xl text-blue-600"></i>
+                            </div>
+                            <h2 className="text-xl font-black mb-2">作成上限です</h2>
+                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
+                                セトリは最大10件まで作成可能です。<br/>新しいセトリを作成するには、既存のセトリを削除してください。
+                            </p>
+                        </div>
+                        <div className="mt-8">
+                            <button 
+                                onClick={onClose}
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
+                            >
+                                閉じる
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
@@ -953,8 +980,13 @@
             
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
             const [deletingId, setDeletingId] = useState(null);
+            const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
 
             const handleCreate = () => {
+                if (setlists.length >= 10) {
+                    setIsLimitModalOpen(true);
+                    return;
+                }
                 setEditingSetlist({ id: Date.now().toString(), name: "", songs: [null, null, null, null, null], memo: "" });
                 setView("edit");
             };
@@ -1109,6 +1141,11 @@
                             isOpen={isDeleteModalOpen}
                             onConfirm={confirmDelete}
                             onCancel={() => { setIsDeleteModalOpen(false); setDeletingId(null); }}
+                        />
+
+                        <SetlistLimitModal 
+                            isOpen={isLimitModalOpen}
+                            onClose={() => setIsLimitModalOpen(false)}
                         />
                     </div>
                 );
