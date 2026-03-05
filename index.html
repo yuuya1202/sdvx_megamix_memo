@@ -1245,11 +1245,13 @@
                                             const id = getSongId(s);
                                             const isSelected = isTitleAlreadySelected(id);
                                             return (
-                                                <div key={i} onClick={() => selectSong(id)} className={`flex items-center gap-3 border-2 rounded-lg p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
-                                                    <img src={s.jacket} className="w-10 h-10 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
+                                                <div key={i} onClick={() => selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-3 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
                                                     <div className="flex-grow min-w-0 text-left">
-                                                        <div className="text-xs font-black text-black break-words leading-tight">{s.title}</div>
-                                                        <div className="text-[10px] font-black uppercase text-gray-600">Lv {formatLevel(s.level)} {s.difficult}</div>
+                                                        <div className="text-sm font-black text-black break-words leading-tight">{s.title}</div>
+                                                        <div className="text-[10px] font-black uppercase tracking-tighter mt-1">
+                                                            <span className="text-gray-400 mr-1">Lv {formatLevel(s.level)}</span>
+                                                            <span style={{ color: getBorderColor(s.difficult) }}>{s.difficult}</span>
+                                                        </div>
                                                     </div>
                                                     {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
                                                 </div>
