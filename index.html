@@ -758,7 +758,7 @@
             }, [personalMemo]);
 
             const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
-            const borderColor = useMemo(() => getBorderColor(song.difficult), [song.difficult]);
+            const borderColor = useMemo(() => getBorderColor(song.difficult) || "#000000", [song.difficult]);
 
             const handleLinkClick = (e, url, type) => {
                 e.stopPropagation();
@@ -1667,20 +1667,20 @@
                                     <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-music-notes text-base"></i> メインページ
                                     </button>
+                                    {user && (
+                                        <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
+                                            <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
+                                        </button>
+                                    )}
+                                    <button onClick={() => setCurrentPage("random")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "random" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-shuffle text-base"></i> ランダム選曲
+                                    </button>
                                     <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-trophy text-base"></i> チェイン数ランキング
                                     </button>
                                     <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-warning-octagon text-base"></i> 要注意曲リスト
                                     </button>
-                                    <button onClick={() => setCurrentPage("random")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "random" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-shuffle text-base"></i> ランダム選曲
-                                    </button>
-                                    {user && (
-                                        <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
-                                            <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
-                                        </button>
-                                    )}
                                     <div className="border-t-2 border-gray-100 my-1"></div>
                                     <button onClick={() => setCurrentPage("terms")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "terms" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-file-text text-base"></i> ガイドライン
@@ -1927,7 +1927,7 @@
                                                     <h3 className="text-sm font-black text-black">代表者へX(旧Twitter)で連絡</h3>
                                                 </div>
                                                 <p className="text-xs font-bold text-gray-600 leading-relaxed">
-                                                    運営代表者のアカウントへ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。
+                                                    代表者のアカウント(@YuSDVX)へ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。
                                                 </p>
                                                 <button 
                                                     onClick={() => setContactLinkModal({ isOpen: true, url: REPRESENTATIVE_X_URL, type: 'x' })}
