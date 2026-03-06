@@ -1308,6 +1308,7 @@
             const [personalMemos, setPersonalMemos] = useState({});
             const [setlists, setSetlists] = useState([]);
             const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+            const [showOnlyMirrors, setShowOnlyMirrors] = useState(false);
             
             const [firebase, setFirebase] = useState(null);
 
@@ -1322,8 +1323,8 @@
             }, [songs]);
 
             const viewToken = useMemo(() => {
-                return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), dangerFilter, showOnlyFavorites].join('|');
-            }, [currentPage, pageIndex, searchTerm, selectedLevels, dangerFilter, showOnlyFavorites]);
+                return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), dangerFilter, showOnlyFavorites, showOnlyMirrors].join('|');
+            }, [currentPage, pageIndex, searchTerm, selectedLevels, dangerFilter, showOnlyFavorites, showOnlyMirrors]);
 
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'auto' });
@@ -1347,6 +1348,7 @@
                             setPersonalMemos({});
                             setSetlists([]);
                             setShowOnlyFavorites(false);
+                            setShowOnlyMirrors(false);
                             setRandomPoolFilter("all");
                         }
                     });
@@ -1404,12 +1406,14 @@
                 setSelectedLevels([]);
                 setIsFilterOpen(false);
                 setPageIndex(1);
+                setShowOnlyFavorites(false);
+                setShowOnlyMirrors(false);
                 if (currentPage !== "terms") setTermsTab("terms");
             }, [currentPage]);
 
             useEffect(() => {
                 setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder, showOnlyFavorites]);
+            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder, showOnlyFavorites, showOnlyMirrors]);
 
             const login = async () => {
                 if (!firebase || isAuthLoading) return;
@@ -1443,6 +1447,7 @@
                 try {
                     await signOut(firebase.auth);
                     setShowOnlyFavorites(false);
+                    setShowOnlyMirrors(false);
                     setCurrentPage("main");
                     setIsLogoutModalOpen(false);
                 } catch (error) {
@@ -1590,11 +1595,14 @@
                     const isFavFilterApplied = currentPage === "main" && showOnlyFavorites;
                     const matchesFav = !isFavFilterApplied || favorites.includes(songId);
 
+                    const isMirrorFilterApplied = currentPage === "main" && showOnlyMirrors;
+                    const matchesMirror = !isMirrorFilterApplied || mirrors.includes(songId);
+
                     if (currentPage === "main") {
                         const matchesSearch = 
                             String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                             String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
-                        return matchesLv && matchesSearch && matchesFav;
+                        return matchesLv && matchesSearch && matchesFav && matchesMirror;
                     }
                     
                     return matchesLv && matchesFav;
@@ -1610,7 +1618,7 @@
                 }
 
                 return result;
-            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, favorites]);
+            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * ITEMS_PER_PAGE;
@@ -1831,9 +1839,20 @@
                                                 </div>
                                             )}
                                             {user && (
-                                                <button onClick={() => setShowOnlyFavorites(!showOnlyFavorites)} className={`fav-filter-toggle ${showOnlyFavorites ? 'active' : ''}`}>
-                                                    お気に入りのみ表示
-                                                </button>
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="toggle-btn-group">
+                                                        <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`}>すべて</button>
+                                                        <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`}>
+                                                            <i className="ph-fill ph-star"></i> お気に入り
+                                                        </button>
+                                                    </div>
+                                                    <div className="toggle-btn-group">
+                                                        <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`}>すべて</button>
+                                                        <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`}>
+                                                            <i className="ph-bold ph-arrows-left-right"></i> ミラー
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             )}
                                         </>
                                     )}
