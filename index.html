@@ -825,14 +825,14 @@
                             </div>
                             <div className="flex-grow min-w-0">
                                 <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
-                                <div className={`flex flex-wrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-4'} gap-y-0.5`}>
+                                <div className={`flex flex-nowrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-4'} gap-y-0.5 whitespace-nowrap`}>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
                                         <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none`}>{displayLevel}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
-                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none`}>{song.bpm || "???"}</span>
+                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none whitespace-nowrap`}>{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1908,7 +1908,7 @@
                                                     <h3 className="text-sm font-black text-black">代表者へX(旧Twitter)で連絡</h3>
                                                 </div>
                                                 <p className="text-xs font-bold text-gray-600 leading-relaxed">
-                                                    代表者(@YuSDVX)のアカウントへ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。
+                                                    運営代表者のアカウントへ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。
                                                 </p>
                                                 <button 
                                                     onClick={() => setContactLinkModal({ isOpen: true, url: REPRESENTATIVE_X_URL, type: 'x' })}
