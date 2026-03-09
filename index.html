@@ -1097,13 +1097,17 @@
                                                                 {sIdx + 1}
                                                             </div>
                                                             <div className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
-                                                                <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
+                                                                <img 
+                                                                    src={song.jacket} 
+                                                                    className="w-12 h-12 border-2 rounded object-cover" 
+                                                                    style={{ borderColor: getBorderColor(song.difficult) }}
+                                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                                                />
                                                                 <div className="flex-grow min-w-0">
                                                                     <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                                    <div className="text-[10px] font-black uppercase">
+                                                                    <div className="text-[10px] font-black uppercase flex items-center gap-2">
                                                                         <span className="text-black">Lv {formatLevel(song.level)}</span>
-                                                                        <span className="ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
-                                                                        <span className="ml-1 text-black">{song.combo}CHAIN</span>
+                                                                        <span className="text-black">{song.combo}CHAIN</span>
                                                                     </div>
                                                                 </div>
                                                                 {isMirrorActive && (
@@ -1184,13 +1188,17 @@
                                     </div>
                                     {song ? (
                                         <div onClick={() => openSongModal(idx)} className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
-                                            <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
+                                            <img 
+                                                src={song.jacket} 
+                                                className="w-12 h-12 border-2 rounded object-cover" 
+                                                style={{ borderColor: getBorderColor(song.difficult) }}
+                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                            />
                                             <div className="flex-grow min-w-0">
                                                 <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                <div className="text-[10px] font-black uppercase">
+                                                <div className="text-[10px] font-black uppercase flex items-center gap-2">
                                                     <span className="text-black">Lv {formatLevel(song.level)}</span>
-                                                    <span className="ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
-                                                    <span className="ml-1 text-black">{song.combo}CHAIN</span>
+                                                    <span className="text-black">{song.combo}CHAIN</span>
                                                 </div>
                                             </div>
                                             <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
@@ -1257,8 +1265,8 @@
                                             const id = getSongId(s);
                                             const isSelected = isTitleAlreadySelected(id);
                                             return (
-                                                <div key={i} onClick={() => selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
-                                                    <div className="flex-shrink-0 w-10 h-10 relative overflow-hidden rounded-md">
+                                                <div key={i} onClick={() => !isSelected && selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
+                                                    <div className="flex-shrink-0 w-12 h-12 relative overflow-hidden rounded-md">
                                                         <img 
                                                             src={s.jacket} 
                                                             alt="jacket" 
@@ -1269,10 +1277,9 @@
                                                     </div>
                                                     <div className="flex-grow min-w-0 text-left">
                                                         <div className="text-sm font-black text-black break-words leading-tight">{s.title}</div>
-                                                        <div className="text-[10px] font-black uppercase tracking-tighter mt-1">
-                                                            <span className="text-black mr-1">Lv {formatLevel(s.level)}</span>
-                                                            <span style={{ color: getBorderColor(s.difficult) }}>{s.difficult}</span>
-                                                            <span className="ml-1 text-black">{s.combo}CHAIN</span>
+                                                        <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
+                                                            <span className="text-black">Lv {formatLevel(s.level)}</span>
+                                                            <span className="text-black">{s.combo}CHAIN</span>
                                                         </div>
                                                     </div>
                                                     {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
