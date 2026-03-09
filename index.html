@@ -1049,7 +1049,7 @@
             const getButtonClass = (bgColor, textColor = "text-black") => `
                 font-black py-2 rounded-xl border-4 border-black 
                 shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 
-                active:shadow-none transition-all text-xs flex justify-center items-center gap-1
+                active:shadow-none transition-all flex justify-center items-center gap-1
                 w-32 ${bgColor} ${textColor}
             `;
 
@@ -1223,7 +1223,7 @@
                         >
                             保存する
                         </button>
-                        <button onClick={() => setView("list")} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs">
+                        <button onClick={() => setView("list")} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all">
                             キャンセル
                         </button>
                     </div>
@@ -2033,7 +2033,7 @@
                                                         <p>取得した情報は、以下の目的でのみ利用します。<br/>1.ユーザーの認証、および本人確認のため<br/>2.ユーザーが作成したデータ（メモ、セトリ、お気に入り等）をサーバーに保存し、異なるデバイス間で同期するため</p>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">データの保存と管理</h4>
-                                                        <p>本サービスでは、Googleが提供するFirebase（Firestore）を利用してデータを保存・管理しています。ユーザーのパスワードを本サービス側で直接取得・保持することはありません。</p>
+                                                        <p>本サービスでは、Googleが提供する Firebase（Firestore）を利用してデータを保存・管理しています。ユーザーのパスワードを本サービス側で直接取得・保持することはありません。</p>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">第三者への情報提供</h4>
                                                         <p>取得した個人情報を、法令に基づく場合を除き、ユーザーの同意なく第三者に提供することはありません。</p>
