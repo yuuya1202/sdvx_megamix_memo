@@ -1257,7 +1257,16 @@
                                             const id = getSongId(s);
                                             const isSelected = isTitleAlreadySelected(id);
                                             return (
-                                                <div key={i} onClick={() => selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-3 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
+                                                <div key={i} onClick={() => selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
+                                                    <div className="flex-shrink-0 w-10 h-10 relative overflow-hidden rounded-md">
+                                                        <img 
+                                                            src={s.jacket} 
+                                                            alt="jacket" 
+                                                            className="border-2 w-full h-full object-cover rounded-md" 
+                                                            style={{ borderColor: getBorderColor(s.difficult) }}
+                                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                                        />
+                                                    </div>
                                                     <div className="flex-grow min-w-0 text-left">
                                                         <div className="text-sm font-black text-black break-words leading-tight">{s.title}</div>
                                                         <div className="text-[10px] font-black uppercase tracking-tighter mt-1">
@@ -1850,13 +1859,13 @@
                                                     <div className="toggle-btn-group">
                                                         <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`}>すべて</button>
                                                         <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`}>
-                                                            <i className="ph-fill ph-star"></i> お気に入りのみ
+                                                            <i className="ph-fill ph-star"></i> お気に入り
                                                         </button>
                                                     </div>
                                                     <div className="toggle-btn-group">
                                                         <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`}>すべて</button>
                                                         <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`}>
-                                                            <i className="ph-bold ph-arrows-left-right"></i> ミラーのみ
+                                                            <i className="ph-bold ph-arrows-left-right"></i> ミラー
                                                         </button>
                                                     </div>
                                                 </div>
