@@ -1086,27 +1086,32 @@
                                         </div>
                                         
                                         <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
-                                            <div className="flex flex-col gap-2 mb-4">
+                                            <div className="flex flex-col gap-3 mb-4">
                                                 {sl.songs.map((songId, sIdx) => {
                                                     const song = songMap[songId];
                                                     if (!song) return null;
                                                     const isMirrorActive = mirrors.includes(songId);
                                                     return (
-                                                        <div key={sIdx} className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
-                                                            <div className="font-black text-gray-400 text-sm w-4 text-center">{sIdx + 1}.</div>
-                                                            <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
-                                                            <div className="flex-grow min-w-0">
-                                                                <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                                <div className="text-[10px] font-black uppercase">
-                                                                    <span className="text-black">Lv {formatLevel(song.level)}</span>
-                                                                    <span className="ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
-                                                                </div>
+                                                        <div key={sIdx} className="relative">
+                                                            <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
+                                                                {sIdx + 1}
                                                             </div>
-                                                            {isMirrorActive && (
-                                                                <div className="mirror-icon-badge flex-shrink-0">
-                                                                    <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                            <div className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
+                                                                <img src={song.jacket} className="w-12 h-12 border-2 border-black rounded object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} />
+                                                                <div className="flex-grow min-w-0">
+                                                                    <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
+                                                                    <div className="text-[10px] font-black uppercase">
+                                                                        <span className="text-black">Lv {formatLevel(song.level)}</span>
+                                                                        <span className="ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                                                        <span className="ml-1 text-black">{song.combo}CHAIN</span>
+                                                                    </div>
                                                                 </div>
-                                                            )}
+                                                                {isMirrorActive && (
+                                                                    <div className="mirror-icon-badge flex-shrink-0">
+                                                                        <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     )
                                                 })}
@@ -1155,7 +1160,7 @@
             }
 
             return (
-                <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
+                <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8_8px_0px_#000]">
                     <h3 className="text-xl font-black mb-4 text-black border-b-4 border-[#52b788] pb-2 inline-block">セトリ作成</h3>
                     
                     <div className="mb-6">
@@ -1185,6 +1190,7 @@
                                                 <div className="text-[10px] font-black uppercase">
                                                     <span className="text-black">Lv {formatLevel(song.level)}</span>
                                                     <span className="ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                                    <span className="ml-1 text-black">{song.combo}CHAIN</span>
                                                 </div>
                                             </div>
                                             <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
