@@ -1732,7 +1732,7 @@
                         )}
                     </div>
 
-                    <header className="mb-10 text-center pt-8">
+                    <header className={`text-center pt-8 ${currentPage === 'random' ? 'mb-4' : 'mb-10'}`}>
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
                         </div>
@@ -2119,7 +2119,7 @@
                                 )}
 
                                 {currentPage === "random" && (
-                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-2">
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-1">
                                         {randomSongs.length > 0 ? (
                                             randomSongs.map((song, idx) => (
                                                 <div key={`random-group-${idx}`} className="mb-1">
