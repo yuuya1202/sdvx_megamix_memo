@@ -795,9 +795,15 @@
 
             const handleMemoSave = () => {
                 if (!isLoggedIn) return;
-                // 【修正箇所】中身が空（空白含む）の場合は、不要なデータ保存を避けるためスキップする
-                if (!localMemo.trim()) return;
-                onSavePersonalMemo(localMemo);
+                
+                // 現在のDB上の値と同じなら保存しない（無駄な通信を避ける）
+                // 比較時にトリム済みの値と比較する
+                const trimmedValue = localMemo.trim();
+                if (trimmedValue === (personalMemo || "")) return;
+                
+                // 空、または空白のみの場合は空文字を渡し、それ以外はトリムした値を渡す
+                // 実際の削除処理は親コンポーネントの savePersonalMemo で行う
+                onSavePersonalMemo(trimmedValue);
             };
 
             const cardClassName = minimalMode 
@@ -1526,8 +1532,17 @@
                 await updateFirestoreProfile(favorites, personalMemos, newMirrors);
             };
 
+            // 【修正箇所】メモの保存と削除のロジックを統合
             const savePersonalMemo = async (songId, memo) => {
-                const newMemos = { ...personalMemos, [songId]: memo };
+                const newMemos = { ...personalMemos };
+                
+                // 空、または空白のみの場合はオブジェクトからキー自体を削除する
+                if (!memo || memo.trim() === "") {
+                    delete newMemos[songId]; 
+                } else {
+                    newMemos[songId] = memo;
+                }
+                
                 setPersonalMemos(newMemos);
                 await updateFirestoreProfile(favorites, newMemos, mirrors);
             };
