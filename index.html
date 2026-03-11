@@ -795,6 +795,8 @@
 
             const handleMemoSave = () => {
                 if (!isLoggedIn) return;
+                // 【修正箇所】中身が空（空白含む）の場合は、不要なデータ保存を避けるためスキップする
+                if (!localMemo.trim()) return;
                 onSavePersonalMemo(localMemo);
             };
 
@@ -877,7 +879,7 @@
                                     <span className="section-label">第2区間</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                                 </div>
@@ -1198,7 +1200,7 @@
                                             />
                                             <div className="flex-grow min-w-0">
                                                 <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                <div className="text-[10px] font-black uppercase flex items-center gap-2">
+                                                <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
                                                     <span className="text-black">Lv {formatLevel(song.level)}</span>
                                                     <span className="text-black">{song.combo}CHAIN</span>
                                                 </div>
@@ -1365,7 +1367,6 @@
                     
                     setFirebase({ auth, db });
 
-                    // Rule 3: Auth Before Queries
                     const initAuth = async () => {
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await signInWithCustomToken(auth, __initial_auth_token);
@@ -1398,9 +1399,9 @@
                 }, 100);
             }, []);
 
-            // --- Master Data Fetch (Firestore version) ---
+            // --- Master Data Fetch ---
             useEffect(() => {
-                if (!firebase || !user) return; // Wait for Auth (Rule 3)
+                if (!firebase || !user) return;
 
                 const fetchMasterData = async () => {
                     const { doc, getDoc } = window.FirebaseSDK;
@@ -1411,14 +1412,9 @@
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             if (data.songs) {
-                                // Firestore stores the song list as a JSON string in 'songs' field
                                 const parsedSongs = JSON.parse(data.songs);
                                 setSongs(parsedSongs);
-                            } else {
-                                console.warn("No 'songs' field found in master document.");
                             }
-                        } else {
-                            console.error("Master song document not found at:", docRef.path);
                         }
                     } catch (err) {
                         console.error("Master Data Fetch Error:", err);
@@ -1484,13 +1480,7 @@
                     await signInWithPopup(firebase.auth, provider);
                 } catch (error) {
                     console.error("Google Login Error:", error);
-                    if (error.code === 'auth/unauthorized-domain') {
-                        setAuthError("このドメインが承認されていません.");
-                    } else if (error.code === 'auth/popup-blocked') {
-                        setAuthError("ポップアップがブロックされました.");
-                    } else {
-                        setAuthError("ログインに失敗しました.");
-                    }
+                    setAuthError("ログインに失敗しました.");
                     setIsAuthLoading(false);
                 }
             };
