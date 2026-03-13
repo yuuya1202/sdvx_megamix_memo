@@ -75,17 +75,21 @@
             position: relative;
         }
 
-        .danger-badge {
+        .danger-badge-container {
             position: absolute;
             top: -12px;
             left: 10px;
+            display: flex;
+            gap: 4px;
+            z-index: 10;
+        }
+        .danger-badge {
             padding: 2px 10px;
             border: 2px solid #000;
             border-radius: 8px;
             font-size: 10px;
             font-weight: 900;
             text-transform: uppercase;
-            z-index: 10;
             box-shadow: 2px 2px 0px #000;
         }
         .danger-badge-1 { background: #ffb703; color: #000; }
@@ -773,12 +777,17 @@
                 setModalInfo({ ...modalInfo, isOpen: false });
             };
 
-            const renderDangerBadge = () => {
-                if (!showDangerBadge) return null; 
-                const level = String(song.danger_level);
-                if (level === "1") return <div className="danger-badge danger-badge-1">要警戒</div>;
-                if (level === "2") return <div className="danger-badge danger-badge-2">危険</div>;
-                return null;
+            const renderDangerBadges = () => {
+                if (!showDangerBadge) return null;
+                const badges = [];
+                if (String(song.danger1) === "1") {
+                    badges.push(<div key="d1" className="danger-badge danger-badge-1">要予習</div>);
+                }
+                if (String(song.danger2) === "1") {
+                    badges.push(<div key="d2" className="danger-badge danger-badge-2">高難易度</div>);
+                }
+                if (badges.length === 0) return null;
+                return <div className="danger-badge-container">{badges}</div>;
             };
 
             const handleFavoriteClick = (e) => {
@@ -795,15 +804,8 @@
 
             const handleMemoSave = () => {
                 if (!isLoggedIn) return;
-                
-                // 現在のDB上の値と同じなら保存しない（無駄な通信を避ける）
-                // 比較時にトリム済みの値と比較する
-                const trimmedValue = localMemo.trim();
-                if (trimmedValue === (personalMemo || "")) return;
-                
-                // 空、または空白のみの場合は空文字を渡し、それ以外はトリムした値を渡す
-                // 実際の削除処理は親コンポーネントの savePersonalMemo で行う
-                onSavePersonalMemo(trimmedValue);
+                if (!localMemo.trim()) return;
+                onSavePersonalMemo(localMemo);
             };
 
             const cardClassName = minimalMode 
@@ -813,7 +815,7 @@
             return (
                 <>
                     <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName}>
-                        {renderDangerBadge()}
+                        {renderDangerBadges()}
                         <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-4'}`}>
                             <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : 'w-[72px] h-[72px]'} relative overflow-hidden rounded-lg`}>
                                 {song.jacket ? (
@@ -1316,7 +1318,6 @@
             const [isLoading, setIsLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState("");
             const [selectedLevels, setSelectedLevels] = useState([]); 
-            const [dangerFilter, setDangerFilter] = useState("all"); 
             const [sortOrder, setSortOrder] = useState("desc");
             const [rankSection, setRankSection] = useState("section1"); 
             const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -1356,8 +1357,8 @@
             }, [songs]);
 
             const viewToken = useMemo(() => {
-                return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), dangerFilter, showOnlyFavorites, showOnlyMirrors].join('|');
-            }, [currentPage, pageIndex, searchTerm, selectedLevels, dangerFilter, showOnlyFavorites, showOnlyMirrors]);
+                return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), showOnlyFavorites, showOnlyMirrors].join('|');
+            }, [currentPage, pageIndex, searchTerm, selectedLevels, showOnlyFavorites, showOnlyMirrors]);
 
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'auto' });
@@ -1469,7 +1470,7 @@
 
             useEffect(() => {
                 setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, dangerFilter, sortOrder, showOnlyFavorites, showOnlyMirrors]);
+            }, [rankSection, searchTerm, selectedLevels, sortOrder, showOnlyFavorites, showOnlyMirrors]);
 
             const login = async () => {
                 if (!firebase || isAuthLoading) return;
@@ -1532,17 +1533,8 @@
                 await updateFirestoreProfile(favorites, personalMemos, newMirrors);
             };
 
-            // 【修正箇所】メモの保存と削除のロジックを統合
             const savePersonalMemo = async (songId, memo) => {
-                const newMemos = { ...personalMemos };
-                
-                // 空、または空白のみの場合はオブジェクトからキー自体を削除する
-                if (!memo || memo.trim() === "") {
-                    delete newMemos[songId]; 
-                } else {
-                    newMemos[songId] = memo;
-                }
-                
+                const newMemos = { ...personalMemos, [songId]: memo };
                 setPersonalMemos(newMemos);
                 await updateFirestoreProfile(favorites, newMemos, mirrors);
             };
@@ -1635,10 +1627,7 @@
                 let baseList = processedSongs;
 
                 if (currentPage === "danger") {
-                    baseList = processedSongs.filter(s => ["1", "2"].includes(String(s.danger_level)));
-                    if (dangerFilter !== "all") {
-                        baseList = baseList.filter(s => String(s.danger_level) === dangerFilter);
-                    }
+                    baseList = processedSongs.filter(s => String(s.danger1) === "1" || String(s.danger2) === "1");
                 }
 
                 const result = baseList.filter(s => {
@@ -1678,7 +1667,7 @@
                 }
 
                 return result;
-            }, [searchTerm, selectedLevels, dangerFilter, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors]);
+            }, [searchTerm, selectedLevels, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * ITEMS_PER_PAGE;
@@ -1825,21 +1814,14 @@
                                         <i className="ph-fill ph-warning-octagon text-3xl text-orange-400"></i>
                                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">要注意曲リスト</h2>
                                     </div>
-                                    <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
+                                    <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-2 text-white">
                                         <div className="text-[13px] font-black leading-relaxed mb-4">
                                             <p>特に注意が必要な楽曲をまとめました。</p>
                                             <p>TIPSには運営からのコメントを記載しています。</p>
                                         </div>
                                         <div className="space-y-3 pl-1 text-[12px] font-bold">
-                                            <p><span className="text-[#ffb703]">■</span> 要警戒... 癖のある配置など</p>
-                                            <p><span className="text-[#e63946]">■</span> 危険... 大量失点の可能性がある楽曲など</p>
-                                        </div>
-                                    </div>
-                                    <div className="mb-2 px-1">
-                                        <div className="toggle-btn-group">
-                                            <button onClick={() => setDangerFilter("all")} className={`toggle-btn-small ${dangerFilter === "all" ? 'active' : ''}`}>すべて</button>
-                                            <button onClick={() => setDangerFilter("1")} className={`toggle-btn-small ${dangerFilter === "1" ? 'active' : ''}`}>要警戒のみ</button>
-                                            <button onClick={() => setDangerFilter("2")} className={`toggle-btn-small ${dangerFilter === "2" ? 'active' : ''}`}>危険のみ</button>
+                                            <p><span className="text-[#ffb703]">■</span> 要予習... 癖のある配置など</p>
+                                            <p><span className="text-[#e63946]">■</span> 高難易度... 難易度の高い配置や大量失点の可能性がある楽曲など</p>
                                         </div>
                                     </div>
                                 </div>
