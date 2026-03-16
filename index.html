@@ -5,14 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDVX MEGAMIX_Memo</title>
     
+    <!-- 背景画像のプリロードを追加 -->
     <link rel="preload" href="https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true" as="image">
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- html2canvas for Image Saving -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+    <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -43,7 +51,7 @@
             height: 100%;
             background: 
                 linear-gradient(rgba(19, 42, 19, 0.75), rgba(19, 42, 19, 0.75)),
-                url('https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true');
+                url('https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -65,6 +73,7 @@
             border-color: #52b788;
             box-shadow: 6px 6px 0px #52b788;
         }
+        /* Static card for random selection */
         .static-card {
             background: white;
             border: 3px solid #000;
@@ -600,6 +609,23 @@
             transform: translateY(-2px);
             box-shadow: 4px 4px 0px #000;
         }
+
+        /* Capture Container Styles */
+        #capture-area {
+            position: fixed;
+            left: -9999px;
+            top: -9999px;
+            width: 1280px;
+            height: 720px;
+            background: url('https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true');
+            background-size: cover;
+            background-position: center;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            color: #000;
+            z-index: -100;
+        }
     </style>
 </head>
 <body>
@@ -625,8 +651,6 @@
         const ITEMS_PER_PAGE = 30;
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
-        // 背景画像のURLを、表示用ではなくデータ直接参照用のRAW URLに変更（CORS対策）
-        const RESULT_IMAGE_BG_URL = "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -821,6 +845,7 @@
                                     <img 
                                         src={song.jacket} 
                                         alt="jacket" 
+                                        crossOrigin="anonymous"
                                         className="border-[3px] w-full h-full object-cover rounded-lg" 
                                         style={{ borderColor: borderColor }}
                                         onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
@@ -886,7 +911,7 @@
                                     <span className="section-label">第2区間</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">{song.start_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                                 </div>
@@ -1110,6 +1135,7 @@
                                                             <div className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
                                                                 <img 
                                                                     src={song.jacket} 
+                                                                    crossOrigin="anonymous"
                                                                     className="w-12 h-12 border-2 rounded object-cover" 
                                                                     style={{ borderColor: getBorderColor(song.difficult) }}
                                                                     onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
@@ -1201,6 +1227,7 @@
                                         <div onClick={() => openSongModal(idx)} className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
                                             <img 
                                                 src={song.jacket} 
+                                                crossOrigin="anonymous"
                                                 className="w-12 h-12 border-2 rounded object-cover" 
                                                 style={{ borderColor: getBorderColor(song.difficult) }}
                                                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
@@ -1281,6 +1308,7 @@
                                                         <img 
                                                             src={s.jacket} 
                                                             alt="jacket" 
+                                                            crossOrigin="anonymous"
                                                             className="border-2 w-full h-full object-cover rounded-md" 
                                                             style={{ borderColor: getBorderColor(s.difficult) }}
                                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
@@ -1330,7 +1358,6 @@
 
             const [randomSongs, setRandomSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
-            const [isSavingImage, setIsSavingImage] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
 
@@ -1364,6 +1391,7 @@
                 window.scrollTo({ top: 0, behavior: 'auto' });
             }, [currentPage, pageIndex]);
 
+            // --- Firebase Initialization & Auth ---
             useEffect(() => {
                 const initFirebase = async () => {
                     const { initializeApp, getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously, getFirestore } = window.FirebaseSDK;
@@ -1405,6 +1433,7 @@
                 }, 100);
             }, []);
 
+            // --- Master Data Fetch ---
             useEffect(() => {
                 if (!firebase || !user) return;
 
@@ -1431,6 +1460,7 @@
                 fetchMasterData();
             }, [firebase, user]);
 
+            // --- User Profile & Setlists Sync ---
             useEffect(() => {
                 if (!user || !firebase || user.isAnonymous) return;
                 const { doc, onSnapshot } = window.FirebaseSDK;
@@ -1608,123 +1638,25 @@
                 setTimeout(() => setIsGenerating(false), 500);
             };
 
-            const saveAsImage = async () => {
-                if (randomSongs.length < 5 || isSavingImage) return;
-                setIsSavingImage(true);
+            // Image Save Logic
+            const saveRandomResultAsImage = async () => {
+                const captureElement = document.getElementById('capture-area');
+                if (!captureElement) return;
 
                 try {
-                    // フォントの読み込みを確実に待つ
-                    await document.fonts.ready;
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 1920;
-                    canvas.height = 1080;
-                    const ctx = canvas.getContext('2d');
-
-                    const loadImage = (url) => new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.crossOrigin = "anonymous";
-                        img.onload = () => resolve(img);
-                        img.onerror = () => {
-                            console.error(`Failed to load image: ${url}`);
-                            reject(new Error(`Failed to load: ${url}`));
-                        };
-                        // キャッシュによるCORSエラーを防ぐためにクエリパラメータを付与
-                        img.src = url.includes('?') ? `${url}&t=${Date.now()}` : `${url}?t=${Date.now()}`;
+                    const canvas = await html2canvas(captureElement, {
+                        useCORS: true,
+                        allowTaint: false,
+                        backgroundColor: null,
+                        scale: 2 // High resolution
                     });
-
-                    // 画像を一括ロード
-                    const [bgImg, ...jackets] = await Promise.all([
-                        loadImage(RESULT_IMAGE_BG_URL),
-                        ...randomSongs.map(s => loadImage(s.jacket || 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'))
-                    ]);
-
-                    // 背景描画
-                    ctx.drawImage(bgImg, 0, 0, 1920, 1080);
-
-                    // ヘッダー描画
-                    ctx.fillStyle = "white";
-                    ctx.textAlign = "right";
-                    ctx.font = "bold 60px 'M PLUS Rounded 1c', sans-serif";
-                    ctx.fillText("ランダム選曲 結果", 1850, 100);
-
-                    // ジャケット描画設定
-                    const jacketSize = 300;
-                    const startX = (1920 - (jacketSize * 5 + 40 * 4)) / 2;
-                    const jacketY = 180;
-
-                    jackets.forEach((img, i) => {
-                        const x = startX + i * (jacketSize + 40);
-                        const diffColor = getBorderColor(randomSongs[i].difficult);
-                        
-                        // 枠線
-                        ctx.fillStyle = diffColor;
-                        ctx.fillRect(x - 6, jacketY - 6, jacketSize + 12, jacketSize + 12);
-                        
-                        // ジャケット
-                        ctx.drawImage(img, x, jacketY, jacketSize, jacketSize);
-                    });
-
-                    // 楽曲リストバー描画
-                    const barWidth = 1600;
-                    const barHeight = 85;
-                    const barStartX = (1920 - barWidth) / 2;
-                    const barStartY = 560;
-                    const spacing = 15;
-
-                    randomSongs.forEach((song, i) => {
-                        const y = barStartY + i * (barHeight + spacing);
-                        const diffColor = getBorderColor(song.difficult);
-
-                        // バーの背景
-                        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-                        if (ctx.roundRect) {
-                            ctx.beginPath();
-                            ctx.roundRect(barStartX, y, barWidth, barHeight, 12);
-                            ctx.fill();
-                        } else {
-                            // roundRect未対応ブラウザ用
-                            ctx.fillRect(barStartX, y, barWidth, barHeight);
-                        }
-
-                        // 難易度アクセントバー
-                        ctx.fillStyle = diffColor;
-                        ctx.fillRect(barStartX, y, 20, barHeight);
-
-                        // テキスト描画
-                        ctx.textAlign = "left";
-                        ctx.fillStyle = "#000000";
-                        
-                        // TRACK
-                        ctx.font = "bold 24px 'M PLUS Rounded 1c', sans-serif";
-                        ctx.fillText(`TRACK ${i + 1}`, barStartX + 45, y + 52);
-
-                        // TITLE
-                        ctx.font = "bold 34px 'M PLUS Rounded 1c', sans-serif";
-                        let title = song.title;
-                        if (title.length > 35) title = title.substring(0, 32) + "...";
-                        ctx.fillText(title, barStartX + 180, y + 54);
-
-                        // DIFF & LV
-                        ctx.textAlign = "right";
-                        ctx.font = "bold 26px 'M PLUS Rounded 1c', sans-serif";
-                        ctx.fillStyle = diffColor;
-                        ctx.fillText(`${song.difficult} Lv ${formatLevel(song.level)}`, barStartX + barWidth - 30, y + 52);
-                    });
-
-                    // ダウンロード処理
-                    // Canvasが汚染されている（CORS許可のない画像を描いた）場合、ここでセキュリティエラーが発生する
-                    const dataUrl = canvas.toDataURL("image/png");
+                    const image = canvas.toDataURL("image/png");
                     const link = document.createElement('a');
-                    link.download = `sdvx_result_${Date.now()}.png`;
-                    link.href = dataUrl;
+                    link.href = image;
+                    link.download = `SDVX_Megamix_Result_${new Date().getTime()}.png`;
                     link.click();
-
                 } catch (error) {
-                    console.error("Image generation failed:", error);
-                    setAuthError("画像の生成に失敗しました。画像サーバーの制限やネットワーク環境をご確認ください。");
-                } finally {
-                    setIsSavingImage(false);
+                    console.error("Image saving error:", error);
                 }
             };
 
@@ -1965,15 +1897,13 @@
                                         )}
                                     </button>
 
-                                    {hasGeneratedRandom && !isGenerating && randomSongs.length > 0 && (
+                                    {/* 完了後に表示される画像保存ボタン */}
+                                    {randomSongs.length > 0 && !isGenerating && (
                                         <button 
-                                            onClick={saveAsImage}
-                                            disabled={isSavingImage}
-                                            className="w-full bg-[#d8f3dc] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-sm flex items-center justify-center gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2"
+                                            onClick={saveRandomResultAsImage}
+                                            className="w-full bg-[#d8f3dc] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-3 mb-4"
                                         >
-                                            {isSavingImage ? (
-                                                <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
-                                            ) : <i className="ph-bold ph-image text-xl"></i>}
+                                            <i className="ph-bold ph-image"></i>
                                             結果を画像で保存する
                                         </button>
                                     )}
@@ -2160,20 +2090,28 @@
                                                 {termsTab === "terms" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">利用規約</h3>
+                                                        
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">非公式サービスについて</h4>
                                                         <p>本サイトは非公式のファンサイトであり、株式会社コナミアミューズメント、および株式会社コナミデジタルエンタテインメントとは一切関係がありません。</p>
+                                                        
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">知的財産権の帰属</h4>
                                                         <p>本サービス内で使用されている一部のジャケット画像等の知的財産権は、すべて各権利所有者に帰属します。権利者様からの申し立てがあった場合、速やかに削除等の対応を行います。</p>
+                                                        
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">サービスの中断・終了</h4>
                                                         <p>予告なくサービスの内容変更、運用の中断、または終了する可能性があります。これらによってユーザーに生じた不利益や損害について、運営側は一切の責任を負いません。</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">免責事項・トラブルについて</h4>
                                                         <p>本サービスのご利用中にユーザー間で発生したトラブルについて、運営側は一切の責任を負いません。</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">保存データに関する注意</h4>
                                                         <p>保存された自分用メモ、セトリ、お気に入り等のデータは、システムの不具合、メンテナンス、またはサービス終了に伴い消失する可能性があります。データの永久的な保持は保証いたしません。</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">ログイン情報の管理</h4>
                                                         <p>Googleログイン等の認証情報の管理はユーザー自身の責任で行ってください。運営側でユーザーのパスワードを保持することはありません。</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">禁止事項</h4>
                                                         <p>サーバーに過度な負荷をかける行為（自動プログラムによる取得など）や、公序良俗に反する内容をメモやセトリ名に登録する行為を禁止します。</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">情報の正確性について</h4>
                                                         <p>提供する情報の正確性には細心の注意を払っていますが、手動入力による誤りが含まれる可能性があります。情報の利用はユーザー自身の判断で行ってください。</p>
                                                     </div>
@@ -2182,14 +2120,19 @@
                                                 {termsTab === "privacy" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">プライバシーポリシー</h3>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">情報の取得について</h4>
                                                         <p>本サービスでは、Googleログインの際に、ユーザーの識別、およびデータの紐付けを目的として、Googleアカウントに登録されているユーザー名、メールアドレス、プロフィール画像、およびサービス固有の識別子（UID）を取得します。</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">情報の利用目的</h4>
                                                         <p>取得した情報は、以下の目的でのみ利用します。<br/>1.ユーザーの認証、および本人確認のため<br/>2.ユーザーが作成したデータ（メモ、セトリ、お気に入り等）をサーバーに保存し、異なるデバイス間で同期するため</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">データの保存と管理</h4>
                                                         <p>本サービスでは、Googleが提供する Firebase（Firestore）を利用してデータを保存・管理しています。ユーザーのパスワードを本サービス側で直接取得・保持することはありません。</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">第三者への情報提供</h4>
                                                         <p>取得した個人情報を、法令に基づく場合を除き、ユーザーの同意なく第三者に提供することはありません。</p>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">クッキー（Cookie）等の利用</h4>
                                                         <p>本サービスでは、ログイン状態の保持や利便性の向上のため、Cookieまたはそれに準ずる技術を利用する場合があります。</p>
                                                     </div>
@@ -2198,6 +2141,7 @@
                                                 {termsTab === "credits" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">クレジット</h3>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">運営メンバー</h4>
                                                         <ul className="list-disc list-inside space-y-1">
                                                             <li>代表：悠 (@YuSDVX)</li>
@@ -2206,7 +2150,9 @@
                                                             <li>データ協力：KAME (@kame_ver2)</li>
                                                             <li>データ協力：えーこぱふ (@eikopaf)</li>
                                                         </ul>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用ライブラリ</h4>
+                                                        <p className="text-xs">本サービスは以下のオープンソースライブラリを使用しています。</p>
                                                         <ul className="list-disc list-inside space-y-1 text-xs">
                                                             <li>React (MIT License)</li>
                                                             <li>Tailwind CSS (MIT License)</li>
@@ -2214,12 +2160,14 @@
                                                             <li>Firebase SDK (Apache License 2.0)</li>
                                                             <li>Babel (MIT License)</li>
                                                         </ul>
+
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用フォント</h4>
                                                         <ul className="list-disc list-inside space-y-1 text-xs">
                                                             <li>M PLUS Rounded 1c (SIL Open Font License)</li>
                                                         </ul>
                                                     </div>
                                                 )}
+                                                
                                                 <p className="mt-8 text-[10px] text-gray-400 text-center italic">※記載内容は予告なく更新される場合があります。</p>
                                             </div>
                                         </div>
@@ -2295,6 +2243,52 @@
                                                 </div>
                                             )
                                         )}
+                                        
+                                        {/* キャプチャ用の隠しコンテナ */}
+                                        <div id="capture-area">
+                                            {/* ヘッダー */}
+                                            <div className="flex justify-end items-start h-20">
+                                                <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: '#000', textShadow: '2px 2px 0px #fff' }}>ランダム選曲 結果</h2>
+                                            </div>
+
+                                            {/* 上段：ジャケット5枚 */}
+                                            <div className="grid grid-cols-5 gap-6 mt-12 px-10">
+                                                {randomSongs.map((song, idx) => (
+                                                    <div key={`cap-jacket-${idx}`} className="flex flex-col items-center">
+                                                        <img 
+                                                            src={song.jacket} 
+                                                            crossOrigin="anonymous"
+                                                            className="w-full aspect-square border-[6px] rounded-2xl shadow-xl object-cover" 
+                                                            style={{ borderColor: getBorderColor(song.difficult) }}
+                                                        />
+                                                        <div className="mt-3 bg-black text-white font-black px-4 py-1 rounded-full text-lg">TRACK {idx+1}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* 下段：楽曲情報バー5つ */}
+                                            <div className="flex flex-col gap-3 mt-12 px-10">
+                                                {randomSongs.map((song, idx) => (
+                                                    <div key={`cap-bar-${idx}`} className="flex items-center bg-white/90 border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000]">
+                                                        <div className="w-16 h-16 flex-shrink-0 bg-black text-white flex items-center justify-center text-3xl font-black rounded-lg mr-6">
+                                                            {idx+1}
+                                                        </div>
+                                                        <div className="flex-grow">
+                                                            <div className="text-2xl font-black truncate max-w-[800px]">{song.title}</div>
+                                                            <div className="flex items-center gap-6 mt-1">
+                                                                <span className="text-lg font-black uppercase"><span className="text-sm">Lv</span> {formatLevel(song.level)}</span>
+                                                                <span className="text-lg font-black uppercase text-gray-500" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                                                <span className="text-lg font-black uppercase"><span className="text-sm">BPM</span> {song.bpm || "???"}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-3xl font-black italic">{song.combo} <span className="text-sm not-italic uppercase">Chain</span></div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="mt-auto text-right text-gray-500 font-bold text-lg">SDVX MEGAMIX_Memo</div>
+                                        </div>
                                     </div>
                                 )}
                                 
