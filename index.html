@@ -609,6 +609,50 @@
             transform: translateY(-2px);
             box-shadow: 4px 4px 0px #000;
         }
+
+        /* --- Image Export Template Styles --- */
+        .export-container {
+            position: absolute;
+            left: -9999px;
+            width: 1200px;
+            height: 675px;
+            background: linear-gradient(135deg, #0a1128 0%, #001f3f 100%);
+            color: white;
+            overflow: hidden;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+        .export-grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 116, 217, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 116, 217, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+        .export-diamond {
+            width: 36px;
+            height: 36px;
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            flex-shrink: 0;
+        }
+        .export-diamond > span {
+            transform: rotate(-45deg);
+            font-size: 20px;
+            font-weight: 900;
+        }
+        .export-glow-text {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(0, 116, 217, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -1343,6 +1387,7 @@
             const [isGenerating, setIsGenerating] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
+            const [customPlayerName, setCustomPlayerName] = useState("");
 
             const [user, setUser] = useState(null);
             const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -1356,7 +1401,7 @@
             
             const [firebase, setFirebase] = useState(null);
 
-            const randomResultRef = useRef(null);
+            const shareTemplateRef = useRef(null);
 
             const getSongId = (song) => `${song.title}_${song.difficult}`;
 
@@ -1624,19 +1669,19 @@
             };
 
             const saveAsImage = async () => {
-                if (!randomResultRef.current) return;
+                if (!shareTemplateRef.current) return;
                 
-                const canvas = await html2canvas(randomResultRef.current, {
+                const canvas = await html2canvas(shareTemplateRef.current, {
                     useCORS: true,
-                    backgroundColor: "#132a13",
                     scale: 2,
                     logging: false,
+                    allowTaint: true
                 });
                 
                 const image = canvas.toDataURL("image/png");
                 const link = document.createElement("a");
                 link.href = image;
-                link.download = `sdvx_random_${Date.now()}.png`;
+                link.download = `sdvx_megamix_random_${Date.now()}.png`;
                 link.click();
             };
 
@@ -1724,6 +1769,61 @@
 
             return (
                 <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
+                    {/* --- Secret Export Template --- */}
+                    <div ref={shareTemplateRef} className="export-container">
+                        <div className="export-grid-bg"></div>
+                        
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="flex justify-between items-start mb-12">
+                                <h1 className="text-6xl font-black italic tracking-tighter uppercase export-glow-text">
+                                    Tracks of choice
+                                </h1>
+                                <div className="text-right">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-1">PLAYER NAME</p>
+                                    <p className="text-2xl font-black italic">{customPlayerName || user?.displayName || "ANONYMOUS"}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-5 gap-6 mb-16">
+                                {randomSongs.map((song, idx) => (
+                                    <div key={idx} className="flex flex-col items-center">
+                                        <div 
+                                            className="w-full aspect-square border-4 bg-gray-800 rounded-xl overflow-hidden shadow-2xl mb-2"
+                                            style={{ borderColor: getBorderColor(song.difficult) }}
+                                        >
+                                            <img src={song.jacket} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col gap-4 flex-grow">
+                                {randomSongs.map((song, idx) => (
+                                    <div key={idx} className="flex items-center gap-6 bg-white/5 backdrop-blur-md border-l-8 border-white p-4 rounded-r-2xl">
+                                        <div className="export-diamond border-white">
+                                            <span>{idx + 1}</span>
+                                        </div>
+                                        <div className="flex items-baseline gap-4">
+                                            <div className="bg-black/80 px-3 py-1 border border-white/20 rounded text-xs font-black uppercase tracking-widest">
+                                                {song.difficult} {formatLevel(song.level)}
+                                            </div>
+                                            <div className="text-3xl font-black truncate max-w-[700px]">{song.title}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-auto flex justify-between items-end border-t border-white/20 pt-4">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Generated by MEGAMIX.MEMO</p>
+                                </div>
+                                <h2 className="text-xl font-black italic tracking-tighter uppercase">
+                                    SOUND VOLTEX MEGAMIX BATTLE
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+
                     {authError && (
                         <div className="error-toast" onClick={() => setAuthError(null)}>
                             <div className="flex flex-col items-center gap-2">
@@ -1862,6 +1962,7 @@
                                         <i className="ph-fill ph-shuffle text-3xl text-[#e9edc9]"></i>
                                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ランダム選曲</h2>
                                     </div>
+                                    
                                     <button 
                                         onClick={generateRandomSongs} 
                                         disabled={isGenerating}
@@ -1878,17 +1979,29 @@
                                     </button>
 
                                     {randomSongs.length > 0 && !isGenerating && (
-                                        <button 
-                                            onClick={saveAsImage}
-                                            className="w-full bg-[#52b788] text-white font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm mb-4 flex items-center justify-center gap-2"
-                                        >
-                                            <i className="ph-bold ph-image"></i>
-                                            結果を画像で保存する
-                                        </button>
+                                        <div className="animate-in fade-in duration-500 space-y-4">
+                                            <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                                                <label className="block text-[10px] font-black uppercase text-white/70 mb-2 ml-1 tracking-widest">画像に表示するプレイヤー名</label>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder={user?.displayName || "プレイヤー名を入力..."}
+                                                    value={customPlayerName}
+                                                    onChange={(e) => setCustomPlayerName(e.target.value)}
+                                                    className="w-full bg-white/10 border-2 border-white/20 rounded-xl py-2 px-4 text-white font-bold focus:outline-none focus:border-white/50 text-sm mb-3"
+                                                />
+                                                <button 
+                                                    onClick={saveAsImage}
+                                                    className="w-full bg-[#52b788] text-white font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-2"
+                                                >
+                                                    <i className="ph-bold ph-image-square text-lg"></i>
+                                                    専用レイアウトで画像を保存
+                                                </button>
+                                            </div>
+                                        </div>
                                     )}
 
                                     {user && !user.isAnonymous && (
-                                        <div className="mb-4">
+                                        <div className="mt-4">
                                             <div className="toggle-btn-group">
                                                 <button onClick={() => setRandomPoolFilter("all")} className={`toggle-btn-small ${randomPoolFilter === "all" ? 'active' : ''}`}>すべて</button>
                                                 <button onClick={() => setRandomPoolFilter("fav")} className={`toggle-btn-small ${randomPoolFilter === "fav" ? 'active' : ''}`}>お気に入りのみ</button>
@@ -2192,7 +2305,7 @@
                                 {currentPage === "random" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-1">
                                         {randomSongs.length > 0 ? (
-                                            <div ref={randomResultRef} className="p-2">
+                                            <div className="p-2">
                                                 {randomSongs.map((song, idx) => (
                                                     <div key={`random-group-${idx}`} className="mb-1">
                                                         <div className="flex items-center gap-2 mb-0.5 ml-1">
