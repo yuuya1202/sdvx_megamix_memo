@@ -618,12 +618,41 @@
             width: 1280px;
             height: 720px;
             background-color: white;
-            background-image: url('https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true');
-            background-size: cover;
-            background-position: center;
             color: black;
             overflow: hidden;
             z-index: -100;
+        }
+
+        .capture-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1280px;
+            height: 720px;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .capture-content {
+            position: relative;
+            z-index: 10;
+            width: 1280px;
+            height: 720px;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .capture-bar {
+            background-color: #f3f4f6; /* gray-100 */
+            border: 4px solid #000;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            border-radius: 16px;
+            box-shadow: 6px 6px 0px #000;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -1639,12 +1668,17 @@
                 if (!captureRef.current || isCapturing) return;
                 setIsCapturing(true);
                 try {
+                    // フォントが完全にロードされるのを待つ
+                    await document.fonts.ready;
+                    
                     const canvas = await html2canvas(captureRef.current, {
                         useCORS: true,
-                        scale: 2,
+                        allowTaint: true,
+                        scale: 2, // 高解像度で出力
                         width: 1280,
                         height: 720,
-                        backgroundColor: null
+                        backgroundColor: null,
+                        logging: false
                     });
                     const link = document.createElement('a');
                     link.download = `sdvx_random_${Date.now()}.png`;
@@ -1657,7 +1691,7 @@
                 }
             };
 
-            const truncateTitle = (title, maxLength = 22) => {
+            const truncateTitle = (title, maxLength = 24) => {
                 if (!title) return "";
                 return title.length > maxLength ? title.substring(0, maxLength) + "..." : title;
             };
@@ -1748,16 +1782,26 @@
                 <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
                     {/* 画像生成用エリア（不可視） */}
                     <div id="capture-area" ref={captureRef}>
-                        <div className="relative w-full h-full p-12 flex flex-col justify-between">
-                            <div className="absolute top-10 right-12">
-                                <h1 className="text-5xl font-black italic tracking-tighter uppercase text-black flex items-center gap-2">
+                        {/* 背景画像をimgタグで配置 (CORS対策) */}
+                        <img 
+                            src="https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true" 
+                            className="capture-bg" 
+                            crossOrigin="anonymous"
+                            alt=""
+                        />
+                        
+                        <div className="capture-content">
+                            {/* ヘッダー (右上) */}
+                            <div className="absolute top-[50px] right-[60px] text-right">
+                                <h1 className="text-5xl font-black italic tracking-tighter uppercase text-black flex items-center justify-end gap-3">
                                     ランダム選曲 <span className="text-4xl opacity-70">結果</span>
                                 </h1>
                             </div>
 
-                            <div className="flex justify-between items-center mt-20 px-4">
+                            {/* ジャケット横並び (上段) */}
+                            <div className="flex justify-between items-center mt-[120px] px-2 h-[200px]">
                                 {randomSongs.map((song, i) => (
-                                    <div key={`cap-j-${i}`} className="w-44 h-44 border-[6px] border-black shadow-[10px_10px_0px_rgba(0,0,0,1)] bg-white overflow-hidden rounded-lg">
+                                    <div key={`cap-j-${i}`} className="w-[180px] h-[180px] border-[6px] border-black shadow-[8px_8px_0px_rgba(0,0,0,1)] bg-white overflow-hidden rounded-xl">
                                         <img 
                                             src={song.jacket} 
                                             className="w-full h-full object-cover" 
@@ -1768,16 +1812,29 @@
                                 ))}
                             </div>
 
-                            <div className="flex flex-col gap-4 mt-12">
+                            {/* 楽曲情報バー (下段) */}
+                            <div className="flex flex-col gap-4 mt-12 w-full px-4">
                                 {randomSongs.map((song, i) => (
-                                    <div key={`cap-b-${i}`} className="bg-gray-100 border-[4px] border-black p-3 flex items-center justify-between px-8 rounded-xl shadow-[6px_6px_0px_rgba(0,0,0,1)]">
-                                        <div className="flex items-center gap-6">
-                                            <span className="font-black text-2xl uppercase tracking-tighter transform -rotate-2 bg-black text-white px-3 py-1 rounded">TRACK {i + 1}</span>
-                                            <span className="text-2xl font-black truncate">{truncateTitle(song.title, 26)}</span>
+                                    <div key={`cap-b-${i}`} className="capture-bar">
+                                        <div className="flex items-center gap-6 flex-grow min-w-0">
+                                            {/* TRACKラベル */}
+                                            <div className="flex-shrink-0 bg-black text-white px-3 py-1 rounded-md text-xl font-black uppercase tracking-tighter">
+                                                TRACK {i + 1}
+                                            </div>
+                                            {/* 曲名 (長すぎる場合は省略) */}
+                                            <div className="text-2xl font-black truncate flex-grow">
+                                                {truncateTitle(song.title, 24)}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-xl font-black bg-black text-white px-4 py-1 rounded-md" style={{ backgroundColor: getBorderColor(song.difficult) }}>{song.difficult}</span>
-                                            <span className="text-3xl font-black italic">Lv {formatLevel(song.level)}</span>
+                                        {/* 難易度・レベル */}
+                                        <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                                            <div className="text-xl font-black text-white px-4 py-0.5 rounded-lg border-2 border-black" style={{ backgroundColor: getBorderColor(song.difficult) }}>
+                                                {song.difficult}
+                                            </div>
+                                            <div className="text-3xl font-black italic flex items-baseline gap-1">
+                                                <span className="text-sm uppercase not-italic">Lv</span>
+                                                {formatLevel(song.level)}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -2206,6 +2263,7 @@
                                                             <li>Phosphor Icons (MIT License)</li>
                                                             <li>Firebase SDK (Apache License 2.0)</li>
                                                             <li>Babel (MIT License)</li>
+                                                            <li>html2canvas (MIT License)</li>
                                                         </ul>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用フォント</h4>
