@@ -7,6 +7,8 @@
     
     <!-- 背景画像のプリロード -->
     <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg" as="image">
+    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/okumono_sf13.png" as="image">
+    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" as="image">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1843,7 +1845,7 @@
                     const shuffled = [...filtered].sort(() => 0.5 - Math.random());
                     const selected = shuffled.slice(0, 5);
                     setRandomSongs(selected);
-                    // ランダム用のデータ設定（まだモーダルは開かない）
+                    // ランダム用のデータ設定
                     setExportData({
                         isOpen: false,
                         title: "ランダム選曲 結果",
@@ -1861,7 +1863,7 @@
                     isOpen: true,
                     title: sl.name,
                     songs: slSongs,
-                    bg: "https://github.com/yuuya1202/image_Setlist_Background/blob/main/okumono_sf13.png?raw=true"
+                    bg: "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/okumono_sf13.png"
                 });
             };
 
