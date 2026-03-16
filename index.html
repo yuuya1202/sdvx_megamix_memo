@@ -5,15 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDVX MEGAMIX_Memo</title>
     
+    <!-- 背景画像のプリロードを追加 -->
     <link rel="preload" href="https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true" as="image">
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- html2canvas for Image Saving -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+    <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -603,16 +610,16 @@
             box-shadow: 4px 4px 0px #000;
         }
 
-        /* --- Image Export Template Styles --- */
+        /* --- Image Export Template Styles (16:9) --- */
         .export-container {
             position: absolute;
             left: -9999px;
             width: 1200px;
             height: 675px;
-            background: linear-gradient(135deg, #0a1128 0%, #001f3f 100%);
+            background: linear-gradient(135deg, #132a13 0%, #0a1f0a 100%);
             color: white;
             overflow: hidden;
-            padding: 40px;
+            padding: 30px 50px;
             display: flex;
             flex-direction: column;
         }
@@ -623,14 +630,14 @@
             width: 100%;
             height: 100%;
             background-image: 
-                linear-gradient(rgba(0, 116, 217, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 116, 217, 0.1) 1px, transparent 1px);
+                linear-gradient(rgba(82, 183, 136, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(82, 183, 136, 0.1) 1px, transparent 1px);
             background-size: 40px 40px;
             z-index: 0;
         }
         .export-diamond {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             transform: rotate(45deg);
             display: flex;
             align-items: center;
@@ -640,11 +647,30 @@
         }
         .export-diamond > span {
             transform: rotate(-45deg);
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 900;
         }
         .export-glow-text {
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(0, 116, 217, 0.5);
+            text-shadow: 0 0 10px rgba(82, 183, 136, 0.5), 0 0 20px rgba(82, 183, 136, 0.3);
+        }
+        .export-jacket {
+            width: 160px;
+            height: 160px;
+            border: 4px solid white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .export-row {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border-left: 6px solid #fff;
+            padding: 12px 24px;
+            border-radius: 0 16px 16px 0;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
     </style>
 </head>
@@ -1014,7 +1040,7 @@
                         </div>
                         <div className="mt-8">
                             <button 
-                                onClose={onClose}
+                                onClick={onClose}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 閉じる
@@ -1761,23 +1787,23 @@
 
             return (
                 <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
-                    {/* --- Secret Export Template --- */}
+                    {/* --- Secret Export Template (16:9 Optimized) --- */}
                     <div ref={shareTemplateRef} className="export-container">
                         <div className="export-grid-bg"></div>
                         
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex justify-start items-center mb-12">
-                                <h1 className="text-6xl font-black italic tracking-tighter uppercase export-glow-text">
+                            <div className="flex justify-start items-center mb-10">
+                                <h1 className="text-5xl font-black italic tracking-tighter uppercase export-glow-text">
                                     ランダム選曲結果
                                 </h1>
                             </div>
 
-                            <div className="grid grid-cols-5 gap-6 mb-16">
+                            <div className="grid grid-cols-5 gap-8 mb-12 px-4">
                                 {randomSongs.map((song, idx) => (
                                     <div key={idx} className="flex flex-col items-center">
                                         <div 
-                                            className="w-full aspect-square border-4 bg-gray-800 rounded-xl overflow-hidden shadow-2xl mb-2"
-                                            style={{ borderColor: getBorderColor(song.difficult) }}
+                                            className="export-jacket"
+                                            style={{ borderColor: getBorderColor(song.difficult) === "#000000" ? "#fff" : getBorderColor(song.difficult) }}
                                         >
                                             <img src={song.jacket} className="w-full h-full object-cover" crossOrigin="anonymous" />
                                         </div>
@@ -1785,20 +1811,23 @@
                                 ))}
                             </div>
 
-                            <div className="flex flex-col gap-4 flex-grow">
+                            <div className="flex flex-col gap-3 flex-grow px-2">
                                 {randomSongs.map((song, idx) => (
-                                    <div key={idx} className="flex items-center gap-6 bg-white/5 backdrop-blur-md border-l-8 border-white p-4 rounded-r-2xl">
+                                    <div key={idx} className="export-row">
                                         <div className="export-diamond border-white">
                                             <span>{idx + 1}</span>
                                         </div>
-                                        <div className="flex items-baseline gap-6 flex-grow min-w-0">
-                                            <div className="text-3xl font-black truncate flex-grow min-w-0 pr-4">{song.title}</div>
-                                            <div className="flex items-baseline gap-3 flex-shrink-0">
-                                                <div className="text-base font-black uppercase tracking-widest text-white/70" style={{ color: getBorderColor(song.difficult) }}>
-                                                    {song.difficult}
-                                                </div>
-                                                <div className="text-4xl font-black">{formatLevel(song.level)}</div>
+                                        <div className="flex-grow min-w-0">
+                                            <div className="text-2xl font-black truncate">{song.title}</div>
+                                        </div>
+                                        <div className="flex items-center gap-6 flex-shrink-0">
+                                            <div 
+                                                className="text-lg font-black uppercase tracking-[0.2em]"
+                                                style={{ color: song.difficult === 'MXM' ? '#fff' : getBorderColor(song.difficult) }}
+                                            >
+                                                {song.difficult}
                                             </div>
+                                            <div className="text-4xl font-black w-24 text-right">{formatLevel(song.level)}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -1806,7 +1835,7 @@
 
                             <div className="mt-auto flex justify-between items-end border-t border-white/20 pt-4">
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Generated by MEGAMIX.MEMO</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#52b788]">Generated by MEGAMIX.MEMO</p>
                                 </div>
                                 <h2 className="text-xl font-black italic tracking-tighter uppercase">
                                     SOUND VOLTEX MEGAMIX BATTLE
