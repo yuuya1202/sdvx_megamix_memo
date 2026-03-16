@@ -610,7 +610,7 @@
             box-shadow: 4px 4px 0px #000;
         }
 
-        /* --- Image Export Layout Styles --- */
+        /* --- Image Export Layout Styles (Fixed for better fit and clarity) --- */
         #export-container {
             position: fixed;
             left: -9999px;
@@ -622,7 +622,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 40px;
+            padding: 30px 40px;
             z-index: -100;
         }
         .export-bg {
@@ -645,17 +645,18 @@
         .export-header {
             width: 100%;
             text-align: right;
-            font-size: 42px;
+            font-size: 38px;
             font-weight: 900;
             color: #000;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-shadow: 2px 2px 0px #fff;
+            line-height: 1;
         }
         .export-jackets-row {
             display: flex;
             justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 40px;
+            gap: 16px;
+            margin-bottom: 24px;
             width: 100%;
         }
         .export-jacket-box {
@@ -679,26 +680,33 @@
             left: 0;
             background: #000;
             color: #fff;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 900;
-            padding: 4px 12px;
-            border-bottom-right-radius: 12px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom-right-radius: 16px;
+            line-height: 1;
         }
         .export-info-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             width: 100%;
+            flex-grow: 1;
         }
         .export-info-row {
             background: rgba(255, 255, 255, 0.92);
             border: 4px solid #000;
             border-radius: 12px;
-            padding: 10px 24px;
+            padding: 8px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+            min-height: 60px;
         }
         .export-info-main {
             display: flex;
@@ -708,10 +716,11 @@
             min-width: 0;
         }
         .export-info-num {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 900;
             color: #000;
             font-style: italic;
+            width: 40px;
         }
         .export-info-title {
             font-size: 26px;
@@ -720,6 +729,8 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.3; /* Fix for cutting off characters */
+            padding-bottom: 2px;
         }
         .export-info-meta {
             display: flex;
@@ -728,6 +739,7 @@
             font-weight: 900;
             color: #333;
             flex-shrink: 0;
+            align-items: center;
         }
     </style>
 </head>
