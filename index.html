@@ -622,7 +622,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            padding: 40px;
             z-index: -100;
         }
         .export-bg {
@@ -634,43 +634,100 @@
             object-fit: cover;
             z-index: 1;
         }
-        .export-content {
+        .export-content-wrapper {
             position: relative;
             z-index: 2;
-            width: 90%;
-            height: 85%;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .export-header {
+            width: 100%;
+            text-align: right;
+            font-size: 42px;
+            font-weight: 900;
+            color: #000;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0px #fff;
+        }
+        .export-jackets-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 40px;
+            width: 100%;
+        }
+        .export-jacket-box {
+            flex: 1;
+            aspect-ratio: 1/1;
+            background: white;
+            border: 6px solid #000;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+        }
+        .export-jacket-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .export-jacket-num {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #000;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 900;
+            padding: 4px 12px;
+            border-bottom-right-radius: 12px;
+        }
+        .export-info-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
+            width: 100%;
         }
-        .export-song-card {
-            background: rgba(255, 255, 255, 0.95);
+        .export-info-row {
+            background: rgba(255, 255, 255, 0.92);
             border: 4px solid #000;
-            border-radius: 16px;
-            padding: 10px 20px;
+            border-radius: 12px;
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+        .export-info-main {
             display: flex;
             align-items: center;
             gap: 20px;
             flex: 1;
+            min-width: 0;
         }
-        .export-jacket {
-            width: 80px;
-            height: 80px;
-            border: 4px solid #000;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-        .export-title {
-            font-size: 28px;
+        .export-info-num {
+            font-size: 24px;
             font-weight: 900;
             color: #000;
+            font-style: italic;
         }
-        .export-meta {
+        .export-info-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: #000;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .export-info-meta {
+            display: flex;
+            gap: 24px;
             font-size: 18px;
             font-weight: 900;
             color: #333;
-            display: flex;
-            gap: 20px;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -1804,28 +1861,42 @@
                             crossOrigin="anonymous"
                             alt="background"
                         />
-                        <div className="export-content">
-                            {randomSongs.map((song, i) => (
-                                <div key={i} className="export-song-card">
-                                    <div style={{ fontSize: '24px', fontWeight: 900, color: '#000', width: '40px' }}>#{i+1}</div>
-                                    <img 
-                                        className="export-jacket" 
-                                        src={song.jacket} 
-                                        crossOrigin="anonymous" 
-                                        style={{ borderColor: getBorderColor(song.difficult) }}
-                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                        alt="jacket"
-                                    />
-                                    <div className="flex flex-col gap-1 flex-grow">
-                                        <div className="export-title">{song.title}</div>
-                                        <div className="export-meta">
+                        <div className="export-content-wrapper">
+                            <div className="export-header">ランダム選曲 結果</div>
+                            
+                            <div className="export-jackets-row">
+                                {randomSongs.map((song, i) => (
+                                    <div key={`exp-jack-${i}`} className="export-jacket-box">
+                                        <div className="export-jacket-num">{i + 1}</div>
+                                        <img 
+                                            className="export-jacket-img" 
+                                            src={song.jacket} 
+                                            crossOrigin="anonymous"
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
+                                        />
+                                    </div>
+                                ))}
+                                {/* 空スロットの穴埋め (もし5曲未満の場合) */}
+                                {[...Array(Math.max(0, 5 - randomSongs.length))].map((_, i) => (
+                                    <div key={`exp-jack-empty-${i}`} className="export-jacket-box opacity-20 border-dashed border-white"></div>
+                                ))}
+                            </div>
+
+                            <div className="export-info-list">
+                                {randomSongs.map((song, i) => (
+                                    <div key={`exp-info-${i}`} className="export-info-row">
+                                        <div className="export-info-main">
+                                            <div className="export-info-num">#{i + 1}</div>
+                                            <div className="export-info-title">{song.title}</div>
+                                        </div>
+                                        <div className="export-info-meta">
                                             <span>Lv {formatLevel(song.level)}</span>
                                             <span style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
                                             <span>BPM {song.bpm}</span>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
 
