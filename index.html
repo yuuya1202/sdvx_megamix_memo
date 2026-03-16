@@ -752,6 +752,10 @@
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
 
+        // Constants for backgrounds
+        const DEFAULT_EXPORT_BG = "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png";
+        const SETLIST_EXPORT_BG = "https://github.com/yuuya1202/image_Setlist_Background/blob/main/setlist.png?raw=true";
+
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
         const LV19_LIST = Array.from({length: 10}, (_, i) => `19.${i}`);
@@ -1171,7 +1175,10 @@
                 const openId = Object.keys(openSetlists).find(id => openSetlists[id]);
                 if (!openId) return;
                 const sl = setlists.find(s => s.id === openId);
-                if (sl) onExport(sl.songs);
+                if (sl) {
+                    // Export with setlist name and setlist-specific background
+                    onExport(sl.songs, sl.name, SETLIST_EXPORT_BG);
+                }
             };
 
             const requestDelete = (id) => {
@@ -1387,8 +1394,8 @@
                     <div className="flex gap-4 justify-center mt-2">
                         <button 
                             onClick={handleSave} 
-                            disabled={!canSave}
-                            className={`w-32 font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all ${canSave ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
+                            disabled={!editingSetlist.name.trim()}
+                            className={`w-32 font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all ${editingSetlist.name.trim() ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
                         >
                             保存する
                         </button>
@@ -1480,6 +1487,9 @@
             const [contactLinkModal, setContactLinkModal] = useState({ isOpen: false, url: '', type: '' });
 
             const [exportSongs, setExportSongs] = useState([]);
+            const [exportTitle, setExportTitle] = useState("ランダム選曲 結果");
+            const [exportBgUrl, setExportBgUrl] = useState(DEFAULT_EXPORT_BG);
+            
             const [isGenerating, setIsGenerating] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
@@ -1764,11 +1774,13 @@
                 setTimeout(() => setIsGenerating(false), 500);
             };
 
-            const handleExportSetlist = async (songIds) => {
+            const handleExportSetlist = async (songIds, title = "ランダム選曲 結果", bgUrl = DEFAULT_EXPORT_BG) => {
                 const songsToExport = songIds.map(id => songMap[id]).filter(Boolean);
                 if (songsToExport.length === 0) return;
                 
                 setExportSongs(songsToExport);
+                setExportTitle(title);
+                setExportBgUrl(bgUrl);
                 setIsSavingImage(true);
                 
                 // Wait for state update and rendering
@@ -1785,7 +1797,7 @@
                         const image = canvas.toDataURL("image/png");
                         const link = document.createElement('a');
                         link.href = image;
-                        link.download = `SDVX_MEGAMIX_SETLIST_${new Date().getTime()}.png`;
+                        link.download = `SDVX_MEGAMIX_${title.replace(/\s+/g, '_')}_${new Date().getTime()}.png`;
                         link.click();
                     } catch (error) {
                         console.error("Image Export Error:", error);
@@ -1883,12 +1895,12 @@
                     <div id="export-container" ref={exportRef}>
                         <img 
                             className="export-bg" 
-                            src="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" 
+                            src={exportBgUrl} 
                             crossOrigin="anonymous"
                             alt="background"
                         />
                         <div className="export-content-wrapper">
-                            <div className="export-header">ランダム選曲 結果</div>
+                            <div className="export-header">{exportTitle}</div>
                             
                             <div className="export-jackets-row">
                                 {exportSongs.map((song, i) => (
@@ -2080,7 +2092,7 @@
                                             )}
                                         </button>
 
-                                        {/* Result Image Save Button (Now generic export handler) */}
+                                        {/* Result Image Save Button */}
                                         {hasGeneratedRandom && exportSongs.length > 0 && !isGenerating && (
                                             <button 
                                                 onClick={() => handleExportSetlist(exportSongs.map(s => getSongId(s)))} 
