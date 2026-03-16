@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDVX MEGAMIX_Memo</title>
     
-    <!-- 背景画像のプリロード -->
+    <!-- 背景画像のプリロードを追加 -->
     <link rel="preload" href="https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true" as="image">
-    <link rel="preload" href="https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true" as="image">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +17,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- html2canvas (For image export) -->
+    <!-- html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Firebase SDK (Modular) -->
@@ -611,113 +610,20 @@
             box-shadow: 4px 4px 0px #000;
         }
 
-        /* --- Cyber Export Styles (New Official Background) --- */
-        .cyber-export-container {
+        /* 画像生成用のスタイル */
+        #capture-area {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
             width: 1280px;
             height: 720px;
+            background-color: white;
             background-image: url('https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true');
             background-size: cover;
             background-position: center;
-            padding: 20px 60px 40px 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            color: white;
-            position: relative;
-            overflow: hidden;
-            border: 10px solid #1b4332;
-        }
-        .cyber-scanline {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px);
-            pointer-events: none;
-            opacity: 0.5;
-        }
-        .cyber-title {
-            font-size: 36px;
-            font-weight: 900;
-            font-style: italic;
-            text-transform: uppercase;
-            text-align: right;
-            color: #52b788;
-            text-shadow: 0px 0px 15px rgba(82, 183, 136, 0.8);
-            margin-bottom: 20px;
-            letter-spacing: 0.15em;
-            line-height: 1;
-        }
-        .cyber-jacket-row {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 30px;
-            padding: 0 30px;
-            z-index: 10;
-            margin-bottom: 30px;
-        }
-        .cyber-jacket-card {
-            aspect-ratio: 1;
-            background: rgba(0,0,0,0.9);
-            border-radius: 4px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
-            width: 100%;
-            max-width: 170px; 
-            margin: 0 auto;
-        }
-        .cyber-info-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            z-index: 10;
-            padding: 0 10px;
-        }
-        .cyber-info-bar {
-            background: #ffffff; 
             color: black;
-            height: 60px; 
-            padding: 0 28px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 20px;
-            border-left: 14px solid #2d6a4f;
-            border-radius: 4px;
-            box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.4);
-        }
-        .cyber-info-track {
-            font-weight: 900;
-            font-size: 16px; 
-            color: #2d6a4f;
-            width: 110px;
-            flex-shrink: 0;
-            border-right: 2px solid rgba(0,0,0,0.1);
-            height: 100%;
-            display: flex;
-            align-items: center;
-            line-height: 1;
-        }
-        .cyber-info-title {
-            font-weight: 900;
-            font-size: 22px; 
-            line-height: 1;
-            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            height: 100%;
-        }
-        .cyber-info-meta {
-            font-weight: 900;
-            font-size: 22px; 
-            display: flex;
-            gap: 20px;
-            flex-shrink: 0;
-            align-items: center;
-            padding-left: 20px;
-            line-height: 1;
-            height: 100%;
+            z-index: -100;
         }
     </style>
 </head>
@@ -737,7 +643,7 @@
             measurementId: "G-PLYC5FW8QK"
         };
 
-        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'sdvx-megamix-memo';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sdvx-megamix-memo';
         const MASTER_COLLECTION = 'song_master';
         const MASTER_DOCUMENT = 'all_songs';
 
@@ -769,52 +675,6 @@
                 case "ULT": return "#ffff00"; 
                 default: return "#000000";
             }
-        };
-
-        // --- Cyber Export helper for border color ---
-        const getCyberBorderColor = (difficult) => {
-            if (String(difficult).toUpperCase() === "MXM") return "#ffffff"; // MXMは白
-            return getBorderColor(difficult);
-        };
-
-        // --- Cyber Image Export Component ---
-        const CyberExportArea = ({ songs, exportRef }) => {
-            if (!songs || songs.length === 0) return null;
-            return (
-                <div style={{ position: 'absolute', top: '-2000px', left: '-2000px' }}>
-                    <div ref={exportRef} className="cyber-export-container">
-                        <div className="cyber-scanline"></div>
-                        
-                        <div className="cyber-title">ランダム選曲　結果</div>
-                        
-                        <div className="cyber-jacket-row">
-                            {songs.map((s, i) => (
-                                <div key={i} className="cyber-jacket-card">
-                                    <img 
-                                        src={s.jacket} 
-                                        className="w-full h-full object-cover"
-                                        style={{ border: `4px solid ${getCyberBorderColor(s.difficult)}` }}
-                                        crossOrigin="anonymous"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="cyber-info-list">
-                            {songs.map((s, i) => (
-                                <div key={i} className="cyber-info-bar">
-                                    <div className="cyber-info-track">TRACK #{i + 1}</div>
-                                    <div className="cyber-info-title">{s.title}</div>
-                                    <div className="cyber-info-meta">
-                                        <span style={{ color: getBorderColor(s.difficult) }}>{s.difficult}</span>
-                                        <span>LV {formatLevel(s.level)}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
         };
 
         const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type }) => {
@@ -987,7 +847,6 @@
                                         className="border-[3px] w-full h-full object-cover rounded-lg" 
                                         style={{ borderColor: borderColor }}
                                         onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                        crossOrigin="anonymous"
                                     />
                                 ) : (
                                     <div 
@@ -1050,7 +909,8 @@
                                     <span className="section-label">第2区間</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">終了位置</p><p className="stat-value">{song.start_pos2 || "-"}</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                                 </div>
 
@@ -1276,7 +1136,6 @@
                                                                     className="w-12 h-12 border-2 rounded object-cover" 
                                                                     style={{ borderColor: getBorderColor(song.difficult) }}
                                                                     onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                                                    crossOrigin="anonymous"
                                                                 />
                                                                 <div className="flex-grow min-w-0">
                                                                     <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
@@ -1368,7 +1227,6 @@
                                                 className="w-12 h-12 border-2 rounded object-cover" 
                                                 style={{ borderColor: getBorderColor(song.difficult) }}
                                                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                                crossOrigin="anonymous"
                                             />
                                             <div className="flex-grow min-w-0">
                                                 <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
@@ -1449,7 +1307,6 @@
                                                             className="border-2 w-full h-full object-cover rounded-md" 
                                                             style={{ borderColor: getBorderColor(s.difficult) }}
                                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                                            crossOrigin="anonymous"
                                                         />
                                                     </div>
                                                     <div className="flex-grow min-w-0 text-left">
@@ -1496,7 +1353,7 @@
 
             const [randomSongs, setRandomSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
-            const [isExporting, setIsExporting] = useState(false);
+            const [isCapturing, setIsCapturing] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
 
@@ -1511,7 +1368,7 @@
             const [showOnlyMirrors, setShowOnlyMirrors] = useState(false);
             
             const [firebase, setFirebase] = useState(null);
-            const exportRef = useRef(null);
+            const captureRef = useRef(null);
 
             const getSongId = (song) => `${song.title}_${song.difficult}`;
 
@@ -1580,7 +1437,7 @@
                 const fetchMasterData = async () => {
                     const { doc, getDoc } = window.FirebaseSDK;
                     try {
-                        const docRef = doc(firebase.db, 'artifacts', APP_ID, 'public', 'data', MASTER_COLLECTION, MASTER_DOCUMENT);
+                        const docRef = doc(firebase.db, 'artifacts', appId, 'public', 'data', MASTER_COLLECTION, MASTER_DOCUMENT);
                         const docSnap = await getDoc(docRef);
                         
                         if (docSnap.exists()) {
@@ -1605,7 +1462,7 @@
                 if (!user || !firebase || user.isAnonymous) return;
                 const { doc, onSnapshot } = window.FirebaseSDK;
 
-                const unsubProfile = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), (docSnap) => {
+                const unsubProfile = onSnapshot(doc(firebase.db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         setFavorites(data.favorites || []);
@@ -1614,7 +1471,7 @@
                     }
                 }, (err) => console.error("Firestore Profile Sync Error:", err));
 
-                const unsubSetlists = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), (docSnap) => {
+                const unsubSetlists = onSnapshot(doc(firebase.db, 'artifacts', appId, 'users', user.uid, 'setlists', 'data'), (docSnap) => {
                     if (docSnap.exists()) {
                         setSetlists(docSnap.data().items || []);
                     }
@@ -1677,7 +1534,7 @@
             const updateFirestoreProfile = async (newFavs, newMemos, newMirrors) => {
                 if (!user || !firebase || user.isAnonymous) return;
                 const { doc, setDoc } = window.FirebaseSDK;
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), {
+                await setDoc(doc(firebase.db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), {
                     favorites: newFavs,
                     memos: newMemos,
                     mirrors: newMirrors
@@ -1714,7 +1571,7 @@
                     : [...setlists, newSetlist];
                 
                 setSetlists(newItems);
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
+                await setDoc(doc(firebase.db, 'artifacts', appId, 'users', user.uid, 'setlists', 'data'), {
                     items: newItems
                 });
             };
@@ -1724,7 +1581,7 @@
                 const { doc, setDoc } = window.FirebaseSDK;
                 const newItems = setlists.filter(s => s.id !== id);
                 setSetlists(newItems);
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
+                await setDoc(doc(firebase.db, 'artifacts', appId, 'users', user.uid, 'setlists', 'data'), {
                     items: newItems
                 });
             };
@@ -1778,29 +1635,31 @@
                 setTimeout(() => setIsGenerating(false), 500);
             };
 
-            const handleExportImage = async () => {
-                if (!exportRef.current || isExporting) return;
-                setIsExporting(true);
+            const captureResult = async () => {
+                if (!captureRef.current || isCapturing) return;
+                setIsCapturing(true);
                 try {
-                    // Give a small delay to ensure images are ready
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                    const canvas = await html2canvas(exportRef.current, {
+                    const canvas = await html2canvas(captureRef.current, {
                         useCORS: true,
-                        allowTaint: true,
-                        scale: 2, // High resolution
-                        backgroundColor: "#132a13",
-                        logging: false
+                        scale: 2,
+                        width: 1280,
+                        height: 720,
+                        backgroundColor: null
                     });
                     const link = document.createElement('a');
-                    link.download = `MEGAMIX_RANDOM_${Date.now()}.png`;
+                    link.download = `sdvx_random_${Date.now()}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                 } catch (err) {
-                    console.error("Export Error:", err);
-                    setAuthError("画像の書き出しに失敗しました");
+                    console.error("Capture Error:", err);
                 } finally {
-                    setIsExporting(false);
+                    setIsCapturing(false);
                 }
+            };
+
+            const truncateTitle = (title, maxLength = 22) => {
+                if (!title) return "";
+                return title.length > maxLength ? title.substring(0, maxLength) + "..." : title;
             };
 
             const processedSongs = useMemo(() => {
@@ -1887,6 +1746,45 @@
 
             return (
                 <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
+                    {/* 画像生成用エリア（不可視） */}
+                    <div id="capture-area" ref={captureRef}>
+                        <div className="relative w-full h-full p-12 flex flex-col justify-between">
+                            <div className="absolute top-10 right-12">
+                                <h1 className="text-5xl font-black italic tracking-tighter uppercase text-black flex items-center gap-2">
+                                    ランダム選曲 <span className="text-4xl opacity-70">結果</span>
+                                </h1>
+                            </div>
+
+                            <div className="flex justify-between items-center mt-20 px-4">
+                                {randomSongs.map((song, i) => (
+                                    <div key={`cap-j-${i}`} className="w-44 h-44 border-[6px] border-black shadow-[10px_10px_0px_rgba(0,0,0,1)] bg-white overflow-hidden rounded-lg">
+                                        <img 
+                                            src={song.jacket} 
+                                            className="w-full h-full object-cover" 
+                                            crossOrigin="anonymous"
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/200x200.png?text=NO+IMAGE'; }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-col gap-4 mt-12">
+                                {randomSongs.map((song, i) => (
+                                    <div key={`cap-b-${i}`} className="bg-gray-100 border-[4px] border-black p-3 flex items-center justify-between px-8 rounded-xl shadow-[6px_6px_0px_rgba(0,0,0,1)]">
+                                        <div className="flex items-center gap-6">
+                                            <span className="font-black text-2xl uppercase tracking-tighter transform -rotate-2 bg-black text-white px-3 py-1 rounded">TRACK {i + 1}</span>
+                                            <span className="text-2xl font-black truncate">{truncateTitle(song.title, 26)}</span>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-xl font-black bg-black text-white px-4 py-1 rounded-md" style={{ backgroundColor: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                            <span className="text-3xl font-black italic">Lv {formatLevel(song.level)}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
                     {authError && (
                         <div className="error-toast" onClick={() => setAuthError(null)}>
                             <div className="flex flex-col items-center gap-2">
@@ -1896,9 +1794,6 @@
                             </div>
                         </div>
                     )}
-
-                    {/* Image Export Area (Hidden) */}
-                    <CyberExportArea songs={randomSongs} exportRef={exportRef} />
 
                     <div className="fixed top-4 left-4 z-50">
                         <div className="nav-dropdown">
@@ -2043,18 +1938,18 @@
                                         )}
                                     </button>
 
-                                    {randomSongs.length > 0 && (
+                                    {randomSongs.length > 0 && !isGenerating && (
                                         <button 
-                                            onClick={handleExportImage} 
-                                            disabled={isExporting}
-                                            className="w-full bg-[#d8f3dc] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-3 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                            onClick={captureResult} 
+                                            disabled={isCapturing}
+                                            className="w-full bg-[#d8f3dc] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-sm flex items-center justify-center gap-2 mb-4"
                                         >
-                                            {isExporting ? (
-                                                <div className="w-5 h-5 border-3 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                            {isCapturing ? (
+                                                <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
                                             ) : (
                                                 <>
-                                                    <i className="ph-bold ph-image-square text-2xl"></i>
-                                                    結果を画像で出力
+                                                    <i className="ph-bold ph-image text-xl"></i>
+                                                    結果を画像で保存する
                                                 </>
                                             )}
                                         </button>
@@ -2256,7 +2151,7 @@
                                                         <p>本サービスのご利用中にユーザー間で発生したトラブルについて、運営側は一切の責任を負いません。</p>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">保存データに関する注意</h4>
-                                                        <p>保存された自分用メモ、セトリ, お気に入り等のデータは、システムの不具合、メンテナンス、またはサービス終了に伴い消失する可能性があります。データの永久的な保持は保証いたしません。</p>
+                                                        <p>保存された自分用メモ、セトリ、お気に入り等のデータは、システムの不具合、メンテナンス、またはサービス終了に伴い消失する可能性があります。データの永久的な保持は保証いたしません。</p>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">ログイン情報の管理</h4>
                                                         <p>Googleログイン等の認証情報の管理はユーザー自身の責任で行ってください。運営側でユーザーのパスワードを保持することはありません。</p>
@@ -2311,10 +2206,9 @@
                                                             <li>Phosphor Icons (MIT License)</li>
                                                             <li>Firebase SDK (Apache License 2.0)</li>
                                                             <li>Babel (MIT License)</li>
-                                                            <li>html2canvas (MIT License)</li>
                                                         </ul>
 
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">フォント</h4>
+                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用フォント</h4>
                                                         <ul className="list-disc list-inside space-y-1 text-xs">
                                                             <li>M PLUS Rounded 1c (SIL Open Font License)</li>
                                                         </ul>
