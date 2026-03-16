@@ -5,22 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDVX MEGAMIX_Memo</title>
     
-    <!-- 背景画像のプリロードを追加 -->
     <link rel="preload" href="https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true" as="image">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- html2canvas for Image Saving -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -1021,7 +1014,7 @@
                         </div>
                         <div className="mt-8">
                             <button 
-                                onClick={onClose}
+                                onClose={onClose}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
                                 閉じる
@@ -1387,7 +1380,6 @@
             const [isGenerating, setIsGenerating] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
-            const [customPlayerName, setCustomPlayerName] = useState("");
 
             const [user, setUser] = useState(null);
             const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -1774,14 +1766,10 @@
                         <div className="export-grid-bg"></div>
                         
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex justify-between items-start mb-12">
+                            <div className="flex justify-start items-center mb-12">
                                 <h1 className="text-6xl font-black italic tracking-tighter uppercase export-glow-text">
-                                    Tracks of choice
+                                    ランダム選曲結果
                                 </h1>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-1">PLAYER NAME</p>
-                                    <p className="text-2xl font-black italic">{customPlayerName || user?.displayName || "ANONYMOUS"}</p>
-                                </div>
                             </div>
 
                             <div className="grid grid-cols-5 gap-6 mb-16">
@@ -1803,11 +1791,14 @@
                                         <div className="export-diamond border-white">
                                             <span>{idx + 1}</span>
                                         </div>
-                                        <div className="flex items-baseline gap-4">
-                                            <div className="bg-black/80 px-3 py-1 border border-white/20 rounded text-xs font-black uppercase tracking-widest">
-                                                {song.difficult} {formatLevel(song.level)}
+                                        <div className="flex items-baseline gap-6 flex-grow min-w-0">
+                                            <div className="text-3xl font-black truncate flex-grow min-w-0 pr-4">{song.title}</div>
+                                            <div className="flex items-baseline gap-3 flex-shrink-0">
+                                                <div className="text-base font-black uppercase tracking-widest text-white/70" style={{ color: getBorderColor(song.difficult) }}>
+                                                    {song.difficult}
+                                                </div>
+                                                <div className="text-4xl font-black">{formatLevel(song.level)}</div>
                                             </div>
-                                            <div className="text-3xl font-black truncate max-w-[700px]">{song.title}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -1979,24 +1970,14 @@
                                     </button>
 
                                     {randomSongs.length > 0 && !isGenerating && (
-                                        <div className="animate-in fade-in duration-500 space-y-4">
-                                            <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
-                                                <label className="block text-[10px] font-black uppercase text-white/70 mb-2 ml-1 tracking-widest">画像に表示するプレイヤー名</label>
-                                                <input 
-                                                    type="text" 
-                                                    placeholder={user?.displayName || "プレイヤー名を入力..."}
-                                                    value={customPlayerName}
-                                                    onChange={(e) => setCustomPlayerName(e.target.value)}
-                                                    className="w-full bg-white/10 border-2 border-white/20 rounded-xl py-2 px-4 text-white font-bold focus:outline-none focus:border-white/50 text-sm mb-3"
-                                                />
-                                                <button 
-                                                    onClick={saveAsImage}
-                                                    className="w-full bg-[#52b788] text-white font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-2"
-                                                >
-                                                    <i className="ph-bold ph-image-square text-lg"></i>
-                                                    専用レイアウトで画像を保存
-                                                </button>
-                                            </div>
+                                        <div className="animate-in fade-in duration-500">
+                                            <button 
+                                                onClick={saveAsImage}
+                                                className="w-full bg-[#52b788] text-white font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-2"
+                                            >
+                                                <i className="ph-bold ph-image-square text-lg"></i>
+                                                結果を画像で保存
+                                            </button>
                                         </div>
                                     )}
 
