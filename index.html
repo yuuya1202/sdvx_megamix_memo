@@ -17,6 +17,8 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- html2canvas for Image Saving -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Firebase SDK (Modular) -->
     <script type="module">
@@ -49,7 +51,7 @@
             height: 100%;
             background: 
                 linear-gradient(rgba(19, 42, 19, 0.75), rgba(19, 42, 19, 0.75)),
-                url('https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg');
+                url('https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -613,7 +615,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
+        const { useState, useMemo, useEffect, useRef } = React;
 
         const firebaseConfig = {
             apiKey: "AIzaSyDSa7sQ4L9w894TSK8RPs4-XdFZ28CUEgA",
@@ -828,6 +830,7 @@
                                         alt="jacket" 
                                         className="border-[3px] w-full h-full object-cover rounded-lg" 
                                         style={{ borderColor: borderColor }}
+                                        crossOrigin="anonymous"
                                         onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                     />
                                 ) : (
@@ -883,7 +886,7 @@
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-4">
                                     <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-label">{song.end_pos || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
                                 </div>
 
@@ -891,8 +894,8 @@
                                     <span className="section-label">第2区間</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">{song.start_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-label">{song.end_pos2 || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                                 </div>
 
@@ -1117,6 +1120,7 @@
                                                                     src={song.jacket} 
                                                                     className="w-12 h-12 border-2 rounded object-cover" 
                                                                     style={{ borderColor: getBorderColor(song.difficult) }}
+                                                                    crossOrigin="anonymous"
                                                                     onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                                                 />
                                                                 <div className="flex-grow min-w-0">
@@ -1208,6 +1212,7 @@
                                                 src={song.jacket} 
                                                 className="w-12 h-12 border-2 rounded object-cover" 
                                                 style={{ borderColor: getBorderColor(song.difficult) }}
+                                                crossOrigin="anonymous"
                                                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                             />
                                             <div className="flex-grow min-w-0">
@@ -1288,6 +1293,7 @@
                                                             alt="jacket" 
                                                             className="border-2 w-full h-full object-cover rounded-md" 
                                                             style={{ borderColor: getBorderColor(s.difficult) }}
+                                                            crossOrigin="anonymous"
                                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                                         />
                                                     </div>
@@ -1349,6 +1355,8 @@
             const [showOnlyMirrors, setShowOnlyMirrors] = useState(false);
             
             const [firebase, setFirebase] = useState(null);
+
+            const randomResultRef = useRef(null);
 
             const getSongId = (song) => `${song.title}_${song.difficult}`;
 
@@ -1615,6 +1623,23 @@
                 setTimeout(() => setIsGenerating(false), 500);
             };
 
+            const saveAsImage = async () => {
+                if (!randomResultRef.current) return;
+                
+                const canvas = await html2canvas(randomResultRef.current, {
+                    useCORS: true,
+                    backgroundColor: "#132a13",
+                    scale: 2,
+                    logging: false,
+                });
+                
+                const image = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                link.href = image;
+                link.download = `sdvx_random_${Date.now()}.png`;
+                link.click();
+            };
+
             const processedSongs = useMemo(() => {
                 return songs.map(s => {
                     let displayCombo = 0;
@@ -1851,6 +1876,16 @@
                                             </>
                                         )}
                                     </button>
+
+                                    {randomSongs.length > 0 && !isGenerating && (
+                                        <button 
+                                            onClick={saveAsImage}
+                                            className="w-full bg-[#52b788] text-white font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm mb-4 flex items-center justify-center gap-2"
+                                        >
+                                            <i className="ph-bold ph-image"></i>
+                                            結果を画像で保存する
+                                        </button>
+                                    )}
 
                                     {user && !user.isAnonymous && (
                                         <div className="mb-4">
@@ -2103,6 +2138,7 @@
                                                             <li>Phosphor Icons (MIT License)</li>
                                                             <li>Firebase SDK (Apache License 2.0)</li>
                                                             <li>Babel (MIT License)</li>
+                                                            <li>html2canvas (MIT License)</li>
                                                         </ul>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用フォント</h4>
@@ -2156,28 +2192,30 @@
                                 {currentPage === "random" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-1">
                                         {randomSongs.length > 0 ? (
-                                            randomSongs.map((song, idx) => (
-                                                <div key={`random-group-${idx}`} className="mb-1">
-                                                    <div className="flex items-center gap-2 mb-0.5 ml-1">
-                                                        <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
-                                                            TRACK {idx + 1}
+                                            <div ref={randomResultRef} className="p-2">
+                                                {randomSongs.map((song, idx) => (
+                                                    <div key={`random-group-${idx}`} className="mb-1">
+                                                        <div className="flex items-center gap-2 mb-0.5 ml-1">
+                                                            <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
+                                                                TRACK {idx + 1}
+                                                            </div>
                                                         </div>
+                                                        <SongCard 
+                                                            key={`random-${getSongId(song)}-${idx}`} 
+                                                            song={song} 
+                                                            isLoggedIn={false}
+                                                            isFavorite={false}
+                                                            onToggleFavorite={() => {}}
+                                                            isMirror={false}
+                                                            onToggleMirror={() => {}}
+                                                            personalMemo={null}
+                                                            onSavePersonalMemo={() => {}}
+                                                            tightMode={true}
+                                                            minimalMode={true}
+                                                        />
                                                     </div>
-                                                    <SongCard 
-                                                        key={`random-${getSongId(song)}-${idx}`} 
-                                                        song={song} 
-                                                        isLoggedIn={false}
-                                                        isFavorite={false}
-                                                        onToggleFavorite={() => {}}
-                                                        isMirror={false}
-                                                        onToggleMirror={() => {}}
-                                                        personalMemo={null}
-                                                        onSavePersonalMemo={() => {}}
-                                                        tightMode={true}
-                                                        minimalMode={true}
-                                                    />
-                                                </div>
-                                            ))
+                                                ))}
+                                            </div>
                                         ) : (
                                             hasGeneratedRandom && !isGenerating && (
                                                 <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
