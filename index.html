@@ -655,15 +655,14 @@
         .export-jackets-row {
             display: flex;
             justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 20px;
-            width: 100%;
+            gap: 32px; /* Increased gap to shrink jackets slightly */
+            margin: 0 40px 20px 40px; /* Added horizontal margin */
+            width: auto;
         }
         .export-jacket-box {
             flex: 1;
             aspect-ratio: 1/1;
-            background: white;
-            border: 6px solid #000;
+            background: transparent;
             border-radius: 16px;
             overflow: hidden;
             position: relative;
@@ -673,22 +672,8 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-        .export-jacket-num {
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: #000;
-            color: #fff;
-            font-size: 24px;
-            font-weight: 900;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom-right-radius: 16px;
-            line-height: 48px; /* Explicit match for vertical centering */
+            border-radius: 16px;
+            box-sizing: border-box;
         }
         .export-info-list {
             display: flex;
@@ -706,7 +691,7 @@
             align-items: center;
             justify-content: space-between;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
-            min-height: 68px; /* Slightly taller for breathing room */
+            min-height: 68px;
         }
         .export-info-main {
             display: flex;
@@ -729,8 +714,8 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.4; /* Fixed for cutting off characters */
-            padding: 4px 0; /* Added space for descenders */
+            line-height: 1.4;
+            padding: 4px 0;
         }
         .export-info-meta {
             display: flex;
@@ -1120,7 +1105,7 @@
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
+        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, isExporting, getSongId, formatLevel, getBorderColor }) => {
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null);
@@ -1182,6 +1167,13 @@
                 setView("list");
             };
 
+            const handleExportClick = () => {
+                const openId = Object.keys(openSetlists).find(id => openSetlists[id]);
+                if (!openId) return;
+                const sl = setlists.find(s => s.id === openId);
+                if (sl) onExport(sl.songs);
+            };
+
             const requestDelete = (id) => {
                 setDeletingId(id);
                 setIsDeleteModalOpen(true);
@@ -1195,7 +1187,7 @@
                 }
             };
 
-            const canSave = editingSetlist && editingSetlist.name.trim() !== "" && editingSetlist.songs.every(id => id !== null);
+            const isAnyOpen = Object.values(openSetlists).some(val => val === true);
 
             const getButtonClass = (bgColor, textColor = "text-black") => `
                 font-black py-2 rounded-xl border-4 border-black 
@@ -1212,9 +1204,21 @@
                                 <i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i>
                                 <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
                             </div>
-                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
-                                <i className="ph-bold ph-plus"></i> 新規
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {isAnyOpen && (
+                                    <button 
+                                        onClick={handleExportClick} 
+                                        disabled={isExporting}
+                                        className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1"
+                                    >
+                                        {isExporting ? <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin"></div> : <i className="ph-bold ph-image"></i>}
+                                        結果を出力
+                                    </button>
+                                )}
+                                <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
+                                    <i className="ph-bold ph-plus"></i> 新規
+                                </button>
+                            </div>
                         </div>
                         
                         {setlists.length === 0 ? (
@@ -1228,7 +1232,11 @@
                                     <div key={sl.id} className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] transition-all">
                                         <div 
                                             className="flex items-center justify-between cursor-pointer" 
-                                            onClick={() => setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}
+                                            onClick={() => setOpenSetlists(prev => {
+                                                const newState = {};
+                                                newState[sl.id] = !prev[sl.id];
+                                                return newState;
+                                            })}
                                         >
                                             <h3 className="text-base font-black text-black">#{idx + 1}　{sl.name}</h3>
                                             <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}>
@@ -1471,7 +1479,7 @@
             
             const [contactLinkModal, setContactLinkModal] = useState({ isOpen: false, url: '', type: '' });
 
-            const [randomSongs, setRandomSongs] = useState([]);
+            const [exportSongs, setExportSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
@@ -1747,38 +1755,44 @@
                 });
 
                 if (filtered.length < 5) {
-                    setRandomSongs([]);
+                    setExportSongs([]);
                 } else {
                     const shuffled = [...filtered].sort(() => 0.5 - Math.random());
-                    setRandomSongs(shuffled.slice(0, 5));
+                    setExportSongs(shuffled.slice(0, 5));
                 }
                 
                 setTimeout(() => setIsGenerating(false), 500);
             };
 
-            const saveRandomAsImage = async () => {
-                if (randomSongs.length === 0) return;
+            const handleExportSetlist = async (songIds) => {
+                const songsToExport = songIds.map(id => songMap[id]).filter(Boolean);
+                if (songsToExport.length === 0) return;
+                
+                setExportSongs(songsToExport);
                 setIsSavingImage(true);
                 
-                try {
-                    const element = document.getElementById('export-container');
-                    const canvas = await html2canvas(element, {
-                        useCORS: true,
-                        allowTaint: false,
-                        scale: 2,
-                        backgroundColor: "#132a13"
-                    });
-                    
-                    const image = canvas.toDataURL("image/png");
-                    const link = document.createElement('a');
-                    link.href = image;
-                    link.download = `SDVX_MEGAMIX_SETLIST_${new Date().getTime()}.png`;
-                    link.click();
-                } catch (error) {
-                    console.error("Image Export Error:", error);
-                } finally {
-                    setIsSavingImage(false);
-                }
+                // Wait for state update and rendering
+                setTimeout(async () => {
+                    try {
+                        const element = document.getElementById('export-container');
+                        const canvas = await html2canvas(element, {
+                            useCORS: true,
+                            allowTaint: false,
+                            scale: 2,
+                            backgroundColor: "#132a13"
+                        });
+                        
+                        const image = canvas.toDataURL("image/png");
+                        const link = document.createElement('a');
+                        link.href = image;
+                        link.download = `SDVX_MEGAMIX_SETLIST_${new Date().getTime()}.png`;
+                        link.click();
+                    } catch (error) {
+                        console.error("Image Export Error:", error);
+                    } finally {
+                        setIsSavingImage(false);
+                    }
+                }, 100);
             };
 
             const processedSongs = useMemo(() => {
@@ -1877,25 +1891,25 @@
                             <div className="export-header">ランダム選曲 結果</div>
                             
                             <div className="export-jackets-row">
-                                {randomSongs.map((song, i) => (
+                                {exportSongs.map((song, i) => (
                                     <div key={`exp-jack-${i}`} className="export-jacket-box">
-                                        <div className="export-jacket-num">{i + 1}</div>
                                         <img 
                                             className="export-jacket-img" 
                                             src={song.jacket} 
+                                            style={{ border: `6px solid ${getBorderColor(song.difficult)}` }}
                                             crossOrigin="anonymous"
                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
                                         />
                                     </div>
                                 ))}
-                                {/* 空スロットの穴埋め (もし5曲未満の場合) */}
-                                {[...Array(Math.max(0, 5 - randomSongs.length))].map((_, i) => (
+                                {/* Empty slot padding */}
+                                {[...Array(Math.max(0, 5 - exportSongs.length))].map((_, i) => (
                                     <div key={`exp-jack-empty-${i}`} className="export-jacket-box opacity-20 border-dashed border-white"></div>
                                 ))}
                             </div>
 
                             <div className="export-info-list">
-                                {randomSongs.map((song, i) => (
+                                {exportSongs.map((song, i) => (
                                     <div key={`exp-info-${i}`} className="export-info-row">
                                         <div className="export-info-main">
                                             <div className="export-info-num">#{i + 1}</div>
@@ -2066,10 +2080,10 @@
                                             )}
                                         </button>
 
-                                        {/* Result Image Save Button */}
-                                        {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
+                                        {/* Result Image Save Button (Now generic export handler) */}
+                                        {hasGeneratedRandom && exportSongs.length > 0 && !isGenerating && (
                                             <button 
-                                                onClick={saveRandomAsImage} 
+                                                onClick={() => handleExportSetlist(exportSongs.map(s => getSongId(s)))} 
                                                 disabled={isSavingImage}
                                                 className="w-full bg-[#d8f3dc] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-sm flex items-center justify-center gap-2"
                                             >
@@ -2078,7 +2092,7 @@
                                                 ) : (
                                                     <i className="ph-bold ph-image"></i>
                                                 )}
-                                                結果を画像で保存する
+                                                結果を出力
                                             </button>
                                         )}
                                     </div>
@@ -2179,6 +2193,8 @@
                                             mirrors={mirrors}
                                             onSave={saveSetlist}
                                             onDelete={deleteSetlist}
+                                            onExport={handleExportSetlist}
+                                            isExporting={isSavingImage}
                                             getSongId={getSongId}
                                             formatLevel={formatLevel}
                                             getBorderColor={getBorderColor}
@@ -2388,8 +2404,8 @@
 
                                 {currentPage === "random" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-1">
-                                        {randomSongs.length > 0 ? (
-                                            randomSongs.map((song, idx) => (
+                                        {exportSongs.length > 0 ? (
+                                            exportSongs.map((song, idx) => (
                                                 <div key={`random-group-${idx}`} className="mb-1">
                                                     <div className="flex items-center gap-2 mb-0.5 ml-1">
                                                         <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
