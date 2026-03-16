@@ -1042,18 +1042,14 @@
                                     <span className="section-label">第1区間</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-4">
-                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">終了位置</p><p className="stat-label">チェイン数</p><p className="stat-value">{song.start_pos || "-"}</p><p className="stat-value">{song.end_pos || "-"}</p><p className="stat-value">{song.combo || "-"}</p></div>
                                 </div>
 
                                 <div className="flex items-center mb-2 text-black">
                                     <span className="section-label">第2区間</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">終了位置</p><p className="stat-label">チェイン数</p><p className="stat-value">{song.start_pos2 || "-"}</p><p className="stat-value">{song.end_pos2 || "-"}</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mb-6">
@@ -1922,7 +1918,7 @@
 
                             <div className="export-info-list">
                                 {randomSongs.map((song, i) => (
-                                    <div key={`exp-info-${i}`} className="export-info-row" style={{ borderLeft: `14px solid ${getBorderColor(song.difficult)}` }}>
+                                    <div key={`exp-info-${i}`} className="export-info-row" style={{ borderLeft: `14px solid #000` }}>
                                         <div className="export-info-main">
                                             <div className="export-info-num">#{i + 1}</div>
                                             <div className="export-info-title">{song.title}</div>
@@ -2081,7 +2077,7 @@
                                             <button 
                                                 onClick={() => setIsExportConfirmOpen(true)} 
                                                 disabled={isSavingImage}
-                                                className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-2"
+                                                className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-2"
                                             >
                                                 {isSavingImage ? (
                                                     <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
