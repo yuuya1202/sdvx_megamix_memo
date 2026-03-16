@@ -614,88 +614,86 @@
         .cyber-export-container {
             width: 1280px;
             height: 720px;
-            background: linear-gradient(135deg, #050f05 0%, #081a08 100%);
-            padding: 30px 40px 90px 40px; /* Reduced top, increased bottom margin */
+            background: linear-gradient(135deg, #020802 0%, #050f05 100%);
+            padding: 20px 60px 40px 60px; /* Adjusted padding to prevent overflow */
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* Shift content up */
+            justify-content: flex-start;
             color: white;
             position: relative;
             overflow: hidden;
-            border: 10px solid #2d6a4f; /* Subtle dark green */
+            border: 10px solid #1b4332;
         }
         .cyber-grid {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background-image: 
-                linear-gradient(rgba(82, 183, 136, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(82, 183, 136, 0.04) 1px, transparent 1px);
-            background-size: 40px 40px;
+                linear-gradient(rgba(82, 183, 136, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(82, 183, 136, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
             pointer-events: none;
+            opacity: 0.5;
         }
         .cyber-scanline {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
             pointer-events: none;
         }
         .cyber-title {
-            font-size: 40px;
+            font-size: 36px;
             font-weight: 900;
             font-style: italic;
             text-transform: uppercase;
             text-align: right;
-            color: #40916c;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-            margin-bottom: 30px;
-            letter-spacing: 0.1em;
-            opacity: 0.8;
+            color: #52b788;
+            text-shadow: 0px 0px 10px rgba(82, 183, 136, 0.6);
+            margin-bottom: 15px;
+            letter-spacing: 0.15em;
         }
         .cyber-jacket-row {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 40px; /* Increased gap */
-            padding: 0 40px; /* Center jackets a bit more */
+            gap: 30px;
+            padding: 0 30px;
             z-index: 10;
-            margin-bottom: 40px;
+            margin-bottom: 25px;
         }
         .cyber-jacket-card {
             aspect-ratio: 1;
             background: rgba(0,0,0,0.9);
             border-radius: 4px;
             overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
-            width: 100%; /* Relative width */
-            max-width: 180px; /* Slightly smaller jacket */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+            width: 100%;
+            max-width: 150px; /* Reduced jacket size */
             margin: 0 auto;
         }
         .cyber-info-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px; /* Tighter gap */
             z-index: 10;
-            padding: 0 20px;
+            padding: 0 10px;
         }
         .cyber-info-bar {
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.95);
             color: black;
-            height: 68px;
-            padding: 0 24px;
+            height: 54px; /* Reduced height */
+            padding: 0 20px;
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* Align contents to left */
-            gap: 20px; /* Gap between segments */
-            border-left: 16px solid #2d6a4f;
-            border-right: 2px solid #000;
-            border-top: 2px solid #000;
-            border-bottom: 2px solid #000;
-            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+            justify-content: flex-start;
+            gap: 15px;
+            border-left: 12px solid #2d6a4f;
+            border-radius: 4px;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.4);
         }
         .cyber-info-track {
             font-weight: 900;
-            font-size: 16px;
+            font-size: 14px;
             color: #2d6a4f;
-            width: 90px;
+            width: 80px;
             flex-shrink: 0;
             border-right: 2px solid rgba(0,0,0,0.1);
             height: 100%;
@@ -704,22 +702,21 @@
         }
         .cyber-info-title {
             font-weight: 900;
-            font-size: 22px;
-            line-height: 1.4;
+            font-size: 18px; /* Slightly smaller font */
+            line-height: 1.2;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            flex-grow: 1; /* Title takes remaining space */
-            padding-bottom: 4px;
+            flex-grow: 1;
         }
         .cyber-info-meta {
             font-weight: 900;
-            font-size: 20px;
+            font-size: 18px;
             display: flex;
-            gap: 16px;
+            gap: 12px;
             flex-shrink: 0;
             align-items: baseline;
-            padding-left: 20px;
+            padding-left: 15px;
         }
     </style>
 </head>
@@ -782,7 +779,7 @@
                         <div className="cyber-grid"></div>
                         <div className="cyber-scanline"></div>
                         
-                        <div className="cyber-title">RANDOM SETLIST RESULT</div>
+                        <div className="cyber-title">ランダム選曲　結果</div>
                         
                         <div className="cyber-jacket-row">
                             {songs.map((s, i) => (
@@ -803,7 +800,7 @@
                                     <div className="cyber-info-track">TRACK #{i + 1}</div>
                                     <div className="cyber-info-title">{s.title}</div>
                                     <div className="cyber-info-meta">
-                                        <span style={{ color: getBorderColor(s.difficult), fontSize: '22px' }}>{s.difficult}</span>
+                                        <span style={{ color: getBorderColor(s.difficult), fontSize: '18px' }}>{s.difficult}</span>
                                         <span>LV {formatLevel(s.level)}</span>
                                     </div>
                                 </div>
@@ -1786,7 +1783,7 @@
                         useCORS: true,
                         allowTaint: true,
                         scale: 2, // High resolution
-                        backgroundColor: "#050f05",
+                        backgroundColor: "#020802",
                         logging: false
                     });
                     const link = document.createElement('a');
