@@ -625,7 +625,8 @@
         const ITEMS_PER_PAGE = 30;
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
-        const RESULT_IMAGE_BG_URL = "https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true";
+        // 背景画像のURLを、表示用ではなくデータ直接参照用のRAW URLに変更（CORS対策）
+        const RESULT_IMAGE_BG_URL = "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -1612,6 +1613,9 @@
                 setIsSavingImage(true);
 
                 try {
+                    // フォントの読み込みを確実に待つ
+                    await document.fonts.ready;
+
                     const canvas = document.createElement('canvas');
                     canvas.width = 1920;
                     canvas.height = 1080;
@@ -1621,8 +1625,12 @@
                         const img = new Image();
                         img.crossOrigin = "anonymous";
                         img.onload = () => resolve(img);
-                        img.onerror = () => reject(new Error(`Failed to load: ${url}`));
-                        img.src = url;
+                        img.onerror = () => {
+                            console.error(`Failed to load image: ${url}`);
+                            reject(new Error(`Failed to load: ${url}`));
+                        };
+                        // キャッシュによるCORSエラーを防ぐためにクエリパラメータを付与
+                        img.src = url.includes('?') ? `${url}&t=${Date.now()}` : `${url}?t=${Date.now()}`;
                     });
 
                     // 画像を一括ロード
@@ -1670,9 +1678,14 @@
 
                         // バーの背景
                         ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-                        ctx.beginPath();
-                        ctx.roundRect(barStartX, y, barWidth, barHeight, 12);
-                        ctx.fill();
+                        if (ctx.roundRect) {
+                            ctx.beginPath();
+                            ctx.roundRect(barStartX, y, barWidth, barHeight, 12);
+                            ctx.fill();
+                        } else {
+                            // roundRect未対応ブラウザ用
+                            ctx.fillRect(barStartX, y, barWidth, barHeight);
+                        }
 
                         // 難易度アクセントバー
                         ctx.fillStyle = diffColor;
@@ -1700,6 +1713,7 @@
                     });
 
                     // ダウンロード処理
+                    // Canvasが汚染されている（CORS許可のない画像を描いた）場合、ここでセキュリティエラーが発生する
                     const dataUrl = canvas.toDataURL("image/png");
                     const link = document.createElement('a');
                     link.download = `sdvx_result_${Date.now()}.png`;
@@ -1708,7 +1722,7 @@
 
                 } catch (error) {
                     console.error("Image generation failed:", error);
-                    setAuthError("画像の生成に失敗しました。時間をおいて再度お試しください。");
+                    setAuthError("画像の生成に失敗しました。画像サーバーの制限やネットワーク環境をご確認ください。");
                 } finally {
                     setIsSavingImage(false);
                 }
