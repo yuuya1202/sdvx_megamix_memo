@@ -7,6 +7,7 @@
     
     <!-- 背景画像のプリロード -->
     <link rel="preload" href="https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true" as="image">
+    <link rel="preload" href="https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true" as="image">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -610,11 +611,13 @@
             box-shadow: 4px 4px 0px #000;
         }
 
-        /* --- Cyber Export Styles (Darker & Refined) --- */
+        /* --- Cyber Export Styles (New Official Background) --- */
         .cyber-export-container {
             width: 1280px;
             height: 720px;
-            background: linear-gradient(135deg, #0a1f0a 0%, #132a13 100%); /* Slightly brighter background */
+            background-image: url('https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true');
+            background-size: cover;
+            background-position: center;
             padding: 20px 60px 40px 60px;
             display: flex;
             flex-direction: column;
@@ -624,21 +627,12 @@
             overflow: hidden;
             border: 10px solid #1b4332;
         }
-        .cyber-grid {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: 
-                linear-gradient(rgba(82, 183, 136, 0.25) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(82, 183, 136, 0.25) 1px, transparent 1px); /* Brighter grid lines */
-            background-size: 40px 40px;
-            pointer-events: none;
-            opacity: 0.8; /* Higher grid opacity */
-        }
         .cyber-scanline {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px);
             pointer-events: none;
+            opacity: 0.5;
         }
         .cyber-title {
             font-size: 36px;
@@ -667,7 +661,7 @@
             overflow: hidden;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
             width: 100%;
-            max-width: 140px; 
+            max-width: 170px; 
             margin: 0 auto;
         }
         .cyber-info-list {
@@ -678,10 +672,10 @@
             padding: 0 10px;
         }
         .cyber-info-bar {
-            background: rgba(255, 255, 255, 0.95);
+            background: #ffffff; 
             color: black;
-            height: 52px;
-            padding: 0 24px;
+            height: 60px; 
+            padding: 0 28px;
             display: flex;
             align-items: center;
             justify-content: flex-start;
@@ -692,9 +686,9 @@
         }
         .cyber-info-track {
             font-weight: 900;
-            font-size: 14px;
+            font-size: 16px; 
             color: #2d6a4f;
-            width: 100px; /* Slightly wider to prevent wrap */
+            width: 110px;
             flex-shrink: 0;
             border-right: 2px solid rgba(0,0,0,0.1);
             height: 100%;
@@ -704,7 +698,7 @@
         }
         .cyber-info-title {
             font-weight: 900;
-            font-size: 18px;
+            font-size: 22px; 
             line-height: 1;
             white-space: nowrap;
             overflow: hidden;
@@ -716,9 +710,9 @@
         }
         .cyber-info-meta {
             font-weight: 900;
-            font-size: 18px;
+            font-size: 22px; 
             display: flex;
-            gap: 16px;
+            gap: 20px;
             flex-shrink: 0;
             align-items: center;
             padding-left: 20px;
@@ -777,13 +771,18 @@
             }
         };
 
+        // --- Cyber Export helper for border color ---
+        const getCyberBorderColor = (difficult) => {
+            if (String(difficult).toUpperCase() === "MXM") return "#ffffff"; // MXMは白
+            return getBorderColor(difficult);
+        };
+
         // --- Cyber Image Export Component ---
         const CyberExportArea = ({ songs, exportRef }) => {
             if (!songs || songs.length === 0) return null;
             return (
                 <div style={{ position: 'absolute', top: '-2000px', left: '-2000px' }}>
                     <div ref={exportRef} className="cyber-export-container">
-                        <div className="cyber-grid"></div>
                         <div className="cyber-scanline"></div>
                         
                         <div className="cyber-title">ランダム選曲　結果</div>
@@ -794,7 +793,7 @@
                                     <img 
                                         src={s.jacket} 
                                         className="w-full h-full object-cover"
-                                        style={{ border: `4px solid ${getBorderColor(s.difficult)}` }}
+                                        style={{ border: `4px solid ${getCyberBorderColor(s.difficult)}` }}
                                         crossOrigin="anonymous"
                                     />
                                 </div>
@@ -807,7 +806,7 @@
                                     <div className="cyber-info-track">TRACK #{i + 1}</div>
                                     <div className="cyber-info-title">{s.title}</div>
                                     <div className="cyber-info-meta">
-                                        <span style={{ color: getBorderColor(s.difficult), fontSize: '18px' }}>{s.difficult}</span>
+                                        <span style={{ color: getBorderColor(s.difficult) }}>{s.difficult}</span>
                                         <span>LV {formatLevel(s.level)}</span>
                                     </div>
                                 </div>
@@ -1051,8 +1050,7 @@
                                     <span className="section-label">第2区間</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">終了位置</p><p className="stat-value">{song.start_pos2 || "-"}</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                                 </div>
 
@@ -2049,7 +2047,7 @@
                                         <button 
                                             onClick={handleExportImage} 
                                             disabled={isExporting}
-                                            className="w-full bg-[#1b4332] text-[#52b788] font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-3 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                            className="w-full bg-[#d8f3dc] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-3 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         >
                                             {isExporting ? (
                                                 <div className="w-5 h-5 border-3 border-black/30 border-t-black rounded-full animate-spin"></div>
