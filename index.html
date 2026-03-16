@@ -645,19 +645,22 @@
             flex-direction: column;
         }
         .export-header {
-            align-self: flex-end; /* 右寄せにする */
-            background: rgba(255, 255, 255, 0.6); /* 薄く背景を引く */
-            padding: 8px 24px;
+            align-self: flex-end; 
+            background: rgba(255, 255, 255, 0.65); /* 背景のみ */
+            padding: 0px 24px 4px 24px; /* 下部パディングを増やして文字を相対的に上に */
             border-radius: 12px;
-            /* border: 4px solid #000; 削除 */
             font-size: 32px;
             font-weight: 900;
             color: #000;
             margin-bottom: 25px;
-            line-height: 1.2;
+            line-height: 1;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            height: 56px; /* 高さを固定して安定させる */
+        }
+        .export-header-text {
+            transform: translateY(-2px); /* 文字をわずかに上に押し上げる */
         }
         .export-jackets-row {
             display: flex;
@@ -1989,7 +1992,9 @@
                             alt="background"
                         />
                         <div className="export-content-wrapper">
-                            <div className="export-header">{exportData.title}</div>
+                            <div className="export-header">
+                                <span className="export-header-text">{exportData.title}</span>
+                            </div>
                             
                             <div className="export-jackets-row">
                                 {exportData.songs.map((song, i) => (
