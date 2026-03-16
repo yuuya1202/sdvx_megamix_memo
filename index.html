@@ -7,8 +7,6 @@
     
     <!-- 背景画像のプリロード -->
     <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg" as="image">
-    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" as="image">
-    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/setlist.png" as="image">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -612,7 +610,7 @@
             box-shadow: 4px 4px 0px #000;
         }
 
-        /* --- Image Export Layout Styles (Fixed for better fit and clarity) --- */
+        /* --- Image Export Layout Styles --- */
         #export-container {
             position: fixed;
             left: -9999px;
@@ -624,7 +622,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 22px 40px 30px 40px; /* Adjusted top padding to move text up */
+            padding: 25px 40px 30px 40px;
             z-index: -100;
         }
         .export-bg {
@@ -650,21 +648,22 @@
             font-size: 38px;
             font-weight: 900;
             color: #000;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-shadow: 2px 2px 0px #fff;
             line-height: 1;
         }
         .export-jackets-row {
             display: flex;
             justify-content: space-between;
-            gap: 32px; /* Increased gap to shrink jackets slightly */
-            margin: 0 40px 20px 40px; /* Added horizontal margin */
-            width: auto;
+            gap: 16px;
+            margin-bottom: 20px;
+            width: 100%;
         }
         .export-jacket-box {
             flex: 1;
             aspect-ratio: 1/1;
-            background: transparent;
+            background: white;
+            border: 6px solid #000;
             border-radius: 16px;
             overflow: hidden;
             position: relative;
@@ -674,8 +673,6 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 16px;
-            box-sizing: border-box;
         }
         .export-info-list {
             display: flex;
@@ -688,7 +685,7 @@
             background: rgba(255, 255, 255, 0.92);
             border: 4px solid #000;
             border-radius: 12px;
-            padding: 6px 24px;
+            padding: 0px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -701,6 +698,7 @@
             gap: 20px;
             flex: 1;
             min-width: 0;
+            height: 100%;
         }
         .export-info-num {
             font-size: 22px;
@@ -716,15 +714,17 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.4;
-            padding: 4px 0;
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            height: 100%;
         }
         .export-info-meta {
             display: flex;
             gap: 24px;
             font-size: 18px;
             font-weight: 900;
-            color: #000; /* Set to pure black */
+            color: #000;
             flex-shrink: 0;
             align-items: center;
         }
@@ -753,10 +753,6 @@
         const ITEMS_PER_PAGE = 30;
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
-
-        // Constants for backgrounds (Direct raw URLs)
-        const DEFAULT_EXPORT_BG = "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png";
-        const SETLIST_EXPORT_BG = "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/setlist.png";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -965,16 +961,16 @@
                                     </div>
                                 )}
                             </div>
-                            <div className="flex-grow min-w-0 flex flex-col justify-center">
+                            <div className="flex-grow min-w-0">
                                 <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
                                 <div className={`flex flex-nowrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-4'} gap-y-0.5 whitespace-nowrap`}>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
-                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none text-black`}>{displayLevel}</span>
+                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none`}>{displayLevel}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
-                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none whitespace-nowrap text-black`}>{song.bpm || "???"}</span>
+                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none whitespace-nowrap`}>{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1111,7 +1107,7 @@
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, isExporting, getSongId, formatLevel, getBorderColor }) => {
+        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null);
@@ -1173,16 +1169,6 @@
                 setView("list");
             };
 
-            const handleExportClick = () => {
-                const openId = Object.keys(openSetlists).find(id => openSetlists[id]);
-                if (!openId) return;
-                const sl = setlists.find(s => s.id === openId);
-                if (sl) {
-                    // Export with setlist name and setlist-specific background
-                    onExport(sl.songs, sl.name, SETLIST_EXPORT_BG);
-                }
-            };
-
             const requestDelete = (id) => {
                 setDeletingId(id);
                 setIsDeleteModalOpen(true);
@@ -1196,7 +1182,7 @@
                 }
             };
 
-            const isAnyOpen = Object.values(openSetlists).some(val => val === true);
+            const canSave = editingSetlist && editingSetlist.name.trim() !== "" && editingSetlist.songs.every(id => id !== null);
 
             const getButtonClass = (bgColor, textColor = "text-black") => `
                 font-black py-2 rounded-xl border-4 border-black 
@@ -1213,21 +1199,9 @@
                                 <i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i>
                                 <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
                             </div>
-                            <div className="flex items-center gap-2">
-                                {isAnyOpen && (
-                                    <button 
-                                        onClick={handleExportClick} 
-                                        disabled={isExporting}
-                                        className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1"
-                                    >
-                                        {isExporting ? <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin"></div> : <i className="ph-bold ph-image"></i>}
-                                        結果を出力
-                                    </button>
-                                )}
-                                <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
-                                    <i className="ph-bold ph-plus"></i> 新規
-                                </button>
-                            </div>
+                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
+                                <i className="ph-bold ph-plus"></i> 新規
+                            </button>
                         </div>
                         
                         {setlists.length === 0 ? (
@@ -1241,11 +1215,7 @@
                                     <div key={sl.id} className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] transition-all">
                                         <div 
                                             className="flex items-center justify-between cursor-pointer" 
-                                            onClick={() => setOpenSetlists(prev => {
-                                                const newState = {};
-                                                newState[sl.id] = !prev[sl.id];
-                                                return newState;
-                                            })}
+                                            onClick={() => setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}
                                         >
                                             <h3 className="text-base font-black text-black">#{idx + 1}　{sl.name}</h3>
                                             <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}>
@@ -1272,7 +1242,7 @@
                                                                     crossOrigin="anonymous"
                                                                     onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                                                 />
-                                                                <div className="flex-grow min-w-0 flex flex-col justify-center">
+                                                                <div className="flex-grow min-w-0">
                                                                     <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                                     <div className="text-[10px] font-black uppercase flex items-center gap-2">
                                                                         <span className="text-black">Lv {formatLevel(song.level)}</span>
@@ -1364,7 +1334,7 @@
                                                 crossOrigin="anonymous"
                                                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                             />
-                                            <div className="flex-grow min-w-0 flex flex-col justify-center">
+                                            <div className="flex-grow min-w-0">
                                                 <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                 <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
                                                     <span className="text-black">Lv {formatLevel(song.level)}</span>
@@ -1396,12 +1366,12 @@
                     <div className="flex gap-4 justify-center mt-2">
                         <button 
                             onClick={handleSave} 
-                            disabled={!editingSetlist.name.trim()}
-                            className={`w-32 font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all ${editingSetlist.name.trim() ? 'bg-[#52b788] text-white active:translate-x-0.5 translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
+                            disabled={!canSave}
+                            className={`w-32 font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all ${canSave ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
                         >
                             保存する
                         </button>
-                        <button onClick={() => setView("list")} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all">
+                        <button onClick={() => setView("list")} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all">
                             キャンセル
                         </button>
                     </div>
@@ -1446,7 +1416,7 @@
                                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                                         />
                                                     </div>
-                                                    <div className="flex-grow min-w-0 text-left flex flex-col justify-center">
+                                                    <div className="flex-grow min-w-0 text-left">
                                                         <div className="text-sm font-black text-black break-words leading-tight">{s.title}</div>
                                                         <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
                                                             <span className="text-black">Lv {formatLevel(s.level)}</span>
@@ -1488,10 +1458,7 @@
             
             const [contactLinkModal, setContactLinkModal] = useState({ isOpen: false, url: '', type: '' });
 
-            const [exportSongs, setExportSongs] = useState([]);
-            const [exportTitle, setExportTitle] = useState("ランダム選曲 結果");
-            const [exportBgUrl, setExportBgUrl] = useState(DEFAULT_EXPORT_BG);
-            
+            const [randomSongs, setRandomSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
@@ -1767,47 +1734,38 @@
                 });
 
                 if (filtered.length < 5) {
-                    setExportSongs([]);
+                    setRandomSongs([]);
                 } else {
                     const shuffled = [...filtered].sort(() => 0.5 - Math.random());
-                    setExportSongs(shuffled.slice(0, 5));
+                    setRandomSongs(shuffled.slice(0, 5));
                 }
                 
                 setTimeout(() => setIsGenerating(false), 500);
             };
 
-            const handleExportSetlist = async (songIds, title = "ランダム選曲 結果", bgUrl = DEFAULT_EXPORT_BG) => {
-                const songsToExport = songIds.map(id => songMap[id]).filter(Boolean);
-                if (songsToExport.length === 0) return;
-                
-                setExportSongs(songsToExport);
-                setExportTitle(title);
-                setExportBgUrl(bgUrl);
+            const saveRandomAsImage = async () => {
+                if (randomSongs.length === 0) return;
                 setIsSavingImage(true);
                 
-                // Wait for state update and rendering
-                setTimeout(async () => {
-                    try {
-                        const element = document.getElementById('export-container');
-                        const canvas = await html2canvas(element, {
-                            useCORS: true,
-                            allowTaint: false,
-                            scale: 2,
-                            backgroundColor: "#132a13",
-                            logging: false
-                        });
-                        
-                        const image = canvas.toDataURL("image/png");
-                        const link = document.createElement('a');
-                        link.href = image;
-                        link.download = `SDVX_MEGAMIX_${title.replace(/\s+/g, '_')}_${new Date().getTime()}.png`;
-                        link.click();
-                    } catch (error) {
-                        console.error("Image Export Error:", error);
-                    } finally {
-                        setIsSavingImage(false);
-                    }
-                }, 150);
+                try {
+                    const element = document.getElementById('export-container');
+                    const canvas = await html2canvas(element, {
+                        useCORS: true,
+                        allowTaint: false,
+                        scale: 2,
+                        backgroundColor: "#132a13"
+                    });
+                    
+                    const image = canvas.toDataURL("image/png");
+                    const link = document.createElement('a');
+                    link.href = image;
+                    link.download = `SDVX_MEGAMIX_SETLIST_${new Date().getTime()}.png`;
+                    link.click();
+                } catch (error) {
+                    console.error("Image Export Error:", error);
+                } finally {
+                    setIsSavingImage(false);
+                }
             };
 
             const processedSongs = useMemo(() => {
@@ -1898,42 +1856,41 @@
                     <div id="export-container" ref={exportRef}>
                         <img 
                             className="export-bg" 
-                            src={exportBgUrl} 
+                            src="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" 
                             crossOrigin="anonymous"
                             alt="background"
                         />
                         <div className="export-content-wrapper">
-                            <div className="export-header">{exportTitle}</div>
+                            <div className="export-header">ランダム選曲 結果</div>
                             
                             <div className="export-jackets-row">
-                                {exportSongs.map((song, i) => (
-                                    <div key={`exp-jack-${i}`} className="export-jacket-box">
+                                {randomSongs.map((song, i) => (
+                                    <div key={`exp-jack-${i}`} className="export-jacket-box" style={{ borderColor: getBorderColor(song.difficult) }}>
                                         <img 
                                             className="export-jacket-img" 
                                             src={song.jacket} 
-                                            style={{ border: `6px solid ${getBorderColor(song.difficult)}` }}
                                             crossOrigin="anonymous"
                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
                                         />
                                     </div>
                                 ))}
-                                {/* Empty slot padding */}
-                                {[...Array(Math.max(0, 5 - exportSongs.length))].map((_, i) => (
+                                {/* 空スロットの穴埋め */}
+                                {[...Array(Math.max(0, 5 - randomSongs.length))].map((_, i) => (
                                     <div key={`exp-jack-empty-${i}`} className="export-jacket-box opacity-20 border-dashed border-white"></div>
                                 ))}
                             </div>
 
                             <div className="export-info-list">
-                                {exportSongs.map((song, i) => (
+                                {randomSongs.map((song, i) => (
                                     <div key={`exp-info-${i}`} className="export-info-row">
                                         <div className="export-info-main">
                                             <div className="export-info-num">#{i + 1}</div>
                                             <div className="export-info-title">{song.title}</div>
                                         </div>
                                         <div className="export-info-meta">
-                                            <span>Lv {formatLevel(song.level)}</span>
+                                            <span style={{ color: '#000' }}>Lv {formatLevel(song.level)}</span>
                                             <span style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
-                                            <span>BPM {song.bpm}</span>
+                                            <span style={{ color: '#000' }}>BPM {song.bpm}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -1981,7 +1938,7 @@
                                         <i className="ph-bold ph-file-text text-base"></i> ガイドライン
                                     </button>
                                     <button onClick={() => setCurrentPage("contact")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "contact" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-chat-centered-text text-base"></i> お問い合わせ・不具合報告
+                                        <i className="ph-bold ph-chat-centered-text text-base"></i> お問い合わせ
                                     </button>
                                     {user && !user.isAnonymous && (
                                         <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
@@ -2067,7 +2024,7 @@
                                         </div>
                                         <div className="space-y-3 pl-1 text-[12px] font-bold">
                                             <p><span className="text-[#ffb703]">■</span> 要予習... 癖のある配置など</p>
-                                            <p><span className="text-[#e63946]">■</span> 高難易度... 難易度の高い配置や大量失点の可能性がある楽曲など</p>
+                                            <p><span className="text-[#e63946]">■</span> 高難易度... 大量失点の可能性がある楽曲など</p>
                                         </div>
                                     </div>
                                 </div>
@@ -2095,10 +2052,9 @@
                                             )}
                                         </button>
 
-                                        {/* Result Image Save Button */}
-                                        {hasGeneratedRandom && exportSongs.length > 0 && !isGenerating && (
+                                        {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
                                             <button 
-                                                onClick={() => handleExportSetlist(exportSongs.map(s => getSongId(s)))} 
+                                                onClick={saveRandomAsImage} 
                                                 disabled={isSavingImage}
                                                 className="w-full bg-[#d8f3dc] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-sm flex items-center justify-center gap-2"
                                             >
@@ -2107,7 +2063,7 @@
                                                 ) : (
                                                     <i className="ph-bold ph-image"></i>
                                                 )}
-                                                結果を出力
+                                                結果を画像で保存する
                                             </button>
                                         )}
                                     </div>
@@ -2208,8 +2164,6 @@
                                             mirrors={mirrors}
                                             onSave={saveSetlist}
                                             onDelete={deleteSetlist}
-                                            onExport={handleExportSetlist}
-                                            isExporting={isSavingImage}
                                             getSongId={getSongId}
                                             formatLevel={formatLevel}
                                             getBorderColor={getBorderColor}
@@ -2223,22 +2177,17 @@
                                             <i className="ph-fill ph-chat-centered-text text-3xl text-[#52b788]"></i>
                                             <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">お問い合わせ</h2>
                                         </div>
-
                                         <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
                                             <p className="text-[13px] font-black leading-relaxed">
-                                                本サービスに関するご質問、不具合報告、楽曲情報の誤り、または改善のご提案などがございましたら、以下のいずれかの方法でご連絡をお願いいたします。
+                                                ご質問、不具合報告、改善のご提案などは以下の方法でご連絡をお願いいたします。
                                             </p>
                                         </div>
-
                                         <div className="space-y-4">
                                             <div className="contact-method-card">
                                                 <div className="flex items-center gap-2">
                                                     <i className="ph-fill ph-x-logo text-xl text-black"></i>
-                                                    <h3 className="text-sm font-black text-black">代表者へX(旧Twitter)で連絡</h3>
+                                                    <h3 className="text-sm font-black text-black">代表者へXで連絡</h3>
                                                 </div>
-                                                <p className="text-xs font-bold text-gray-600 leading-relaxed">
-                                                    代表者のアカウント(@YuSDVX)へ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。
-                                                </p>
                                                 <button 
                                                     onClick={() => setContactLinkModal({ isOpen: true, url: REPRESENTATIVE_X_URL, type: 'x' })}
                                                     className="link-button chart mt-2"
@@ -2246,15 +2195,11 @@
                                                     <i className="ph-bold ph-paper-plane-tilt text-lg"></i>DMを送る
                                                 </button>
                                             </div>
-
                                             <div className="contact-method-card">
                                                 <div className="flex items-center gap-2">
                                                     <i className="ph-fill ph-file-text text-xl text-black"></i>
                                                     <h3 className="text-sm font-black text-black">専用フォームから送信</h3>
                                                 </div>
-                                                <p className="text-xs font-bold text-gray-600 leading-relaxed">
-                                                    Googleフォームよりお問い合わせ内容を送信いただけます。SNSアカウントをお持ちでない方はこちらをご利用ください。
-                                                </p>
                                                 <button 
                                                     onClick={() => setContactLinkModal({ isOpen: true, url: CONTACT_FORM_URL, type: 'contact' })}
                                                     className="link-button video mt-2"
@@ -2263,11 +2208,8 @@
                                                 </button>
                                             </div>
                                         </div>
-
                                         <div className="mt-10 flex justify-center">
-                                            <button onClick={() => setCurrentPage("main")} className="page-btn">
-                                                メインページに戻る
-                                            </button>
+                                            <button onClick={() => setCurrentPage("main")} className="page-btn">メインページに戻る</button>
                                         </div>
                                     </div>
                                 )}
@@ -2278,111 +2220,40 @@
                                             <i className="ph-fill ph-file-text text-3xl text-blue-400"></i>
                                             <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ガイドライン</h2>
                                         </div>
-                                        
-                                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md mb-4 text-white">
-                                            <p className="text-[11px] font-black leading-relaxed">
-                                                本内容に関するお問い合わせは「お問い合わせ・不具合報告」ページからお願いいたします。
-                                            </p>
-                                        </div>
-
                                         <div className="mb-4">
                                             <div className="toggle-btn-group">
                                                 <button onClick={() => setTermsTab("terms")} className={`toggle-btn-small ${termsTab === "terms" ? 'active' : ''}`}>利用規約</button>
-                                                <button onClick={() => setTermsTab("privacy")} className={`toggle-btn-small ${termsTab === "privacy" ? 'active' : ''}`}>プライバシーポリシー</button>
+                                                <button onClick={() => setTermsTab("privacy")} className={`toggle-btn-small ${termsTab === "privacy" ? 'active' : ''}`}>プライバシー</button>
                                                 <button onClick={() => setTermsTab("credits")} className={`toggle-btn-small ${termsTab === "credits" ? 'active' : ''}`}>クレジット</button>
                                             </div>
                                         </div>
-
                                         <div className="bg-white border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_#000]">
                                             <div className="space-y-4 text-sm font-bold leading-relaxed text-black">
                                                 {termsTab === "terms" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">利用規約</h3>
-                                                        
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">非公式サービスについて</h4>
-                                                        <p>本サイトは非公式のファンサイトであり、株式会社コナミアミューズメント、および株式会社コナミデジタルエンタテインメントとは一切関係がありません。</p>
-                                                        
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">知的財産権の帰属</h4>
-                                                        <p>本サービス内で使用されている一部のジャケット画像等の知的財産権は、すべて各権利所有者に帰属します。権利者様からの申し立てがあった場合、速やかに削除等の対応を行います。</p>
-                                                        
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">サービスの中断・終了</h4>
-                                                        <p>予告なくサービスの内容変更、運用の中断、または終了する可能性があります。これらによってユーザーに生じた不利益や損害について、運営側は一切の責任を負いません。</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">免責事項・トラブルについて</h4>
-                                                        <p>本サービスのご利用中にユーザー間で発生したトラブルについて、運営側は一切の責任を負いません。</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">保存データに関する注意</h4>
-                                                        <p>保存された自分用メモ、セトリ、お気に入り等のデータは、システムの不具合、メンテナンス、またはサービス終了に伴い消失する可能性があります。データの永久的な保持は保証いたしません。</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">ログイン情報の管理</h4>
-                                                        <p>Googleログイン等の認証情報の管理はユーザー自身の責任で行ってください。運営側でユーザーのパスワードを保持することはありません。</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">禁止事項</h4>
-                                                        <p>サーバーに過度な負荷をかける行為（自動プログラムによる取得など）や、公序良俗に反する内容をメモやセトリ名に登録する行為を禁止します。</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">情報の正確性について</h4>
-                                                        <p>提供する情報の正確性には細心の注意を払っていますが、手動入力による誤りが含まれる可能性があります。情報の利用はユーザー自身の判断で行ってください。</p>
+                                                        <p>本サイトは非公式のファンサイトです。株式会社コナミアミューズメント様とは一切関係がありません。</p>
                                                     </div>
                                                 )}
-                                                
                                                 {termsTab === "privacy" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">プライバシーポリシー</h3>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">情報の取得について</h4>
-                                                        <p>本サービスでは、Googleログインの際に、ユーザーの識別、およびデータの紐付けを目的として、Googleアカウントに登録されているユーザー名、メールアドレス、プロフィール画像、およびサービス固有の識別子（UID）を取得します。</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">情報の利用目的</h4>
-                                                        <p>取得した情報は、以下の目的でのみ利用します。<br/>1.ユーザーの認証、および本人確認のため<br/>2.ユーザーが作成したデータ（メモ、セトリ、お気に入り等）をサーバーに保存し、異なるデバイス間で同期するため</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">データの保存と管理</h4>
-                                                        <p>本サービスでは、Googleが提供する Firebase（Firestore）を利用してデータを保存・管理しています。ユーザーのパスワードを本サービス側で直接取得・保持することはありません。</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">第三者への情報提供</h4>
-                                                        <p>取得した個人情報を、法令に基づく場合を除き、ユーザーの同意なく第三者に提供することはありません。</p>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">クッキー（Cookie）等の利用</h4>
-                                                        <p>本サービスでは、ログイン状態の保持や利便性の向上のため、Cookieまたはそれに準ずる技術を利用する場合があります。</p>
+                                                        <p>取得した情報はユーザー認証とデータ同期の目的でのみ使用されます。</p>
                                                     </div>
                                                 )}
-
                                                 {termsTab === "credits" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">クレジット</h3>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">運営メンバー</h4>
-                                                        <ul className="list-disc list-inside space-y-1">
+                                                        <ul className="list-disc list-inside">
                                                             <li>代表：悠 (@YuSDVX)</li>
-                                                            <li>開発＆運営：Yuya_M (@Yuuya1202)</li>
-                                                            <li>動画編集：加藤 (@katosv)</li>
-                                                            <li>データ協力：KAME (@kame_ver2)</li>
-                                                            <li>データ協力：えーこぱふ (@eikopaf)</li>
-                                                        </ul>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用ライブラリ</h4>
-                                                        <p className="text-xs">本サービスは以下のオープンソースライブラリを使用しています。</p>
-                                                        <ul className="list-disc list-inside space-y-1 text-xs">
-                                                            <li>React (MIT License)</li>
-                                                            <li>Tailwind CSS (MIT License)</li>
-                                                            <li>Phosphor Icons (MIT License)</li>
-                                                            <li>Firebase SDK (Apache License 2.0)</li>
-                                                            <li>Babel (MIT License)</li>
-                                                        </ul>
-
-                                                        <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用フォント</h4>
-                                                        <ul className="list-disc list-inside space-y-1 text-xs">
-                                                            <li>M PLUS Rounded 1c (SIL Open Font License)</li>
+                                                            <li>開発：Yuya_M (@Yuuya1202)</li>
                                                         </ul>
                                                     </div>
                                                 )}
-                                                
-                                                <p className="mt-8 text-[10px] text-gray-400 text-center italic">※記載内容は予告なく更新される場合があります。</p>
                                             </div>
                                         </div>
                                         <div className="mt-8 flex justify-center">
-                                            <button onClick={() => setCurrentPage("main")} className="page-btn">
-                                                メインページに戻る
-                                            </button>
+                                            <button onClick={() => setCurrentPage("main")} className="page-btn">メインページに戻る</button>
                                         </div>
                                     </div>
                                 )}
@@ -2401,7 +2272,7 @@
                                             return (
                                                 <div key={idx} className="ranking-row">
                                                     <div className={`rank-number ${isTopThree ? `rank-${currentRank}` : ''}`}>#{currentRank}</div>
-                                                    <div className="flex-grow min-w-0 px-2 flex flex-col justify-center">
+                                                    <div className="flex-grow min-w-0 px-2">
                                                         <p className="text-sm font-black leading-tight break-words">{song.title}</p>
                                                         <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5">
                                                             Lv {formatLevel(song.level)} <span style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
@@ -2419,8 +2290,8 @@
 
                                 {currentPage === "random" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-1">
-                                        {exportSongs.length > 0 ? (
-                                            exportSongs.map((song, idx) => (
+                                        {randomSongs.length > 0 ? (
+                                            randomSongs.map((song, idx) => (
                                                 <div key={`random-group-${idx}`} className="mb-1">
                                                     <div className="flex items-center gap-2 mb-0.5 ml-1">
                                                         <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
@@ -2447,7 +2318,6 @@
                                                 <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
                                                     <i className="ph-bold ph-dice-five text-4xl text-white/30 mb-4 block"></i>
                                                     <p className="font-black text-white/50 text-sm">条件に合う曲が不足しています</p>
-                                                    <p className="text-white/40 text-[10px] mt-1">レベルまたはお気に入り設定を確認してください（5曲以上必要）</p>
                                                 </div>
                                             )
                                         )}
