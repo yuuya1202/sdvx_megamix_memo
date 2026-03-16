@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDVX MEGAMIX_Memo</title>
     
-    <!-- 背景画像のプリロード（URLをraw形式に変更） -->
+    <!-- 背景画像のプリロード -->
     <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg" as="image">
+    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" as="image">
+    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/setlist.png" as="image">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -752,9 +754,9 @@
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
 
-        // Constants for backgrounds
+        // Constants for backgrounds (Direct raw URLs)
         const DEFAULT_EXPORT_BG = "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png";
-        const SETLIST_EXPORT_BG = "https://github.com/yuuya1202/image_Setlist_Background/blob/main/setlist.png?raw=true";
+        const SETLIST_EXPORT_BG = "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/setlist.png";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -1791,7 +1793,8 @@
                             useCORS: true,
                             allowTaint: false,
                             scale: 2,
-                            backgroundColor: "#132a13"
+                            backgroundColor: "#132a13",
+                            logging: false
                         });
                         
                         const image = canvas.toDataURL("image/png");
@@ -1804,7 +1807,7 @@
                     } finally {
                         setIsSavingImage(false);
                     }
-                }, 100);
+                }, 150);
             };
 
             const processedSongs = useMemo(() => {
