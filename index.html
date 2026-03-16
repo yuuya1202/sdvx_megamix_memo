@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDVX MEGAMIX_Memo</title>
     
-    <!-- 背景画像のプリロードを追加 -->
+    <!-- 背景画像のプリロード -->
     <link rel="preload" href="https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true" as="image">
 
     <!-- Tailwind CSS -->
@@ -17,7 +17,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- html2canvas for Image Saving -->
+    <!-- html2canvas (For image export) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Firebase SDK (Modular) -->
@@ -610,98 +610,93 @@
             box-shadow: 4px 4px 0px #000;
         }
 
-        /* --- Image Export Template Styles (16:9) --- */
-        .export-container {
-            position: absolute;
-            left: -9999px;
-            width: 1200px;
-            height: 675px;
-            background-color: #132a13;
-            background-image: linear-gradient(135deg, #132a13 0%, #051a05 100%);
-            color: white;
-            overflow: hidden;
-            padding: 40px 60px;
+        /* --- Cyber Export Styles --- */
+        .cyber-export-container {
+            width: 1280px;
+            height: 720px;
+            background: linear-gradient(135deg, #050f05 0%, #0a1f0a 100%);
+            padding: 40px;
             display: flex;
             flex-direction: column;
-        }
-        .export-grid-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(82, 183, 136, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(82, 183, 136, 0.08) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: 0;
-        }
-        .export-diamond {
-            width: 40px;
-            height: 40px;
-            transform: rotate(45deg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid #fff;
-            background: rgba(255,255,255,0.1);
-            flex-shrink: 0;
-        }
-        .export-diamond > span {
-            transform: rotate(-45deg);
-            font-size: 20px;
-            font-weight: 900;
-            color: #fff;
-        }
-        .export-glow-text {
-            color: #fff;
-            text-shadow: 0 0 15px rgba(82, 183, 136, 0.6);
-        }
-        .export-jacket {
-            width: 170px;
-            height: 170px;
-            border: 4px solid white;
-            border-radius: 16px;
+            justify-content: space-between;
+            color: white;
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-            background: #222;
+            border: 8px solid #00ff00;
         }
-        .export-row {
-            background: rgba(255, 255, 255, 0.1);
-            border-left: 8px solid #52b788;
-            padding: 10px 24px;
-            border-radius: 4px 20px 20px 4px;
-            height: 72px;
+        .cyber-grid {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .cyber-scanline {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
+            pointer-events: none;
+        }
+        .cyber-title {
+            font-size: 48px;
+            font-weight: 900;
+            font-style: italic;
+            text-transform: uppercase;
+            text-align: right;
+            color: #00ff00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        .cyber-jacket-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            z-index: 10;
+        }
+        .cyber-jacket-card {
+            aspect-ratio: 1;
+            background: rgba(0,0,0,0.5);
+            border: 4px solid #fff;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cyber-info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+        }
+        .cyber-info-bar {
+            background: rgba(255, 255, 255, 0.9);
+            color: black;
+            height: 56px;
+            padding: 0 20px;
             display: flex;
             align-items: center;
-            gap: 24px;
-            margin-bottom: 12px;
+            justify-content: space-between;
+            border-left: 12px solid #00ff00;
+            border-right: 4px solid #000;
+            border-top: 4px solid #000;
+            border-bottom: 4px solid #000;
+            box-shadow: 4px 4px 0px rgba(0, 255, 0, 0.5);
         }
-        .export-title {
-            font-size: 28px;
+        .cyber-info-title {
             font-weight: 900;
-            color: #fff;
+            font-size: 20px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            flex-grow: 1;
+            max-width: 800px;
         }
-        .export-diff-badge {
-            font-size: 20px;
+        .cyber-info-meta {
             font-weight: 900;
-            letter-spacing: 0.1em;
+            font-size: 18px;
+            display: flex;
+            gap: 20px;
             flex-shrink: 0;
-            min-width: 80px;
-            text-align: right;
-        }
-        .export-level-num {
-            font-size: 42px;
-            font-weight: 900;
-            flex-shrink: 0;
-            min-width: 100px;
-            text-align: right;
-            color: #fff;
-            line-height: 1;
         }
     </style>
 </head>
@@ -734,15 +729,6 @@
         const LV19_LIST = Array.from({length: 10}, (_, i) => `19.${i}`);
         const LV20_LIST = Array.from({length: 10}, (_, i) => `20.${i}`);
 
-        // 難易度表記を半角大文字に統一するユーティリティ
-        const normalizeDifficulty = (diff) => {
-            if (!diff) return "";
-            return String(diff)
-                .replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
-                .replace(/\s/g, "")
-                .toUpperCase();
-        };
-
         const formatLevel = (lv) => {
             const lvStr = String(lv || "");
             if (["17", "18", "19", "20"].includes(lvStr)) return lvStr + ".0";
@@ -750,7 +736,7 @@
         };
 
         const getBorderColor = (difficult) => {
-            const diff = normalizeDifficulty(difficult);
+            const diff = String(difficult || "").toUpperCase();
             switch(diff) {
                 case "MXM": return "#000000";
                 case "EXH": return "#ef4444";
@@ -762,6 +748,46 @@
                 case "ULT": return "#ffff00"; 
                 default: return "#000000";
             }
+        };
+
+        // --- Cyber Image Export Component ---
+        const CyberExportArea = ({ songs, exportRef }) => {
+            if (!songs || songs.length === 0) return null;
+            return (
+                <div style={{ position: 'absolute', top: '-2000px', left: '-2000px' }}>
+                    <div ref={exportRef} className="cyber-export-container">
+                        <div className="cyber-grid"></div>
+                        <div className="cyber-scanline"></div>
+                        
+                        <div className="cyber-title">ランダム選曲　結果</div>
+                        
+                        <div className="cyber-jacket-row">
+                            {songs.map((s, i) => (
+                                <div key={i} className="cyber-jacket-card">
+                                    <img 
+                                        src={s.jacket} 
+                                        className="w-full h-full object-cover"
+                                        style={{ border: `4px solid ${getBorderColor(s.difficult)}` }}
+                                        crossOrigin="anonymous"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="cyber-info-list">
+                            {songs.map((s, i) => (
+                                <div key={i} className="cyber-info-bar">
+                                    <div className="cyber-info-title">{s.title}</div>
+                                    <div className="cyber-info-meta">
+                                        <span style={{ color: getBorderColor(s.difficult) }}>{s.difficult}</span>
+                                        <span>LV {formatLevel(s.level)}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
         };
 
         const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type }) => {
@@ -933,8 +959,8 @@
                                         alt="jacket" 
                                         className="border-[3px] w-full h-full object-cover rounded-lg" 
                                         style={{ borderColor: borderColor }}
-                                        crossOrigin="anonymous"
                                         onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                        crossOrigin="anonymous"
                                     />
                                 ) : (
                                     <div 
@@ -946,7 +972,7 @@
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words text-black`}>{song.title}</h3>
+                                <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
                                 <div className={`flex flex-nowrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-4'} gap-y-0.5 whitespace-nowrap`}>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
@@ -989,7 +1015,7 @@
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-4">
                                     <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-label">{song.end_pos || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
                                 </div>
 
@@ -997,8 +1023,8 @@
                                     <span className="section-label">第2区間</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 mb-5">
-                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-label">{song.start_pos2 || "-"}</p></div>
-                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-label">{song.end_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                    <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                     <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                                 </div>
 
@@ -1223,8 +1249,8 @@
                                                                     src={song.jacket} 
                                                                     className="w-12 h-12 border-2 rounded object-cover" 
                                                                     style={{ borderColor: getBorderColor(song.difficult) }}
-                                                                    crossOrigin="anonymous"
                                                                     onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                                                    crossOrigin="anonymous"
                                                                 />
                                                                 <div className="flex-grow min-w-0">
                                                                     <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
@@ -1315,8 +1341,8 @@
                                                 src={song.jacket} 
                                                 className="w-12 h-12 border-2 rounded object-cover" 
                                                 style={{ borderColor: getBorderColor(song.difficult) }}
-                                                crossOrigin="anonymous"
                                                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                                crossOrigin="anonymous"
                                             />
                                             <div className="flex-grow min-w-0">
                                                 <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
@@ -1396,8 +1422,8 @@
                                                             alt="jacket" 
                                                             className="border-2 w-full h-full object-cover rounded-md" 
                                                             style={{ borderColor: getBorderColor(s.difficult) }}
-                                                            crossOrigin="anonymous"
                                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                                            crossOrigin="anonymous"
                                                         />
                                                     </div>
                                                     <div className="flex-grow min-w-0 text-left">
@@ -1444,6 +1470,7 @@
 
             const [randomSongs, setRandomSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
+            const [isExporting, setIsExporting] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
 
@@ -1458,10 +1485,9 @@
             const [showOnlyMirrors, setShowOnlyMirrors] = useState(false);
             
             const [firebase, setFirebase] = useState(null);
+            const exportRef = useRef(null);
 
-            const shareTemplateRef = useRef(null);
-
-            const getSongId = (song) => `${song.title}_${normalizeDifficulty(song.difficult)}`;
+            const getSongId = (song) => `${song.title}_${song.difficult}`;
 
             const songMap = useMemo(() => {
                 const map = {};
@@ -1726,23 +1752,28 @@
                 setTimeout(() => setIsGenerating(false), 500);
             };
 
-            const saveAsImage = async () => {
-                if (!shareTemplateRef.current) return;
-                
-                // レンダリング設定の最適化
-                const canvas = await html2canvas(shareTemplateRef.current, {
-                    useCORS: true,
-                    scale: 1.25, // 高画質すぎない適度なサイズに調整
-                    logging: false,
-                    allowTaint: true,
-                    backgroundColor: '#132a13'
-                });
-                
-                const image = canvas.toDataURL("image/jpeg", 0.85); // JPEG形式で容量削減
-                const link = document.createElement("a");
-                link.href = image;
-                link.download = `sdvx_random_${Date.now()}.jpg`;
-                link.click();
+            const handleExportImage = async () => {
+                if (!exportRef.current || isExporting) return;
+                setIsExporting(true);
+                try {
+                    // Give a small delay to ensure images are ready
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    const canvas = await html2canvas(exportRef.current, {
+                        useCORS: true,
+                        allowTaint: true,
+                        scale: 2, // High resolution
+                        backgroundColor: "#050f05"
+                    });
+                    const link = document.createElement('a');
+                    link.download = `MEGAMIX_RANDOM_${Date.now()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } catch (err) {
+                    console.error("Export Error:", err);
+                    setAuthError("画像の書き出しに失敗しました");
+                } finally {
+                    setIsExporting(false);
+                }
             };
 
             const processedSongs = useMemo(() => {
@@ -1829,62 +1860,6 @@
 
             return (
                 <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
-                    {/* --- Secret Export Template (16:9 Optimized) --- */}
-                    <div ref={shareTemplateRef} className="export-container">
-                        <div className="export-grid-bg"></div>
-                        
-                        <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex justify-start items-center mb-8">
-                                <h1 className="text-5xl font-black italic tracking-tighter uppercase export-glow-text">
-                                    ランダム選曲結果
-                                </h1>
-                            </div>
-
-                            <div className="grid grid-cols-5 gap-6 mb-10 px-2">
-                                {randomSongs.map((song, idx) => (
-                                    <div key={idx} className="flex flex-col items-center">
-                                        <div 
-                                            className="export-jacket"
-                                            style={{ borderColor: getBorderColor(song.difficult) === "#000000" ? "#fff" : getBorderColor(song.difficult) }}
-                                        >
-                                            <img src={song.jacket} className="w-full h-full object-cover" crossOrigin="anonymous" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="flex flex-col flex-grow">
-                                {randomSongs.map((song, idx) => {
-                                    const diff = normalizeDifficulty(song.difficult);
-                                    const diffColor = diff === 'MXM' ? '#fff' : getBorderColor(song.difficult);
-                                    return (
-                                        <div key={idx} className="export-row">
-                                            <div className="export-diamond">
-                                                <span>{idx + 1}</span>
-                                            </div>
-                                            <div className="export-title">{song.title}</div>
-                                            <div className="export-diff-badge" style={{ color: diffColor }}>
-                                                {diff}
-                                            </div>
-                                            <div className="export-level-num">
-                                                {formatLevel(song.level)}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="mt-auto flex justify-between items-end border-t border-white/10 pt-4">
-                                <div>
-                                    <p className="text-[11px] font-black uppercase tracking-widest text-[#52b788]">Generated by MEGAMIX.MEMO</p>
-                                </div>
-                                <h2 className="text-xl font-black italic tracking-tighter uppercase text-white">
-                                    SOUND VOLTEX MEGAMIX BATTLE
-                                </h2>
-                            </div>
-                        </div>
-                    </div>
-
                     {authError && (
                         <div className="error-toast" onClick={() => setAuthError(null)}>
                             <div className="flex flex-col items-center gap-2">
@@ -1894,6 +1869,9 @@
                             </div>
                         </div>
                     )}
+
+                    {/* Image Export Area (Hidden) */}
+                    <CyberExportArea songs={randomSongs} exportRef={exportRef} />
 
                     <div className="fixed top-4 left-4 z-50">
                         <div className="nav-dropdown">
@@ -2023,7 +2001,6 @@
                                         <i className="ph-fill ph-shuffle text-3xl text-[#e9edc9]"></i>
                                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ランダム選曲</h2>
                                     </div>
-                                    
                                     <button 
                                         onClick={generateRandomSongs} 
                                         disabled={isGenerating}
@@ -2039,20 +2016,25 @@
                                         )}
                                     </button>
 
-                                    {randomSongs.length > 0 && !isGenerating && (
-                                        <div className="animate-in fade-in duration-500">
-                                            <button 
-                                                onClick={saveAsImage}
-                                                className="w-full bg-[#52b788] text-white font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-2"
-                                            >
-                                                <i className="ph-bold ph-image-square text-lg"></i>
-                                                結果を画像で保存
-                                            </button>
-                                        </div>
+                                    {randomSongs.length > 0 && (
+                                        <button 
+                                            onClick={handleExportImage} 
+                                            disabled={isExporting}
+                                            className="w-full bg-[#00ff00] text-black font-black py-3 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-3 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                        >
+                                            {isExporting ? (
+                                                <div className="w-5 h-5 border-3 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                            ) : (
+                                                <>
+                                                    <i className="ph-bold ph-image-square text-2xl"></i>
+                                                    結果を画像で出力
+                                                </>
+                                            )}
+                                        </button>
                                     )}
 
                                     {user && !user.isAnonymous && (
-                                        <div className="mt-4">
+                                        <div className="mb-4">
                                             <div className="toggle-btn-group">
                                                 <button onClick={() => setRandomPoolFilter("all")} className={`toggle-btn-small ${randomPoolFilter === "all" ? 'active' : ''}`}>すべて</button>
                                                 <button onClick={() => setRandomPoolFilter("fav")} className={`toggle-btn-small ${randomPoolFilter === "fav" ? 'active' : ''}`}>お気に入りのみ</button>
@@ -2340,7 +2322,7 @@
                                                     <div className="flex-grow min-w-0 px-2">
                                                         <p className="text-sm font-black leading-tight break-words">{song.title}</p>
                                                         <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5">
-                                                            Lv {formatLevel(song.level)} <span style={{ color: getBorderColor(song.difficult) }}>{normalizeDifficulty(song.difficult)}</span>
+                                                            Lv {formatLevel(song.level)} <span style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
                                                         </p>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
@@ -2356,30 +2338,28 @@
                                 {currentPage === "random" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-1">
                                         {randomSongs.length > 0 ? (
-                                            <div className="p-2">
-                                                {randomSongs.map((song, idx) => (
-                                                    <div key={`random-group-${idx}`} className="mb-1">
-                                                        <div className="flex items-center gap-2 mb-0.5 ml-1">
-                                                            <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
-                                                                TRACK {idx + 1}
-                                                            </div>
+                                            randomSongs.map((song, idx) => (
+                                                <div key={`random-group-${idx}`} className="mb-1">
+                                                    <div className="flex items-center gap-2 mb-0.5 ml-1">
+                                                        <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
+                                                            TRACK {idx + 1}
                                                         </div>
-                                                        <SongCard 
-                                                            key={`random-${getSongId(song)}-${idx}`} 
-                                                            song={song} 
-                                                            isLoggedIn={false}
-                                                            isFavorite={false}
-                                                            onToggleFavorite={() => {}}
-                                                            isMirror={false}
-                                                            onToggleMirror={() => {}}
-                                                            personalMemo={null}
-                                                            onSavePersonalMemo={() => {}}
-                                                            tightMode={true}
-                                                            minimalMode={true}
-                                                        />
                                                     </div>
-                                                ))}
-                                            </div>
+                                                    <SongCard 
+                                                        key={`random-${getSongId(song)}-${idx}`} 
+                                                        song={song} 
+                                                        isLoggedIn={false}
+                                                        isFavorite={false}
+                                                        onToggleFavorite={() => {}}
+                                                        isMirror={false}
+                                                        onToggleMirror={() => {}}
+                                                        personalMemo={null}
+                                                        onSavePersonalMemo={() => {}}
+                                                        tightMode={true}
+                                                        minimalMode={true}
+                                                    />
+                                                </div>
+                                            ))
                                         ) : (
                                             hasGeneratedRandom && !isGenerating && (
                                                 <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
