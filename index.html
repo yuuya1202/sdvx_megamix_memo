@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDVX MEGAMIX_Memo</title>
     
-    <!-- 背景画像のプリロード -->
-    <link rel="preload" href="https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true" as="image">
+    <!-- 背景画像のプリロード（URLをraw形式に変更） -->
+    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg" as="image">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -51,7 +51,7 @@
             height: 100%;
             background: 
                 linear-gradient(rgba(19, 42, 19, 0.75), rgba(19, 42, 19, 0.75)),
-                url('https://github.com/yuuya1202/image/blob/main/IMG_1788.jpg?raw=true');
+                url('https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -893,6 +893,7 @@
                                         alt="jacket" 
                                         className="border-[3px] w-full h-full object-cover rounded-lg" 
                                         style={{ borderColor: borderColor }}
+                                        crossOrigin="anonymous"
                                         onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                     />
                                 ) : (
@@ -1182,6 +1183,7 @@
                                                                     src={song.jacket} 
                                                                     className="w-12 h-12 border-2 rounded object-cover" 
                                                                     style={{ borderColor: getBorderColor(song.difficult) }}
+                                                                    crossOrigin="anonymous"
                                                                     onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                                                 />
                                                                 <div className="flex-grow min-w-0">
@@ -1273,6 +1275,7 @@
                                                 src={song.jacket} 
                                                 className="w-12 h-12 border-2 rounded object-cover" 
                                                 style={{ borderColor: getBorderColor(song.difficult) }}
+                                                crossOrigin="anonymous"
                                                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                             />
                                             <div className="flex-grow min-w-0">
@@ -1353,6 +1356,7 @@
                                                             alt="jacket" 
                                                             className="border-2 w-full h-full object-cover rounded-md" 
                                                             style={{ borderColor: getBorderColor(s.difficult) }}
+                                                            crossOrigin="anonymous"
                                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
                                                         />
                                                     </div>
@@ -1796,7 +1800,7 @@
                     <div id="export-container" ref={exportRef}>
                         <img 
                             className="export-bg" 
-                            src="https://github.com/yuuya1202/image_Setlist_Background/blob/main/image_Setlist_Background.png?raw=true" 
+                            src="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" 
                             crossOrigin="anonymous"
                             alt="background"
                         />
