@@ -616,10 +616,11 @@
             left: -9999px;
             width: 1200px;
             height: 675px;
-            background: linear-gradient(135deg, #132a13 0%, #0a1f0a 100%);
+            background-color: #132a13;
+            background-image: linear-gradient(135deg, #132a13 0%, #051a05 100%);
             color: white;
             overflow: hidden;
-            padding: 30px 50px;
+            padding: 40px 60px;
             display: flex;
             flex-direction: column;
         }
@@ -630,47 +631,77 @@
             width: 100%;
             height: 100%;
             background-image: 
-                linear-gradient(rgba(82, 183, 136, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(82, 183, 136, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
+                linear-gradient(rgba(82, 183, 136, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(82, 183, 136, 0.08) 1px, transparent 1px);
+            background-size: 50px 50px;
             z-index: 0;
         }
         .export-diamond {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             transform: rotate(45deg);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid #fff;
+            border: 3px solid #fff;
+            background: rgba(255,255,255,0.1);
             flex-shrink: 0;
         }
         .export-diamond > span {
             transform: rotate(-45deg);
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 900;
+            color: #fff;
         }
         .export-glow-text {
-            text-shadow: 0 0 10px rgba(82, 183, 136, 0.5), 0 0 20px rgba(82, 183, 136, 0.3);
+            color: #fff;
+            text-shadow: 0 0 15px rgba(82, 183, 136, 0.6);
         }
         .export-jacket {
-            width: 160px;
-            height: 160px;
+            width: 170px;
+            height: 170px;
             border: 4px solid white;
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            background: #222;
         }
         .export-row {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(8px);
-            border-left: 6px solid #fff;
-            padding: 12px 24px;
-            border-radius: 0 16px 16px 0;
-            height: 64px;
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 8px solid #52b788;
+            padding: 10px 24px;
+            border-radius: 4px 20px 20px 4px;
+            height: 72px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 24px;
+            margin-bottom: 12px;
+        }
+        .export-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+        }
+        .export-diff-badge {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            flex-shrink: 0;
+            min-width: 80px;
+            text-align: right;
+        }
+        .export-level-num {
+            font-size: 42px;
+            font-weight: 900;
+            flex-shrink: 0;
+            min-width: 100px;
+            text-align: right;
+            color: #fff;
+            line-height: 1;
         }
     </style>
 </head>
@@ -703,6 +734,15 @@
         const LV19_LIST = Array.from({length: 10}, (_, i) => `19.${i}`);
         const LV20_LIST = Array.from({length: 10}, (_, i) => `20.${i}`);
 
+        // 難易度表記を半角大文字に統一するユーティリティ
+        const normalizeDifficulty = (diff) => {
+            if (!diff) return "";
+            return String(diff)
+                .replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+                .replace(/\s/g, "")
+                .toUpperCase();
+        };
+
         const formatLevel = (lv) => {
             const lvStr = String(lv || "");
             if (["17", "18", "19", "20"].includes(lvStr)) return lvStr + ".0";
@@ -710,7 +750,7 @@
         };
 
         const getBorderColor = (difficult) => {
-            const diff = String(difficult || "").toUpperCase();
+            const diff = normalizeDifficulty(difficult);
             switch(diff) {
                 case "MXM": return "#000000";
                 case "EXH": return "#ef4444";
@@ -906,7 +946,7 @@
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
+                                <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words text-black`}>{song.title}</h3>
                                 <div className={`flex flex-nowrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-4'} gap-y-0.5 whitespace-nowrap`}>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
@@ -1421,7 +1461,7 @@
 
             const shareTemplateRef = useRef(null);
 
-            const getSongId = (song) => `${song.title}_${song.difficult}`;
+            const getSongId = (song) => `${song.title}_${normalizeDifficulty(song.difficult)}`;
 
             const songMap = useMemo(() => {
                 const map = {};
@@ -1689,17 +1729,19 @@
             const saveAsImage = async () => {
                 if (!shareTemplateRef.current) return;
                 
+                // レンダリング設定の最適化
                 const canvas = await html2canvas(shareTemplateRef.current, {
                     useCORS: true,
-                    scale: 2,
+                    scale: 1.25, // 高画質すぎない適度なサイズに調整
                     logging: false,
-                    allowTaint: true
+                    allowTaint: true,
+                    backgroundColor: '#132a13'
                 });
                 
-                const image = canvas.toDataURL("image/png");
+                const image = canvas.toDataURL("image/jpeg", 0.85); // JPEG形式で容量削減
                 const link = document.createElement("a");
                 link.href = image;
-                link.download = `sdvx_megamix_random_${Date.now()}.png`;
+                link.download = `sdvx_random_${Date.now()}.jpg`;
                 link.click();
             };
 
@@ -1792,13 +1834,13 @@
                         <div className="export-grid-bg"></div>
                         
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex justify-start items-center mb-10">
+                            <div className="flex justify-start items-center mb-8">
                                 <h1 className="text-5xl font-black italic tracking-tighter uppercase export-glow-text">
                                     ランダム選曲結果
                                 </h1>
                             </div>
 
-                            <div className="grid grid-cols-5 gap-8 mb-12 px-4">
+                            <div className="grid grid-cols-5 gap-6 mb-10 px-2">
                                 {randomSongs.map((song, idx) => (
                                     <div key={idx} className="flex flex-col items-center">
                                         <div 
@@ -1811,33 +1853,32 @@
                                 ))}
                             </div>
 
-                            <div className="flex flex-col gap-3 flex-grow px-2">
-                                {randomSongs.map((song, idx) => (
-                                    <div key={idx} className="export-row">
-                                        <div className="export-diamond border-white">
-                                            <span>{idx + 1}</span>
-                                        </div>
-                                        <div className="flex-grow min-w-0">
-                                            <div className="text-2xl font-black truncate">{song.title}</div>
-                                        </div>
-                                        <div className="flex items-center gap-6 flex-shrink-0">
-                                            <div 
-                                                className="text-lg font-black uppercase tracking-[0.2em]"
-                                                style={{ color: song.difficult === 'MXM' ? '#fff' : getBorderColor(song.difficult) }}
-                                            >
-                                                {song.difficult}
+                            <div className="flex flex-col flex-grow">
+                                {randomSongs.map((song, idx) => {
+                                    const diff = normalizeDifficulty(song.difficult);
+                                    const diffColor = diff === 'MXM' ? '#fff' : getBorderColor(song.difficult);
+                                    return (
+                                        <div key={idx} className="export-row">
+                                            <div className="export-diamond">
+                                                <span>{idx + 1}</span>
                                             </div>
-                                            <div className="text-4xl font-black w-24 text-right">{formatLevel(song.level)}</div>
+                                            <div className="export-title">{song.title}</div>
+                                            <div className="export-diff-badge" style={{ color: diffColor }}>
+                                                {diff}
+                                            </div>
+                                            <div className="export-level-num">
+                                                {formatLevel(song.level)}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
-                            <div className="mt-auto flex justify-between items-end border-t border-white/20 pt-4">
+                            <div className="mt-auto flex justify-between items-end border-t border-white/10 pt-4">
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#52b788]">Generated by MEGAMIX.MEMO</p>
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-[#52b788]">Generated by MEGAMIX.MEMO</p>
                                 </div>
-                                <h2 className="text-xl font-black italic tracking-tighter uppercase">
+                                <h2 className="text-xl font-black italic tracking-tighter uppercase text-white">
                                     SOUND VOLTEX MEGAMIX BATTLE
                                 </h2>
                             </div>
@@ -2299,7 +2340,7 @@
                                                     <div className="flex-grow min-w-0 px-2">
                                                         <p className="text-sm font-black leading-tight break-words">{song.title}</p>
                                                         <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5">
-                                                            Lv {formatLevel(song.level)} <span style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                                            Lv {formatLevel(song.level)} <span style={{ color: getBorderColor(song.difficult) }}>{normalizeDifficulty(song.difficult)}</span>
                                                         </p>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
