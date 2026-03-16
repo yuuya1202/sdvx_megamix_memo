@@ -884,7 +884,7 @@
             );
         };
 
-        const ExportConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
+        const ExportConfirmModal = ({ isOpen, onConfirm, onCancel, title = "画像出力" }) => {
             if (!isOpen) return null;
             return (
                 <div className="modal-overlay" onClick={onCancel}>
@@ -893,7 +893,7 @@
                             <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-blue-100">
                                 <i className="ph-bold ph-image text-3xl text-blue-600"></i>
                             </div>
-                            <h2 className="text-xl font-black mb-2">画像出力</h2>
+                            <h2 className="text-xl font-black mb-2">{title}</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
                                 現在の結果を画像として出力しますか？
                             </p>
@@ -912,6 +912,47 @@
                                 キャンセル
                             </button>
                         </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // セトリを選択して出力するためのモーダル
+        const SetlistSelectExportModal = ({ isOpen, onClose, setlists, onSelect }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal-content" style={{ maxWidth: '360px' }} onClick={e => e.stopPropagation()}>
+                        <div className="mb-6">
+                            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-blue-100">
+                                <i className="ph-bold ph-image text-3xl text-blue-600"></i>
+                            </div>
+                            <h2 className="text-xl font-black mb-2">出力するセトリを選択</h2>
+                            <p className="text-[10px] font-bold text-gray-500">画像として保存したいセトリを選んでください</p>
+                        </div>
+                        
+                        <div className="max-h-[300px] overflow-y-auto pr-1 flex flex-col gap-3 mb-6">
+                            {setlists.map((sl, idx) => (
+                                <button 
+                                    key={sl.id} 
+                                    onClick={() => onSelect(sl)}
+                                    className="w-full text-left bg-white border-2 border-black p-3 rounded-xl hover:bg-blue-50 transition-all font-black text-sm flex items-center gap-3 active:translate-y-0.5"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border-2 border-black flex-shrink-0">
+                                        {idx + 1}
+                                    </div>
+                                    <span className="truncate flex-grow">{sl.name}</span>
+                                    <i className="ph-bold ph-arrow-right text-gray-400"></i>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button 
+                            onClick={onClose}
+                            className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none transition-all"
+                        >
+                            キャンセル
+                        </button>
                     </div>
                 </div>
             );
@@ -1141,7 +1182,7 @@
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, getSongId, formatLevel, getBorderColor }) => {
+        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, getSongId, formatLevel, getBorderColor }) => {
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null);
@@ -1153,6 +1194,7 @@
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
             const [deletingId, setDeletingId] = useState(null);
             const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
+            const [isSelectExportOpen, setIsSelectExportOpen] = useState(false);
 
             const handleCreate = () => {
                 if (setlists.length >= 10) {
@@ -1233,9 +1275,19 @@
                                 <i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i>
                                 <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
                             </div>
-                            <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
-                                <i className="ph-bold ph-plus"></i> 新規
-                            </button>
+                            <div className="flex gap-2">
+                                {setlists.length > 0 && (
+                                    <button 
+                                        onClick={() => setIsSelectExportOpen(true)} 
+                                        className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1"
+                                    >
+                                        <i className="ph-bold ph-image"></i> 画像出力
+                                    </button>
+                                )}
+                                <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
+                                    <i className="ph-bold ph-plus"></i> 新規
+                                </button>
+                            </div>
                         </div>
                         
                         {setlists.length === 0 ? (
@@ -1331,6 +1383,16 @@
                         <SetlistLimitModal 
                             isOpen={isLimitModalOpen}
                             onClose={() => setIsLimitModalOpen(false)}
+                        />
+
+                        <SetlistSelectExportModal 
+                            isOpen={isSelectExportOpen}
+                            onClose={() => setIsSelectExportOpen(false)}
+                            setlists={setlists}
+                            onSelect={(sl) => {
+                                setIsSelectExportOpen(false);
+                                onExport(sl);
+                            }}
                         />
                     </div>
                 );
@@ -1489,7 +1551,14 @@
             const [isNavOpen, setIsNavOpen] = useState(false);
             const [pageIndex, setPageIndex] = useState(1);
             const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-            const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false);
+            
+            // 出力用データ管理
+            const [exportData, setExportData] = useState({ 
+                isOpen: false, 
+                title: "ランダム選曲 結果", 
+                songs: [], 
+                bg: "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" 
+            });
             
             const [contactLinkModal, setContactLinkModal] = useState({ isOpen: false, url: '', type: '' });
 
@@ -1772,15 +1841,32 @@
                     setRandomSongs([]);
                 } else {
                     const shuffled = [...filtered].sort(() => 0.5 - Math.random());
-                    setRandomSongs(shuffled.slice(0, 5));
+                    const selected = shuffled.slice(0, 5);
+                    setRandomSongs(selected);
+                    // ランダム用のデータ設定（まだモーダルは開かない）
+                    setExportData({
+                        isOpen: false,
+                        title: "ランダム選曲 結果",
+                        songs: selected,
+                        bg: "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png"
+                    });
                 }
                 
                 setTimeout(() => setIsGenerating(false), 500);
             };
 
-            const saveRandomAsImage = async () => {
-                if (randomSongs.length === 0) return;
-                setIsExportConfirmOpen(false); // 確認モーダルを閉じる
+            const handleSetlistExport = (sl) => {
+                const slSongs = sl.songs.map(id => songMap[id]).filter(s => s);
+                setExportData({
+                    isOpen: true,
+                    title: sl.name,
+                    songs: slSongs,
+                    bg: "https://github.com/yuuya1202/image_Setlist_Background/blob/main/okumono_sf13.png?raw=true"
+                });
+            };
+
+            const performImageExport = async () => {
+                setExportData(prev => ({ ...prev, isOpen: false }));
                 setIsSavingImage(true);
                 
                 try {
@@ -1892,15 +1978,15 @@
                     <div id="export-container" ref={exportRef}>
                         <img 
                             className="export-bg" 
-                            src="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" 
+                            src={exportData.bg} 
                             crossOrigin="anonymous"
                             alt="background"
                         />
                         <div className="export-content-wrapper">
-                            <div className="export-header">ランダム選曲 結果</div>
+                            <div className="export-header">{exportData.title}</div>
                             
                             <div className="export-jackets-row">
-                                {randomSongs.map((song, i) => (
+                                {exportData.songs.map((song, i) => (
                                     <div key={`exp-jack-${i}`} className="export-jacket-box" style={{ borderColor: getBorderColor(song.difficult) }}>
                                         <img 
                                             className="export-jacket-img" 
@@ -1911,13 +1997,13 @@
                                     </div>
                                 ))}
                                 {/* 空スロットの穴埋め */}
-                                {[...Array(Math.max(0, 5 - randomSongs.length))].map((_, i) => (
+                                {[...Array(Math.max(0, 5 - exportData.songs.length))].map((_, i) => (
                                     <div key={`exp-jack-empty-${i}`} className="export-jacket-box opacity-20 border-dashed border-white"></div>
                                 ))}
                             </div>
 
                             <div className="export-info-list">
-                                {randomSongs.map((song, i) => (
+                                {exportData.songs.map((song, i) => (
                                     <div key={`exp-info-${i}`} className="export-info-row" style={{ borderLeft: `14px solid #000` }}>
                                         <div className="export-info-main">
                                             <div className="export-info-num">#{i + 1}</div>
@@ -2075,7 +2161,7 @@
                                         </div>
                                         {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
                                             <button 
-                                                onClick={() => setIsExportConfirmOpen(true)} 
+                                                onClick={() => setExportData(prev => ({ ...prev, isOpen: true }))} 
                                                 disabled={isSavingImage}
                                                 className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-2"
                                             >
@@ -2201,6 +2287,7 @@
                                             mirrors={mirrors}
                                             onSave={saveSetlist}
                                             onDelete={deleteSetlist}
+                                            onExport={handleSetlistExport}
                                             getSongId={getSongId}
                                             formatLevel={formatLevel}
                                             getBorderColor={getBorderColor}
@@ -2411,9 +2498,10 @@
                     />
 
                     <ExportConfirmModal 
-                        isOpen={isExportConfirmOpen}
-                        onConfirm={saveRandomAsImage}
-                        onCancel={() => setIsExportConfirmOpen(false)}
+                        isOpen={exportData.isOpen}
+                        onConfirm={performImageExport}
+                        onCancel={() => setExportData(prev => ({ ...prev, isOpen: false }))}
+                        title={exportData.title}
                     />
 
                     <LinkConfirmModal 
