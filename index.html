@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -920,6 +919,38 @@
             );
         };
 
+        const ImagePreviewModal = ({ isOpen, imageUrl, onSave, onCancel }) => {
+            if (!isOpen || !imageUrl) return null;
+            return (
+                <div className="modal-overlay" onClick={onCancel}>
+                    <div className="modal-content" style={{ maxWidth: '420px', padding: '16px' }} onClick={e => e.stopPropagation()}>
+                        <div className="mb-4">
+                            <h2 className="text-xl font-black mb-1">画像プレビュー</h2>
+                            <p className="text-[10px] font-bold text-gray-500 mb-4">生成された画像を確認してください</p>
+                            <div className="border-4 border-black rounded-xl overflow-hidden bg-gray-200 aspect-video relative">
+                                <img src={imageUrl} alt="preview" className="w-full h-full object-contain" />
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <button 
+                                onClick={onSave}
+                                className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2"
+                            >
+                                <i className="ph-bold ph-download-simple text-xl"></i>
+                                画像を保存する
+                            </button>
+                            <button 
+                                onClick={onCancel}
+                                className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none transition-all"
+                            >
+                                閉じる
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const SetlistSelectExportModal = ({ isOpen, onClose, setlists, onSelect }) => {
             if (!isOpen) return null;
             return (
@@ -1583,6 +1614,7 @@
                 songs: [], 
                 bg: "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" 
             });
+            const [previewUrl, setPreviewUrl] = useState(null);
             
             const [contactLinkModal, setContactLinkModal] = useState({ isOpen: false, url: '', type: '' });
 
@@ -1902,16 +1934,33 @@
                         backgroundColor: "#132a13"
                     });
                     
-                    const image = canvas.toDataURL("image/png");
-                    const link = document.createElement('a');
-                    link.href = image;
-                    link.download = `SDVX_MEGAMIX_SETLIST_${new Date().getTime()}.png`;
-                    link.click();
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            setPreviewUrl(url);
+                        }
+                        setIsSavingImage(false);
+                    }, 'image/png');
                 } catch (error) {
                     console.error("Image Export Error:", error);
-                } finally {
                     setIsSavingImage(false);
                 }
+            };
+
+            const handleDownloadPreview = () => {
+                if (!previewUrl) return;
+                const link = document.createElement('a');
+                link.href = previewUrl;
+                link.download = `SDVX_MEGAMIX_SETLIST_${new Date().getTime()}.png`;
+                link.click();
+                handleClosePreview();
+            };
+
+            const handleClosePreview = () => {
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                }
+                setPreviewUrl(null);
             };
 
             const processedSongs = useMemo(() => {
@@ -2609,6 +2658,13 @@
                         onConfirm={performImageExport}
                         onCancel={() => setExportData(prev => ({ ...prev, isOpen: false }))}
                         title={exportData.title}
+                    />
+
+                    <ImagePreviewModal 
+                        isOpen={!!previewUrl}
+                        imageUrl={previewUrl}
+                        onSave={handleDownloadPreview}
+                        onCancel={handleClosePreview}
                     />
 
                     <LinkConfirmModal 
