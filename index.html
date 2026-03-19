@@ -79,30 +79,32 @@
         /* --- グリッドアイテム用スタイル --- */
         .grid-item {
             background: white;
-            border: 3px solid #000;
+            border: 2px solid #000;
             aspect-ratio: 1/1;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
             position: relative;
-            box-shadow: 4px 4px 0px #000;
+            box-shadow: 3px 3px 0px #000;
             transition: all 0.1s;
         }
         .grid-item:active {
-            transform: translate(2px, 2px);
-            box-shadow: 0px 0px 0px #000;
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px #000;
         }
-        .grid-badge {
+        .grid-title-badge {
             position: absolute;
-            bottom: 4px;
-            left: 4px;
-            right: 4px;
-            background: rgba(0,0,0,0.8);
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
             color: white;
-            font-size: 8px;
-            font-weight: 900;
+            font-size: 7px;
+            font-weight: 700;
             padding: 2px 4px;
-            border-radius: 4px;
             text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             pointer-events: none;
         }
 
@@ -799,6 +801,19 @@
             flex-shrink: 0;
             align-items: center;
         }
+        
+        /* カスタムスクロールバー（PC用） */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -821,7 +836,9 @@
         const MASTER_COLLECTION = 'song_master';
         const MASTER_DOCUMENT = 'all_songs';
 
-        const ITEMS_PER_PAGE = 30;
+        const LIST_ITEMS_PER_PAGE = 30;
+        const GRID_ITEMS_PER_PAGE = 60;
+
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
 
@@ -924,86 +941,138 @@
 
         // 楽曲詳細モーダル（グリッドモード用）
         const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel }) => {
+            const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
+            const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
+
             if (!isOpen || !song) return null;
+
+            const handleChartClick = (e, url) => {
+                e.stopPropagation();
+                setChartModal({ isOpen: true, url });
+            };
+
+            const handleVideoClick = (e, url) => {
+                e.stopPropagation();
+                setConfirmModal({ isOpen: true, url, type: 'video' });
+            };
+
+            const confirmVideoNavigation = () => {
+                window.open(confirmModal.url, '_blank', 'noopener,noreferrer');
+                setConfirmModal({ ...confirmModal, isOpen: false });
+            };
+
             return (
-                <div className="modal-overlay" onClick={onCancel}>
-                    <div className="modal-content !max-w-[380px] !text-left" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-start mb-4">
-                            <h2 className="text-xl font-black leading-tight pr-4">{song.title}</h2>
-                            <button onClick={onCancel} className="text-gray-400 hover:text-black">
-                                <i className="ph-bold ph-x text-2xl"></i>
-                            </button>
-                        </div>
-                        
-                        {/* SongCardの展開部分のロジックを流用して表示 */}
-                        <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-black flex-shrink-0">
-                                    <img src={song.jacket} className="w-full h-full object-cover" crossOrigin="anonymous" alt="jacket" />
+                <>
+                    <div className="modal-overlay" onClick={onCancel}>
+                        <div className="modal-content !max-w-[380px] !text-left" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between items-start mb-4">
+                                <h2 className="text-xl font-black leading-tight pr-4">{song.title}</h2>
+                                <button onClick={onCancel} className="text-gray-400 hover:text-black">
+                                    <i className="ph-bold ph-x text-2xl"></i>
+                                </button>
+                            </div>
+                            
+                            <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-black flex-shrink-0">
+                                        <img src={song.jacket} className="w-full h-full object-cover" crossOrigin="anonymous" alt="jacket" />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-[10px] font-black">Lv</span>
+                                            <span className="text-2xl font-black italic">{formatLevel(song.level)}</span>
+                                            <span className="text-xs font-black ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                        </div>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-[10px] font-black">BPM</span>
+                                            <span className="text-lg font-black">{song.bpm || "???"}</span>
+                                        </div>
+                                        {isLoggedIn && (
+                                            <div className="flex gap-2 mt-1">
+                                                <button onClick={onToggleFavorite} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isFavorite ? 'bg-yellow-400' : 'bg-white'}`}>
+                                                    <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-sm`}></i>
+                                                </button>
+                                                <button onClick={onToggleMirror} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isMirror ? 'bg-indigo-400 text-white' : 'bg-white'}`}>
+                                                    <i className="ph-bold ph-arrows-left-right text-sm"></i>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-[10px] font-black">Lv</span>
-                                        <span className="text-2xl font-black italic">{formatLevel(song.level)}</span>
-                                        <span className="text-xs font-black ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <span className="section-label">第1区間</span>
+                                        <div className="grid grid-cols-3 gap-2 mt-2">
+                                            <div className="stat-box"><p className="stat-label">開始</p><p className="stat-value">{song.start_pos || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">終了</p><p className="stat-value">{song.end_pos || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">チェイン</p><p className="stat-value">{song.combo || "-"}</p></div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-[10px] font-black">BPM</span>
-                                        <span className="text-lg font-black">{song.bpm || "???"}</span>
+                                    <div>
+                                        <span className="section-label">第2区間</span>
+                                        <div className="grid grid-cols-3 gap-2 mt-2">
+                                            <div className="stat-box"><p className="stat-label">開始</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">終了</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">チェイン</p><p className="stat-value">{song.combo2 || "-"}</p></div>
+                                        </div>
                                     </div>
+
+                                    <div className="grid grid-cols-2 gap-3 mb-6">
+                                        {song.site_link ? (
+                                            <button className="link-button chart" onClick={(e) => handleChartClick(e, song.site_link)}>
+                                                <i className="ph-bold ph-file-text text-lg"></i>画像で確認
+                                            </button>
+                                        ) : (
+                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>画像なし</div>
+                                        )}
+                                        
+                                        {song.movie_link ? (
+                                            <button className="link-button video" onClick={(e) => handleVideoClick(e, song.movie_link)}>
+                                                <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
+                                            </button>
+                                        ) : (
+                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
+                                        )}
+                                    </div>
+                                    
+                                    {song.memo && (
+                                        <div className="bg-green-50 p-4 rounded-xl border-2 border-black">
+                                            <p className="text-[10px] font-black uppercase mb-1">Tips</p>
+                                            <p className="text-sm font-bold whitespace-pre-wrap">{song.memo}</p>
+                                        </div>
+                                    )}
+
                                     {isLoggedIn && (
-                                        <div className="flex gap-2 mt-1">
-                                            <button onClick={onToggleFavorite} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isFavorite ? 'bg-yellow-400' : 'bg-white'}`}>
-                                                <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-sm`}></i>
-                                            </button>
-                                            <button onClick={onToggleMirror} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isMirror ? 'bg-indigo-400 text-white' : 'bg-white'}`}>
-                                                <i className="ph-bold ph-arrows-left-right text-sm"></i>
-                                            </button>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase mb-1">My Memo</p>
+                                            <textarea 
+                                                className="memo-textarea" 
+                                                value={personalMemo || ""}
+                                                onChange={(e) => onSavePersonalMemo(e.target.value)}
+                                                placeholder="自分だけの攻略メモを入力..."
+                                            />
                                         </div>
                                     )}
                                 </div>
                             </div>
-
-                            <div className="space-y-6">
-                                <div>
-                                    <span className="section-label">第1区間</span>
-                                    <div className="grid grid-cols-3 gap-2 mt-2">
-                                        <div className="stat-box"><p className="stat-label">開始</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                        <div className="stat-box"><p className="stat-label">終了</p><p className="stat-value">{song.end_pos || "-"}</p></div>
-                                        <div className="stat-box"><p className="stat-label">チェイン</p><p className="stat-value">{song.combo || "-"}</p></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <span className="section-label">第2区間</span>
-                                    <div className="grid grid-cols-3 gap-2 mt-2">
-                                        <div className="stat-box"><p className="stat-label">開始</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                        <div className="stat-box"><p className="stat-label">終了</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
-                                        <div className="stat-box"><p className="stat-label">チェイン</p><p className="stat-value">{song.combo2 || "-"}</p></div>
-                                    </div>
-                                </div>
-                                
-                                {song.memo && (
-                                    <div className="bg-green-50 p-4 rounded-xl border-2 border-black">
-                                        <p className="text-[10px] font-black uppercase mb-1">Tips</p>
-                                        <p className="text-sm font-bold whitespace-pre-wrap">{song.memo}</p>
-                                    </div>
-                                )}
-
-                                {isLoggedIn && (
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase mb-1">My Memo</p>
-                                        <textarea 
-                                            className="memo-textarea" 
-                                            value={personalMemo || ""}
-                                            onChange={(e) => onSavePersonalMemo(e.target.value)}
-                                            placeholder="自分だけの攻略メモを入力..."
-                                        />
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </div>
-                </div>
+
+                    <LinkConfirmModal 
+                        isOpen={confirmModal.isOpen}
+                        onConfirm={confirmVideoNavigation}
+                        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                        type={confirmModal.type}
+                    />
+
+                    <ChartPreviewModal 
+                        isOpen={chartModal.isOpen}
+                        url={chartModal.url}
+                        title={song.title}
+                        onCancel={() => setChartModal({ ...chartModal, isOpen: false })}
+                    />
+                </>
             );
         };
 
@@ -1222,19 +1291,9 @@
                             crossOrigin="anonymous"
                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
                         />
-                        <div className="grid-badge">
-                            {displayLevel} / {song.difficult}
+                        <div className="grid-title-badge">
+                            {song.title}
                         </div>
-                        {isFavorite && (
-                            <div className="absolute top-1 right-1 text-yellow-400 drop-shadow-md">
-                                <i className="ph-fill ph-star text-sm"></i>
-                            </div>
-                        )}
-                        {isMirror && (
-                            <div className="absolute top-1 left-1 text-indigo-400 drop-shadow-md">
-                                <i className="ph-bold ph-arrows-left-right text-sm"></i>
-                            </div>
-                        )}
                     </div>
                 );
             }
@@ -1330,7 +1389,6 @@
                                 </div>
                                 <div className="grid grid-cols-3 gap-2 mb-6">
                                     <div className="stat-box">
-                                        <p className="stat-label">開始位置</p>
                                         <p className="stat-label">開始位置</p>
                                         <p className="stat-value">{song.start_pos2 || "-"}</p>
                                     </div>
@@ -1745,7 +1803,7 @@
                                     <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
                                 
-                                <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4">
+                                <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4 custom-scrollbar">
                                     {searchTerm.trim() === "" ? (
                                         <div className="flex flex-col items-center justify-center py-12 opacity-40">
                                             <i className="ph-bold ph-magnifying-glass text-5xl mb-3 text-black"></i>
@@ -1851,6 +1909,9 @@
                 });
                 return map;
             }, [songs]);
+
+            // ビューモードによって1ページあたりの件数を切り替え
+            const itemsPerPage = viewMode === 'grid' ? GRID_ITEMS_PER_PAGE : LIST_ITEMS_PER_PAGE;
 
             const viewToken = useMemo(() => {
                 return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), showOnlyFavorites, showOnlyMirrors, viewMode].join('|');
@@ -1966,7 +2027,7 @@
 
             useEffect(() => {
                 setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, sortOrder, showOnlyFavorites, showOnlyMirrors]);
+            }, [rankSection, searchTerm, selectedLevels, sortOrder, showOnlyFavorites, showOnlyMirrors, viewMode]);
 
             const login = async () => {
                 if (!firebase || isAuthLoading) return;
@@ -2219,11 +2280,11 @@
             }, [searchTerm, selectedLevels, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors]);
 
             const paginatedSongs = useMemo(() => {
-                const start = (pageIndex - 1) * ITEMS_PER_PAGE;
-                return allFilteredSongs.slice(start, start + ITEMS_PER_PAGE);
-            }, [allFilteredSongs, pageIndex]);
+                const start = (pageIndex - 1) * itemsPerPage;
+                return allFilteredSongs.slice(start, start + itemsPerPage);
+            }, [allFilteredSongs, pageIndex, itemsPerPage]);
 
-            const totalPages = Math.ceil(allFilteredSongs.length / ITEMS_PER_PAGE);
+            const totalPages = Math.ceil(allFilteredSongs.length / itemsPerPage);
 
             const handlePageChange = (newIndex) => {
                 if (newIndex >= 1 && newIndex <= totalPages) {
@@ -2758,7 +2819,7 @@
                                 {currentPage === "ranking" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         {paginatedSongs.map((song, idx) => {
-                                            const globalIdx = (pageIndex - 1) * ITEMS_PER_PAGE + idx;
+                                            const globalIdx = (pageIndex - 1) * itemsPerPage + idx;
                                             let currentRank = globalIdx + 1;
                                             if (globalIdx > 0) {
                                                 let backtrackIdx = globalIdx;
@@ -2822,7 +2883,7 @@
                                 )}
                                 
                                 {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && (
-                                    <div className={viewMode === 'grid' && currentPage === 'main' ? 'grid grid-cols-3 gap-3 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
+                                    <div className={viewMode === 'grid' && currentPage === 'main' ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
                                         {paginatedSongs.map((song, idx) => {
                                             const songId = getSongId(song);
                                             return (
