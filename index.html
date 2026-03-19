@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -995,7 +994,8 @@
                                 </button>
                             </div>
                             
-                            <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+                            {/* スクロールエリア最下部の余白調整 (pb-8) */}
+                            <div className="max-h-[70vh] overflow-y-auto pr-2 pb-8 custom-scrollbar">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-black flex-shrink-0">
                                         <img src={song.jacket} className="w-full h-full object-cover" crossOrigin="anonymous" alt="jacket" />
@@ -1035,6 +1035,7 @@
                                     <div>
                                         <span className="section-label">第2区間</span>
                                         <div className="grid grid-cols-3 gap-2 mt-2">
+                                            {/* ラベル重複解消 */}
                                             <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
                                             <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
                                             <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
@@ -1068,11 +1069,12 @@
 
                                     {isLoggedIn && (
                                         <div>
-                                            <p className="text-[10px] font-black uppercase mb-1">自分用メモ</p>
+                                            <p className="text-[10px] font-black uppercase mb-1">My Memo</p>
                                             <textarea 
                                                 className="memo-textarea" 
                                                 value={personalMemo || ""}
                                                 onChange={(e) => onSavePersonalMemo(e.target.value)}
+                                                placeholder="自分だけの攻略メモを入力..."
                                             />
                                         </div>
                                     )}
@@ -1244,22 +1246,22 @@
             return (
                 <div className="modal-overlay" onClick={onCancel}>
                     <div className="modal-content" style={{ maxWidth: '320px' }} onClick={e => e.stopPropagation()}>
-                        <h2 className="text-lg font-black mb-3">表示形式を選択</h2>
+                        <h2 className="text-xl font-black mb-6">表示形式を選択</h2>
                         <div className="flex flex-col gap-4">
                             <button 
                                 onClick={() => { onSelect('list'); onCancel(); }}
-                                className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
+                                className={`w-full py-4 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
                             >
                                 <i className="ph-bold ph-list text-2xl"></i> リスト表示
                             </button>
                             <button 
                                 onClick={() => { onSelect('grid'); onCancel(); }}
-                                className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
+                                className={`w-full py-4 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
                             >
                                 <i className="ph-bold ph-squares-four text-2xl"></i> グリッド表示
                             </button>
                         </div>
-                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">閉じる</button>
+                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">Close</button>
                     </div>
                 </div>
             );
@@ -2483,7 +2485,7 @@
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
                         </div>
-                        <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-3 text-white">
+                        <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-8 text-white">
                             MEGAMIX<span className="text-[#52b788]">.</span>MEMO
                         </h1>
 
