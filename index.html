@@ -680,19 +680,19 @@
 
         .view-mode-badge {
             position: absolute;
-            top: -14px;
-            right: 4px;
-            background: #1b4332;
-            color: white;
+            top: -38px; /* 検索ボックスの上に配置して重なりを解消 */
+            right: 0px;
+            background: white; /* 白背景に変更 */
+            color: black; /* 黒文字に変更 */
             border: 2px solid #000;
             border-radius: 10px;
-            padding: 4px 10px;
-            font-size: 10px;
+            padding: 5px 12px;
+            font-size: 11px;
             font-weight: 900;
             box-shadow: 3px 3px 0px #000;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             transition: all 0.2s;
             cursor: pointer;
             z-index: 20;
@@ -1260,7 +1260,7 @@
                                 <i className="ph-bold ph-squares-four text-2xl"></i> グリッド表示
                             </button>
                         </div>
-                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">Close</button>
+                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">閉じる</button>
                     </div>
                 </div>
             );
