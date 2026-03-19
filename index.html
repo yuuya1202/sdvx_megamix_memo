@@ -1069,11 +1069,12 @@
 
                                     {isLoggedIn && (
                                         <div>
-                                            <p className="text-[10px] font-black uppercase mb-1">自分用メモ</p>
+                                            <p className="text-[10px] font-black uppercase mb-1">My Memo</p>
                                             <textarea 
                                                 className="memo-textarea" 
                                                 value={personalMemo || ""}
                                                 onChange={(e) => onSavePersonalMemo(e.target.value)}
+                                                placeholder="自分だけの攻略メモを入力..."
                                             />
                                         </div>
                                     )}
@@ -1245,22 +1246,22 @@
             return (
                 <div className="modal-overlay" onClick={onCancel}>
                     <div className="modal-content" style={{ maxWidth: '320px' }} onClick={e => e.stopPropagation()}>
-                        <h2 className="text-lg font-black mb-3">表示形式を選択</h2>
+                        <h2 className="text-xl font-black mb-6">表示形式を選択</h2>
                         <div className="flex flex-col gap-4">
                             <button 
                                 onClick={() => { onSelect('list'); onCancel(); }}
-                                className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
+                                className={`w-full py-4 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
                             >
                                 <i className="ph-bold ph-list text-2xl"></i> リスト表示
                             </button>
                             <button 
                                 onClick={() => { onSelect('grid'); onCancel(); }}
-                                className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
+                                className={`w-full py-4 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
                             >
                                 <i className="ph-bold ph-squares-four text-2xl"></i> グリッド表示
                             </button>
                         </div>
-                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">閉じる</button>
+                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">Close</button>
                     </div>
                 </div>
             );
@@ -1602,6 +1603,19 @@
                 setIsSongModalOpen(false);
             };
 
+            // 改修：トラックの入れ替え機能
+            const moveTrack = (index, direction) => {
+                const newIndex = index + direction;
+                if (newIndex < 0 || newIndex >= editingSetlist.songs.length) return;
+                
+                const newSongs = [...editingSetlist.songs];
+                const temp = newSongs[index];
+                newSongs[index] = newSongs[newIndex];
+                newSongs[newIndex] = temp;
+                
+                setEditingSetlist({ ...editingSetlist, songs: newSongs });
+            };
+
             const handleSave = () => {
                 onSave(editingSetlist);
                 if (editingSetlist && editingSetlist.id) {
@@ -1782,34 +1796,54 @@
                         {editingSetlist.songs.map((songId, idx) => {
                             const song = songId ? songMap[songId] : null;
                             return (
-                                <div key={idx} className="relative">
-                                    <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
-                                        {idx + 1}
-                                    </div>
-                                    {song ? (
-                                        <div onClick={() => openSongModal(idx)} className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
-                                            <img 
-                                                src={song.jacket} 
-                                                className="w-12 h-12 border-2 rounded object-cover" 
-                                                style={{ borderColor: getBorderColor(song.difficult) }}
-                                                crossOrigin="anonymous"
-                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                            />
-                                            <div className="flex-grow min-w-0">
-                                                <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
-                                                    <span className="text-black">Lv {formatLevel(song.level)}</span>
-                                                    <span className="text-black">{song.combo}CHAIN</span>
+                                <div key={idx} className="flex items-center gap-2">
+                                    <div className="flex-grow relative">
+                                        <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
+                                            {idx + 1}
+                                        </div>
+                                        {song ? (
+                                            <div onClick={() => openSongModal(idx)} className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
+                                                <img 
+                                                    src={song.jacket} 
+                                                    className="w-12 h-12 border-2 rounded object-cover" 
+                                                    style={{ borderColor: getBorderColor(song.difficult) }}
+                                                    crossOrigin="anonymous"
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                                />
+                                                <div className="flex-grow min-w-0">
+                                                    <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
+                                                    <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
+                                                        <span className="text-black">Lv {formatLevel(song.level)}</span>
+                                                        <span className="text-black">{song.combo}CHAIN</span>
+                                                    </div>
                                                 </div>
+                                                <i className="ph-bold ph-arrows-left-right text-gray-400 text-sm mr-1"></i>
                                             </div>
-                                            <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
-                                        </div>
-                                    ) : (
-                                        <div onClick={() => openSongModal(idx)} className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 active:translate-y-0.5 transition-all">
-                                            <i className="ph-bold ph-plus-circle text-2xl text-gray-400 mr-2"></i>
-                                            <span className="text-gray-500 font-bold text-sm">曲を選択する</span>
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <div onClick={() => openSongModal(idx)} className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 active:translate-y-0.5 transition-all">
+                                                <i className="ph-bold ph-plus-circle text-2xl text-gray-400 mr-2"></i>
+                                                <span className="text-gray-500 font-bold text-sm">曲を選択する</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* 入れ替え用コントロール */}
+                                    <div className="flex flex-col gap-1 flex-shrink-0">
+                                        <button 
+                                            disabled={idx === 0}
+                                            onClick={(e) => { e.stopPropagation(); moveTrack(idx, -1); }}
+                                            className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg disabled:opacity-20 active:translate-y-0.5 transition-all shadow-[2px_2px_0px_#000] disabled:shadow-none"
+                                        >
+                                            <i className="ph-bold ph-caret-up text-xs"></i>
+                                        </button>
+                                        <button 
+                                            disabled={idx === editingSetlist.songs.length - 1}
+                                            onClick={(e) => { e.stopPropagation(); moveTrack(idx, 1); }}
+                                            className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg disabled:opacity-20 active:translate-y-0.5 transition-all shadow-[2px_2px_0px_#000] disabled:shadow-none"
+                                        >
+                                            <i className="ph-bold ph-caret-down text-xs"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             )
                         })}
@@ -2484,7 +2518,7 @@
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
                         </div>
-                        <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-4 text-white">
+                        <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-8 text-white">
                             MEGAMIX<span className="text-[#52b788]">.</span>MEMO
                         </h1>
 
