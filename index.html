@@ -1069,12 +1069,11 @@
 
                                     {isLoggedIn && (
                                         <div>
-                                            <p className="text-[10px] font-black uppercase mb-1">My Memo</p>
+                                            <p className="text-[10px] font-black uppercase mb-1">自分用メモ</p>
                                             <textarea 
                                                 className="memo-textarea" 
                                                 value={personalMemo || ""}
                                                 onChange={(e) => onSavePersonalMemo(e.target.value)}
-                                                placeholder="自分だけの攻略メモを入力..."
                                             />
                                         </div>
                                     )}
@@ -1246,22 +1245,22 @@
             return (
                 <div className="modal-overlay" onClick={onCancel}>
                     <div className="modal-content" style={{ maxWidth: '320px' }} onClick={e => e.stopPropagation()}>
-                        <h2 className="text-xl font-black mb-6">表示形式を選択</h2>
+                        <h2 className="text-lg font-black mb-3">表示形式を選択</h2>
                         <div className="flex flex-col gap-4">
                             <button 
                                 onClick={() => { onSelect('list'); onCancel(); }}
-                                className={`w-full py-4 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
+                                className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
                             >
                                 <i className="ph-bold ph-list text-2xl"></i> リスト表示
                             </button>
                             <button 
                                 onClick={() => { onSelect('grid'); onCancel(); }}
-                                className={`w-full py-4 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
+                                className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
                             >
                                 <i className="ph-bold ph-squares-four text-2xl"></i> グリッド表示
                             </button>
                         </div>
-                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">Close</button>
+                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">閉じる</button>
                     </div>
                 </div>
             );
