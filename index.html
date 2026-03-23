@@ -26,9 +26,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, getFirestore, doc, setDoc, getDoc, onSnapshot };
+        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, getFirestore, doc, setDoc, getDoc };
     </script>
 
     <style>
@@ -2027,16 +2027,31 @@
                 if (!firebase || !user) return;
 
                 const fetchMasterData = async () => {
-                    const { doc, getDoc } = window.FirebaseSDK;
+                    const CACHE_KEY = `sdvx_songs_${MASTER_DATA_UPDATED_AT}`;
                     try {
+                        // キャッシュ確認：更新日が同じなら再取得しない
+                        const cached = localStorage.getItem(CACHE_KEY);
+                        if (cached) {
+                            setSongs(JSON.parse(cached));
+                            setIsLoading(false);
+                            return;
+                        }
+
+                        // 古いキャッシュを削除
+                        Object.keys(localStorage)
+                            .filter(k => k.startsWith('sdvx_songs_'))
+                            .forEach(k => localStorage.removeItem(k));
+
+                        // Firestoreから取得してキャッシュに保存
+                        const { doc, getDoc } = window.FirebaseSDK;
                         const docRef = doc(firebase.db, 'artifacts', APP_ID, 'public', 'data', MASTER_COLLECTION, MASTER_DOCUMENT);
                         const docSnap = await getDoc(docRef);
-                        
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             if (data.songs) {
                                 const parsedSongs = JSON.parse(data.songs);
                                 setSongs(parsedSongs);
+                                localStorage.setItem(CACHE_KEY, JSON.stringify(parsedSongs));
                             }
                         }
                     } catch (err) {
@@ -2049,30 +2064,35 @@
                 fetchMasterData();
             }, [firebase, user]);
 
-            // --- User Profile & Setlists Sync ---
+            // --- User Profile & Setlists Fetch（onSnapshot→getDocに変更）---
             useEffect(() => {
                 if (!user || !firebase || user.isAnonymous) return;
-                const { doc, onSnapshot } = window.FirebaseSDK;
 
-                const unsubProfile = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        setFavorites(data.favorites || []);
-                        setMirrors(data.mirrors || []);
-                        setPersonalMemos(data.memos || {});
+                const fetchUserData = async () => {
+                    const { doc, getDoc } = window.FirebaseSDK;
+                    try {
+                        const profileSnap = await getDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'));
+                        if (profileSnap.exists()) {
+                            const data = profileSnap.data();
+                            setFavorites(data.favorites || []);
+                            setMirrors(data.mirrors || []);
+                            setPersonalMemos(data.memos || {});
+                        }
+                    } catch (err) {
+                        console.error("Firestore Profile Fetch Error:", err);
                     }
-                }, (err) => console.error("Firestore Profile Sync Error:", err));
 
-                const unsubSetlists = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), (docSnap) => {
-                    if (docSnap.exists()) {
-                        setSetlists(docSnap.data().items || []);
+                    try {
+                        const setlistSnap = await getDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'));
+                        if (setlistSnap.exists()) {
+                            setSetlists(setlistSnap.data().items || []);
+                        }
+                    } catch (err) {
+                        console.error("Firestore Setlist Fetch Error:", err);
                     }
-                }, (err) => console.error("Firestore Setlist Sync Error:", err));
-
-                return () => {
-                    unsubProfile();
-                    unsubSetlists();
                 };
+
+                fetchUserData();
             }, [user, firebase]);
 
             useEffect(() => {
