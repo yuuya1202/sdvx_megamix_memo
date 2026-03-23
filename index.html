@@ -9,7 +9,7 @@
     <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg" as="image">
     <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/okumono_sf13.png" as="image">
     <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" as="image">
-
+ 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & ReactDOM -->
@@ -21,19 +21,19 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- html2canvas (Element to Image) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+ 
     <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+ 
         window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query };
     </script>
-
+ 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
-
+ 
         body {
             background-color: #132a13;
             color: #222;
@@ -43,7 +43,7 @@
             min-height: 100vh;
             margin: 0;
         }
-
+ 
         body::before {
             content: "";
             position: fixed;
@@ -82,7 +82,7 @@
             box-shadow: 4px 4px 0px #000;
             position: relative;
         }
-
+ 
         .danger-badge-container {
             position: absolute;
             top: -12px;
@@ -102,7 +102,7 @@
         }
         .danger-badge-1 { background: #ffb703; color: #000; }
         .danger-badge-2 { background: #e63946; color: #fff; }
-
+ 
         .memo-area {
             max-height: 0;
             opacity: 0;
@@ -119,7 +119,7 @@
             padding: 12px 12px 10px 12px;
             border: 2px solid #000;
         }
-
+ 
         .filter-area {
             max-height: 0;
             opacity: 0;
@@ -135,7 +135,7 @@
             border-radius: 1rem;
             background-color: #ffffff;
         }
-
+ 
         .filter-trigger {
             border: 3px solid #000;
             background: white;
@@ -150,7 +150,7 @@
             background: #40916c;
             color: white;
         }
-
+ 
         .filter-btn {
             border: 2px solid #000;
             box-shadow: 2px 2px 0px #000;
@@ -165,7 +165,7 @@
             background: #52b788;
             color: white;
         }
-
+ 
         .toggle-btn-group {
             display: flex;
             background: #2d6a4f;
@@ -193,7 +193,7 @@
             color: #1b4332;
             box-shadow: 2px 2px 0px #000;
         }
-
+ 
         .batch-btn {
             border: 1px solid #000;
             padding: 1px 8px;
@@ -204,7 +204,7 @@
             font-weight: 900;
             text-transform: uppercase;
         }
-
+ 
         .section-label {
             font-size: 13px;
             font-weight: 900;
@@ -216,7 +216,7 @@
             text-decoration-color: #52b788;
             text-underline-offset: 4px;
         }
-
+ 
         .stat-box {
             background: white;
             border: 2px solid #000;
@@ -238,7 +238,7 @@
             line-height: 1.1;
             color: #000;
         }
-
+ 
         .link-button {
             display: flex;
             align-items: center;
@@ -261,7 +261,7 @@
         }
         .link-button.chart { background: #e9edc9; }
         .link-button.video { background: #fec5bb; }
-
+ 
         .ranking-row {
             background: white;
             border: 2px solid #000;
@@ -284,7 +284,7 @@
         .rank-1 { color: #ffd700; text-shadow: 2px 2px 0px #000; }
         .rank-2 { color: #c0c0c0; text-shadow: 2px 2px 0px #000; }
         .rank-3 { color: #cd7f32; text-shadow: 2px 2px 0px #000; }
-
+ 
         .nav-dropdown {
             position: relative;
             display: inline-block;
@@ -308,7 +308,7 @@
             transform: translate(2px, 2px);
             box-shadow: 1px 1px 0px #000;
         }
-
+ 
         .dropdown-panel {
             position: absolute;
             top: 100%;
@@ -344,7 +344,7 @@
             background: #d8f3dc;
             color: #1b4332;
         }
-
+ 
         .pagination-container {
             display: flex;
             align-items: center;
@@ -385,7 +385,7 @@
             font-weight: 900;
             font-size: 12px;
         }
-
+ 
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -415,7 +415,7 @@
             from { transform: scale(0.8); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
-
+ 
         .hit-counter {
             background: #6b7280; 
             color: white;
@@ -428,7 +428,7 @@
             border: 2px solid #000;
             box-shadow: 2px 2px 0px #000;
         }
-
+ 
         .auth-btn {
             background: white;
             border: 2px solid #000;
@@ -458,7 +458,7 @@
             opacity: 0.6;
             cursor: wait;
         }
-
+ 
         .fav-btn {
             background: white;
             border: 2px solid #e5e7eb;
@@ -477,7 +477,7 @@
             color: #fbbf24;
             box-shadow: 2px 2px 0px #fbbf24;
         }
-
+ 
         .mirror-btn {
             background: white;
             border: 2px solid #e5e7eb;
@@ -520,7 +520,7 @@
             cursor: not-allowed;
             border-color: #9ca3af;
         }
-
+ 
         .fav-filter-toggle {
             display: flex;
             align-items: center;
@@ -543,7 +543,7 @@
             color: #b45309;
             box-shadow: 4px 4px 0px #fbbf24;
         }
-
+ 
         .error-toast {
             position: fixed;
             bottom: 20px;
@@ -567,7 +567,7 @@
             from { transform: translate(-50%, 20px); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
         }
-
+ 
         .mirror-tag {
             display: inline-flex;
             align-items: center;
@@ -582,7 +582,7 @@
             line-height: 1;
             white-space: nowrap;
         }
-
+ 
         .mirror-icon-badge {
             width: 20px;
             height: 20px;
@@ -595,7 +595,7 @@
             color: #6366f1;
             flex-shrink: 0;
         }
-
+ 
         .contact-method-card {
             background: #f8fafc;
             border: 2px solid #000;
@@ -611,7 +611,7 @@
             transform: translateY(-2px);
             box-shadow: 4px 4px 0px #000;
         }
-
+ 
         /* --- Image Export Layout Styles --- */
         #export-container {
             position: fixed;
@@ -739,10 +739,10 @@
 </head>
 <body>
     <div id="root"></div>
-
+ 
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef } = React;
-
+ 
         const firebaseConfig = {
             apiKey: "AIzaSyDSa7sQ4L9w894TSK8RPs4-XdFZ28CUEgA",
             authDomain: "sdvx-megamix-memo.firebaseapp.com",
@@ -752,26 +752,26 @@
             appId: "1:808467911876:web:4b220e81fb99b240532591",
             measurementId: "G-PLYC5FW8QK"
         };
-
+ 
         const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'sdvx-megamix-memo';
         const MASTER_COLLECTION = 'song_master';
         const MASTER_DOCUMENT = 'all_songs';
-
+ 
         const ITEMS_PER_PAGE = 30;
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
-
+ 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
         const LV19_LIST = Array.from({length: 10}, (_, i) => `19.${i}`);
         const LV20_LIST = Array.from({length: 10}, (_, i) => `20.${i}`);
-
+ 
         const formatLevel = (lv) => {
             const lvStr = String(lv || "");
             if (["17", "18", "19", "20"].includes(lvStr)) return lvStr + ".0";
             return lvStr;
         };
-
+ 
         const getBorderColor = (difficult) => {
             const diff = String(difficult || "").toUpperCase();
             switch(diff) {
@@ -786,7 +786,7 @@
                 default: return "#000000";
             }
         };
-
+ 
         const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type }) => {
             if (!isOpen) return null;
             return (
@@ -819,7 +819,7 @@
                 </div>
             );
         };
-
+ 
         const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
             if (!isOpen) return null;
             return (
@@ -852,7 +852,7 @@
                 </div>
             );
         };
-
+ 
         const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
             if (!isOpen) return null;
             return (
@@ -885,7 +885,7 @@
                 </div>
             );
         };
-
+ 
         const ImagePreviewModal = ({ isOpen, imageUrl, onCancel }) => {
             if (!isOpen || !imageUrl) return null;
             return (
@@ -920,7 +920,7 @@
                 </div>
             );
         };
-
+ 
         const SetlistSelectExportModal = ({ isOpen, onClose, setlists, onSelect }) => {
             if (!isOpen) return null;
             return (
@@ -949,7 +949,7 @@
                                 </button>
                             ))}
                         </div>
-
+ 
                         <button 
                             onClick={onClose}
                             className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none transition-all"
@@ -960,7 +960,7 @@
                 </div>
             );
         };
-
+ 
         const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, tightMode = false, minimalMode = false }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
@@ -969,21 +969,21 @@
             useEffect(() => {
                 setLocalMemo(personalMemo || "");
             }, [personalMemo]);
-
+ 
             const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
             const borderColor = useMemo(() => getBorderColor(song.difficult) || "#000000", [song.difficult]);
-
+ 
             const handleLinkClick = (e, url, type) => {
                 e.stopPropagation();
                 e.preventDefault();
                 setModalInfo({ isOpen: true, url, type });
             };
-
+ 
             const confirmNavigation = () => {
                 window.open(modalInfo.url, '_blank', 'noopener,noreferrer');
                 setModalInfo({ ...modalInfo, isOpen: false });
             };
-
+ 
             const renderDangerBadges = () => {
                 if (!showDangerBadge) return null;
                 const badges = [];
@@ -996,29 +996,29 @@
                 if (badges.length === 0) return null;
                 return <div className="danger-badge-container">{badges}</div>;
             };
-
+ 
             const handleFavoriteClick = (e) => {
                 e.stopPropagation();
                 if (!isLoggedIn) return;
                 onToggleFavorite();
             };
-
+ 
             const handleMirrorClick = (e) => {
                 e.stopPropagation();
                 if (!isLoggedIn) return;
                 onToggleMirror();
             };
-
+ 
             const handleMemoSave = () => {
                 if (!isLoggedIn) return;
                 if (!localMemo.trim()) return;
                 onSavePersonalMemo(localMemo);
             };
-
+ 
             const cardClassName = minimalMode 
                 ? `static-card rounded-xl p-1.5 mb-1`
                 : `pop-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`;
-
+ 
             return (
                 <>
                     <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName}>
@@ -1059,8 +1059,7 @@
                             <div className="flex flex-col items-center gap-1.5">
                                 {!minimalMode && (
                                     <>
-                                        {/* isLoggedIn が false の場合は表示されないように明示的にガード */}
-                                        {isLoggedIn === true && (
+                                        {isLoggedIn && !showDangerBadge && (
                                             <div className="flex flex-row gap-1" onClick={e => e.stopPropagation()}>
                                                 <button 
                                                     onClick={handleFavoriteClick} 
@@ -1100,7 +1099,7 @@
                                         <p className="stat-value">{song.combo || "-"}</p>
                                     </div>
                                 </div>
-
+ 
                                 <div className="flex items-center mb-3 text-black">
                                     <span className="section-label">第2区間</span>
                                 </div>
@@ -1118,7 +1117,7 @@
                                         <p className="stat-value">{song.combo2 || "-"}</p>
                                     </div>
                                 </div>
-
+ 
                                 <div className="grid grid-cols-2 gap-3 mb-6">
                                     {song.site_link ? (
                                         <button className="link-button chart" onClick={(e) => handleLinkClick(e, song.site_link, 'chart')}>
@@ -1136,7 +1135,7 @@
                                         <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
                                     )}
                                 </div>
-
+ 
                                 {showTips && song.memo && (
                                     <>
                                         <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
@@ -1150,9 +1149,8 @@
                                         </div>
                                     </>
                                 )}
-
-                                {/* isLoggedIn が false の場合は自分用メモも表示されない */}
-                                {isLoggedIn === true && (
+ 
+                                {isLoggedIn && !showDangerBadge && (
                                     <div className="mt-4 pt-4 border-t-2 border-gray-100" onClick={e => e.stopPropagation()}>
                                         <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
                                             <i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i>
@@ -1171,7 +1169,7 @@
                             </div>
                         )}
                     </div>
-
+ 
                     <LinkConfirmModal 
                         isOpen={modalInfo.isOpen}
                         onConfirm={confirmNavigation}
@@ -1181,7 +1179,7 @@
                 </>
             );
         };
-
+ 
         const SetlistLimitModal = ({ isOpen, onClose }) => {
             if (!isOpen) return null;
             return (
@@ -1208,7 +1206,7 @@
                 </div>
             );
         };
-
+ 
         const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, getSongId, formatLevel, getBorderColor }) => {
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
@@ -1222,7 +1220,7 @@
             const [deletingId, setDeletingId] = useState(null);
             const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
             const [isSelectExportOpen, setIsSelectExportOpen] = useState(false);
-
+ 
             const handleCreate = () => {
                 if (setlists.length >= 10) {
                     setIsLimitModalOpen(true);
@@ -1231,18 +1229,18 @@
                 setEditingSetlist({ id: Date.now().toString(), name: "", songs: [null, null, null, null, null], memo: "" });
                 setView("edit");
             };
-
+ 
             const handleEdit = (sl) => {
                 setEditingSetlist({ ...sl, songs: [...sl.songs], memo: sl.memo || "" });
                 setView("edit");
             };
-
+ 
             const openSongModal = (slotIndex) => {
                 setSelectingSlot(slotIndex);
                 setSearchTerm("");
                 setIsSongModalOpen(true);
             };
-
+ 
             const isTitleAlreadySelected = (songIdToCheck) => {
                 if (!editingSetlist) return false;
                 const songToCheck = songMap[songIdToCheck];
@@ -1255,7 +1253,7 @@
                     return selectedSong && selectedSong.title === songToCheck.title;
                 });
             };
-
+ 
             const selectSong = (songId) => {
                 if (isTitleAlreadySelected(songId)) return;
                 const newSongs = [...editingSetlist.songs];
@@ -1263,7 +1261,7 @@
                 setEditingSetlist({ ...editingSetlist, songs: newSongs });
                 setIsSongModalOpen(false);
             };
-
+ 
             const handleSave = () => {
                 onSave(editingSetlist);
                 if (editingSetlist && editingSetlist.id) {
@@ -1271,12 +1269,12 @@
                 }
                 setView("list");
             };
-
+ 
             const requestDelete = (id) => {
                 setDeletingId(id);
                 setIsDeleteModalOpen(true);
             };
-
+ 
             const confirmDelete = () => {
                 if (deletingId) {
                     onDelete(deletingId);
@@ -1284,16 +1282,16 @@
                     setIsDeleteModalOpen(false);
                 }
             };
-
+ 
             const canSave = editingSetlist && editingSetlist.name.trim() !== "" && editingSetlist.songs.every(id => id !== null);
-
+ 
             const getButtonClass = (bgColor, textColor = "text-black") => `
                 font-black py-2 rounded-xl border-4 border-black 
                 shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 
                 active:shadow-none transition-all flex justify-center items-center gap-1
                 w-32 ${bgColor} ${textColor}
             `;
-
+ 
             if (view === "list") {
                 return (
                     <div className="flex flex-col gap-4">
@@ -1372,7 +1370,7 @@
                                                     )
                                                 })}
                                             </div>
-
+ 
                                             {sl.memo && (
                                                 <div className="mt-4 pt-4 border-t-2 border-gray-100">
                                                     <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
@@ -1386,7 +1384,7 @@
                                                     </div>
                                                 </div>
                                             )}
-
+ 
                                             <div className="flex gap-4 mt-6 justify-center">
                                                 <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className={getButtonClass("bg-yellow-400")}>
                                                     <i className="ph-bold ph-pencil-simple"></i> 編集する
@@ -1400,18 +1398,18 @@
                                 ))}
                             </div>
                         )}
-
+ 
                         <DeleteConfirmModal 
                             isOpen={isDeleteModalOpen}
                             onConfirm={confirmDelete}
                             onCancel={() => { setIsDeleteModalOpen(false); setDeletingId(null); }}
                         />
-
+ 
                         <SetlistLimitModal 
                             isOpen={isLimitModalOpen}
                             onClose={() => setIsLimitModalOpen(false)}
                         />
-
+ 
                         <SetlistSelectExportModal 
                             isOpen={isSelectExportOpen}
                             onClose={() => setIsSelectExportOpen(false)}
@@ -1424,7 +1422,7 @@
                     </div>
                 );
             }
-
+ 
             return (
                 <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8_8px_0px_#000]">
                     <h3 className="text-xl font-black mb-4 text-black border-b-4 border-[#52b788] pb-2 inline-block">セトリ作成</h3>
@@ -1438,7 +1436,7 @@
                             className="w-full bg-gray-50 border-4 border-black rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:border-[#52b788] focus:bg-white transition-all text-black"
                         />
                     </div>
-
+ 
                     <div className="flex flex-col gap-3 mb-6 px-1 pt-1">
                         <label className="block text-xs font-black uppercase text-gray-500 mb-[-4px]">TRACKS</label>
                         {editingSetlist.songs.map((songId, idx) => {
@@ -1476,7 +1474,7 @@
                             )
                         })}
                     </div>
-
+ 
                     <div className="mb-6">
                         <label className="block text-xs font-black uppercase text-gray-500 mb-1">自分用メモ</label>
                         <textarea 
@@ -1485,7 +1483,7 @@
                             className="memo-textarea"
                         />
                     </div>
-
+ 
                     <div className="flex gap-4 justify-center mt-2">
                         <button 
                             onClick={handleSave} 
@@ -1498,7 +1496,7 @@
                             キャンセル
                         </button>
                     </div>
-
+ 
                     {isSongModalOpen && (
                         <div className="modal-overlay" onClick={() => setIsSongModalOpen(false)}>
                             <div className="modal-content" style={{ padding: '16px', maxWidth: '380px', width: '100%', height: '80vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
@@ -1564,7 +1562,7 @@
                 </div>
             )
         };
-
+ 
         const App = () => {
             const [songs, setSongs] = useState([]);
             const [isLoading, setIsLoading] = useState(true);
@@ -1588,13 +1586,13 @@
             const [previewUrl, setPreviewUrl] = useState(null);
             
             const [contactLinkModal, setContactLinkModal] = useState({ isOpen: false, url: '', type: '' });
-
+ 
             const [randomSongs, setRandomSongs] = useState([]);
             const [isGenerating, setIsGenerating] = useState(false);
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
             const [isSavingImage, setIsSavingImage] = useState(false);
-
+ 
             const [user, setUser] = useState(null);
             const [isAuthLoading, setIsAuthLoading] = useState(true);
             const [authError, setAuthError] = useState(null);
@@ -1606,11 +1604,11 @@
             const [showOnlyMirrors, setShowOnlyMirrors] = useState(false);
             
             const [firebase, setFirebase] = useState(null);
-
+ 
             const exportRef = useRef(null);
-
+ 
             const getSongId = (song) => `${song.title}_${song.difficult}`;
-
+ 
             const songMap = useMemo(() => {
                 const map = {};
                 songs.forEach(s => {
@@ -1618,15 +1616,15 @@
                 });
                 return map;
             }, [songs]);
-
+ 
             const viewToken = useMemo(() => {
                 return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), showOnlyFavorites, showOnlyMirrors].join('|');
             }, [currentPage, pageIndex, searchTerm, selectedLevels, showOnlyFavorites, showOnlyMirrors]);
-
+ 
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'auto' });
             }, [currentPage, pageIndex]);
-
+ 
             // --- Firebase Initialization & Auth ---
             useEffect(() => {
                 const initFirebase = async () => {
@@ -1636,7 +1634,7 @@
                     const db = getFirestore(app);
                     
                     setFirebase({ auth, db });
-
+ 
                     const initAuth = async () => {
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await signInWithCustomToken(auth, __initial_auth_token);
@@ -1645,7 +1643,7 @@
                         }
                     };
                     initAuth();
-
+ 
                     onAuthStateChanged(auth, (currentUser) => {
                         setUser(currentUser);
                         setIsAuthLoading(false);
@@ -1660,7 +1658,7 @@
                         }
                     });
                 };
-
+ 
                 const interval = setInterval(() => {
                     if (window.FirebaseSDK) {
                         initFirebase();
@@ -1668,11 +1666,11 @@
                     }
                 }, 100);
             }, []);
-
+ 
             // --- Master Data Fetch ---
             useEffect(() => {
                 if (!firebase || !user) return;
-
+ 
                 const fetchMasterData = async () => {
                     const { doc, getDoc } = window.FirebaseSDK;
                     try {
@@ -1692,15 +1690,15 @@
                         setIsLoading(false);
                     }
                 };
-
+ 
                 fetchMasterData();
             }, [firebase, user]);
-
+ 
             // --- User Profile & Setlists Sync ---
             useEffect(() => {
                 if (!user || !firebase || user.isAnonymous) return;
                 const { doc, onSnapshot } = window.FirebaseSDK;
-
+ 
                 const unsubProfile = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -1709,19 +1707,19 @@
                         setPersonalMemos(data.memos || {});
                     }
                 }, (err) => console.error("Firestore Profile Sync Error:", err));
-
+ 
                 const unsubSetlists = onSnapshot(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), (docSnap) => {
                     if (docSnap.exists()) {
                         setSetlists(docSnap.data().items || []);
                     }
                 }, (err) => console.error("Firestore Setlist Sync Error:", err));
-
+ 
                 return () => {
                     unsubProfile();
                     unsubSetlists();
                 };
             }, [user, firebase]);
-
+ 
             useEffect(() => {
                 setSelectedLevels([]);
                 setIsFilterOpen(false);
@@ -1730,11 +1728,11 @@
                 setShowOnlyMirrors(false);
                 if (currentPage !== "terms") setTermsTab("terms");
             }, [currentPage]);
-
+ 
             useEffect(() => {
                 setPageIndex(1);
             }, [rankSection, searchTerm, selectedLevels, sortOrder, showOnlyFavorites, showOnlyMirrors]);
-
+ 
             const login = async () => {
                 if (!firebase || isAuthLoading) return;
                 setIsAuthLoading(true);
@@ -1745,7 +1743,7 @@
                 provider.setCustomParameters({
                     prompt: 'select_account'
                 });
-
+ 
                 try {
                     await signInWithPopup(firebase.auth, provider);
                 } catch (error) {
@@ -1754,7 +1752,7 @@
                     setIsAuthLoading(false);
                 }
             };
-
+ 
             const logout = async () => {
                 if (!firebase) return;
                 const { signOut, signInAnonymously } = window.FirebaseSDK;
@@ -1769,7 +1767,7 @@
                     console.error("Logout Error:", error);
                 }
             };
-
+ 
             const updateFirestoreProfile = async (newFavs, newMemos, newMirrors) => {
                 if (!user || !firebase || user.isAnonymous) return;
                 const { doc, setDoc } = window.FirebaseSDK;
@@ -1779,7 +1777,7 @@
                     mirrors: newMirrors
                 }, { merge: true });
             };
-
+ 
             const toggleFavorite = async (songId) => {
                 const newFavs = favorites.includes(songId) 
                     ? favorites.filter(id => id !== songId) 
@@ -1787,7 +1785,7 @@
                 setFavorites(newFavs);
                 await updateFirestoreProfile(newFavs, personalMemos, mirrors);
             };
-
+ 
             const toggleMirror = async (songId) => {
                 const newMirrors = mirrors.includes(songId) 
                     ? mirrors.filter(id => id !== songId) 
@@ -1795,13 +1793,13 @@
                 setMirrors(newMirrors);
                 await updateFirestoreProfile(favorites, personalMemos, newMirrors);
             };
-
+ 
             const savePersonalMemo = async (songId, memo) => {
                 const newMemos = { ...personalMemos, [songId]: memo };
                 setPersonalMemos(newMemos);
                 await updateFirestoreProfile(favorites, newMemos, mirrors);
             };
-
+ 
             const saveSetlist = async (newSetlist) => {
                 if (!user || !firebase || user.isAnonymous) return;
                 const { doc, setDoc } = window.FirebaseSDK;
@@ -1814,7 +1812,7 @@
                     items: newItems
                 });
             };
-
+ 
             const deleteSetlist = async (id) => {
                 if (!user || !firebase || user.isAnonymous) return;
                 const { doc, setDoc } = window.FirebaseSDK;
@@ -1824,13 +1822,13 @@
                     items: newItems
                 });
             };
-
+ 
             const toggleLevel = (lv) => {
                 setSelectedLevels(prev => 
                     prev.includes(lv) ? prev.filter(l => l !== lv) : [...prev, lv]
                 );
             };
-
+ 
             const toggleLevelRange = (range) => {
                 const allSelected = range.every(lv => selectedLevels.includes(lv));
                 if (allSelected) {
@@ -1839,11 +1837,11 @@
                     setSelectedLevels(prev => [...new Set([...prev, ...range])]);
                 }
             };
-
+ 
             const isLevelFilterActive = useMemo(() => {
                 return selectedLevels.length > 0;
             }, [selectedLevels]);
-
+ 
             const generateRandomSongs = () => {
                 setIsGenerating(true);
                 setHasGeneratedRandom(true);
@@ -1851,7 +1849,7 @@
                     const songId = getSongId(s);
                     const matchesFav = randomPoolFilter === "all" || (user && favorites.includes(songId));
                     if (!matchesFav) return false;
-
+ 
                     const lvStr = String(s.level || "");
                     const matchesLv = selectedLevels.length === 0 || selectedLevels.some(targetLv => {
                         if (["17.0", "18.0", "19.0", "20.0"].includes(targetLv)) {
@@ -1863,7 +1861,7 @@
                     
                     return matchesLv;
                 });
-
+ 
                 if (filtered.length < 5) {
                     setRandomSongs([]);
                 } else {
@@ -1880,7 +1878,7 @@
                 
                 setTimeout(() => setIsGenerating(false), 500);
             };
-
+ 
             const performImageExport = async () => {
                 setIsSavingImage(true);
                 
@@ -1908,7 +1906,7 @@
                     setIsSavingImage(false);
                 }
             };
-
+ 
             const handleSetlistExport = (sl) => {
                 const slSongs = sl.songs.map(id => songMap[id]).filter(s => s);
                 setExportData({
@@ -1919,14 +1917,14 @@
                 // データセット後にエクスポートを実行
                 performImageExport();
             };
-
+ 
             const handleClosePreview = () => {
                 if (previewUrl) {
                     URL.revokeObjectURL(previewUrl);
                 }
                 setPreviewUrl(null);
             };
-
+ 
             const processedSongs = useMemo(() => {
                 return songs.map(s => {
                     let displayCombo = 0;
@@ -1938,14 +1936,14 @@
                     return { ...s, _displayCombo: displayCombo };
                 });
             }, [songs, rankSection]);
-
+ 
             const allFilteredSongs = useMemo(() => {
                 let baseList = processedSongs;
-
+ 
                 if (currentPage === "danger") {
                     baseList = processedSongs.filter(s => String(s.danger1) === "1" || String(s.danger2) === "1");
                 }
-
+ 
                 const result = baseList.filter(s => {
                     const lvStr = String(s.level || "");
                     const matchesLv = selectedLevels.length === 0 || selectedLevels.some(targetLv => {
@@ -1957,13 +1955,12 @@
                     });
                     
                     const songId = getSongId(s);
-                    // ここで currentPage が main の時だけお気に入りフィルターが効くようにする
                     const isFavFilterApplied = currentPage === "main" && showOnlyFavorites;
                     const matchesFav = !isFavFilterApplied || favorites.includes(songId);
-
+ 
                     const isMirrorFilterApplied = currentPage === "main" && showOnlyMirrors;
                     const matchesMirror = !isMirrorFilterApplied || mirrors.includes(songId);
-
+ 
                     if (currentPage === "main") {
                         const matchesSearch = 
                             String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1971,10 +1968,9 @@
                         return matchesLv && matchesSearch && matchesFav && matchesMirror;
                     }
                     
-                    // 要注意曲リストページではレベル絞り込みのみ適用し、お気に入り/ミラー条件は無視（常に表示）
-                    return matchesLv;
+                    return matchesLv && matchesFav;
                 });
-
+ 
                 if (currentPage === "ranking") {
                     const listWithCombo = result.filter(s => s._displayCombo > 0);
                     return listWithCombo.sort((a, b) => {
@@ -1983,34 +1979,34 @@
                         return sortOrder === "desc" ? comboB - comboA : comboA - comboB;
                     });
                 }
-
+ 
                 return result;
             }, [searchTerm, selectedLevels, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors]);
-
+ 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * ITEMS_PER_PAGE;
                 return allFilteredSongs.slice(start, start + ITEMS_PER_PAGE);
             }, [allFilteredSongs, pageIndex]);
-
+ 
             const totalPages = Math.ceil(allFilteredSongs.length / ITEMS_PER_PAGE);
-
+ 
             const handlePageChange = (newIndex) => {
                 if (newIndex >= 1 && newIndex <= totalPages) {
                     setPageIndex(newIndex);
                 }
             };
-
+ 
             const FilterButton = ({ lv, label }) => (
                 <button onClick={() => toggleLevel(lv)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedLevels.includes(lv) ? 'active' : ''}`}>{label || lv}</button>
             );
-
+ 
             const LevelSectionHeader = ({ title, list }) => (
                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
                     <div className="text-[10px] font-black text-black uppercase leading-none">Level {title}</div>
                     <button onClick={() => toggleLevelRange(list)} className="batch-btn">全選択/解除</button>
                 </div>
             );
-
+ 
             return (
                 <div className="min-h-screen px-4 py-8 max-w-md mx-auto">
                     {/* Invisible Container for Image Export (16:9) */}
@@ -2040,7 +2036,7 @@
                                     <div key={`exp-jack-empty-${i}`} className="export-jacket-box opacity-20 border-dashed border-white"></div>
                                 ))}
                             </div>
-
+ 
                             <div className="export-info-list">
                                 {exportData.songs.map((song, i) => (
                                     <div key={`exp-info-${i}`} className="export-info-row" style={{ borderLeft: `14px solid #000` }}>
@@ -2058,7 +2054,7 @@
                             </div>
                         </div>
                     </div>
-
+ 
                     {authError && (
                         <div className="error-toast" onClick={() => setAuthError(null)}>
                             <div className="flex flex-col items-center gap-2">
@@ -2068,7 +2064,7 @@
                             </div>
                         </div>
                     )}
-
+ 
                     <div className="fixed top-4 left-4 z-50">
                         <div className="nav-dropdown">
                             <button onClick={() => setIsNavOpen(!isNavOpen)} className="nav-btn">
@@ -2110,7 +2106,7 @@
                             )}
                         </div>
                     </div>
-
+ 
                     <div className="fixed top-4 right-4 z-50">
                         {user && !user.isAnonymous ? (
                             <div className="bg-white border-2 border-black px-3 py-2 rounded-xl shadow-[3px_3px_0px_#000] flex items-center gap-2">
@@ -2137,7 +2133,7 @@
                             </button>
                         )}
                     </div>
-
+ 
                     <header className={`text-center pt-8 ${currentPage === 'random' ? 'mb-4' : 'mb-10'}`}>
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
@@ -2145,7 +2141,7 @@
                         <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-6 text-white">
                             MEGAMIX<span className="text-[#52b788]">.</span>MEMO
                         </h1>
-
+ 
                         <div className="space-y-6">
                             {currentPage === "ranking" && (
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
@@ -2171,7 +2167,7 @@
                                     </div>
                                 </div>
                             )}
-
+ 
                             {currentPage === "danger" && (
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                     <div className="flex items-center gap-2 mb-3">
@@ -2190,7 +2186,7 @@
                                     </div>
                                 </div>
                             )}
-
+ 
                             {currentPage === "random" && (
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                     <div className="flex items-center justify-between mb-3">
@@ -2229,7 +2225,7 @@
                                             )}
                                         </button>
                                     </div>
-
+ 
                                     <div className="mt-4">
                                         {user && !user.isAnonymous && (
                                             <div className="mb-4">
@@ -2242,11 +2238,9 @@
                                     </div>
                                 </div>
                             )}
-
-                            {/* 条件分けエリア: メインページか要注意曲リストページの場合 */}
+ 
                             {currentPage !== "setlist" && currentPage !== "terms" && currentPage !== "contact" && (
                                 <div className="px-1 flex flex-col gap-3">
-                                    {/* 検索バーと お気に入りのみボタン はメインページのみに厳密に限定 */}
                                     {currentPage === "main" && (
                                         <>
                                             <div className="relative">
@@ -2284,8 +2278,6 @@
                                             )}
                                         </>
                                     )}
-                                    
-                                    {/* レベル絞り込みボタンは共通で使用可能（要注意曲リストでも役立つため） */}
                                     <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isLevelFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
                                         <div className="flex items-center gap-3">
                                             <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
@@ -2312,7 +2304,7 @@
                             )}
                         </div>
                     </header>
-
+ 
                     <main className="pb-10">
                         {isLoading ? (
                             <div className="flex flex-col items-center py-20">
@@ -2337,20 +2329,20 @@
                                         />
                                     </div>
                                 )}
-
+ 
                                 {currentPage === "contact" && (
                                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                         <div className="flex items-center gap-2 mb-4">
                                             <i className="ph-fill ph-chat-centered-text text-3xl text-[#52b788]"></i>
                                             <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">お問い合わせ</h2>
                                         </div>
-
+ 
                                         <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
                                             <p className="text-[13px] font-black leading-relaxed">
                                                 本サービスに関するご質問、不具合報告、楽曲情報の誤り、または改善のご提案などがございましたら、以下のいずれかの方法でご連絡をお願いいたします。
                                             </p>
                                         </div>
-
+ 
                                         <div className="space-y-4">
                                             <div className="contact-method-card">
                                                 <div className="flex items-center gap-2">
@@ -2367,7 +2359,7 @@
                                                     <i className="ph-bold ph-paper-plane-tilt text-lg"></i>DMを送る
                                                 </button>
                                             </div>
-
+ 
                                             <div className="contact-method-card">
                                                 <div className="flex items-center gap-2">
                                                     <i className="ph-fill ph-file-text text-xl text-black"></i>
@@ -2384,7 +2376,7 @@
                                                 </button>
                                             </div>
                                         </div>
-
+ 
                                         <div className="mt-10 flex justify-center">
                                             <button onClick={() => setCurrentPage("main")} className="page-btn">
                                                 メインページに戻る
@@ -2392,7 +2384,7 @@
                                         </div>
                                     </div>
                                 )}
-
+ 
                                 {currentPage === "terms" && (
                                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                         <div className="flex items-center gap-2 mb-4">
@@ -2405,7 +2397,7 @@
                                                 本内容に関するお問い合わせは「お問い合わせ・不具合報告」ページからお願いいたします。
                                             </p>
                                         </div>
-
+ 
                                         <div className="mb-4">
                                             <div className="toggle-btn-group">
                                                 <button onClick={() => setTermsTab("terms")} className={`toggle-btn-small ${termsTab === "terms" ? 'active' : ''}`}>利用規約</button>
@@ -2413,7 +2405,7 @@
                                                 <button onClick={() => setTermsTab("credits")} className={`toggle-btn-small ${termsTab === "credits" ? 'active' : ''}`}>クレジット</button>
                                             </div>
                                         </div>
-
+ 
                                         <div className="bg-white border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_#000]">
                                             <div className="space-y-4 text-sm font-bold leading-relaxed text-black">
                                                 {termsTab === "terms" && (
@@ -2428,19 +2420,19 @@
                                                         
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">サービスの中断・終了</h4>
                                                         <p>予告なくサービスの内容変更、運用の中断、または終了する可能性があります。これらによってユーザーに生じた不利益や損害について、運営側は一切の責任を負いません。</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">免責事項・トラブルについて</h4>
                                                         <p>本サービスのご利用中にユーザー間で発生したトラブルについて、運営側は一切の責任を負いません。</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">保存データに関する注意</h4>
                                                         <p>保存された自分用メモ、セトリ、お気に入り等のデータは、システムの不具合、メンテナンス、またはサービス終了に伴い消失する可能性があります。データの永久的な保持は保証いたしません。</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">ログイン情報の管理</h4>
                                                         <p>Googleログイン等の認証情報の管理はユーザー自身の責任で行ってください。運営側でユーザーのパスワードを保持することはありません。</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">禁止事項</h4>
                                                         <p>サーバーに過度な負荷をかける行為（自動プログラムによる取得など）や、公序良俗に反する内容をメモやセトリ名に登録する行為を禁止します。</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">情報の正確性について</h4>
                                                         <p>提供する情報の正確性には細心の注意を払っていますが、手動入力による誤りが含まれる可能性があります。情報の利用はユーザー自身の判断で行ってください。</p>
                                                     </div>
@@ -2449,28 +2441,28 @@
                                                 {termsTab === "privacy" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">プライバシーポリシー</h3>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">情報の取得について</h4>
                                                         <p>本サービスでは、Googleログインの際に、ユーザーの識別、およびデータの紐付けを目的として、Googleアカウントに登録されているユーザー名、メールアドレス、プロフィール画像、およびサービス固有の識別子（UID）を取得します。</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">情報の利用目的</h4>
                                                         <p>取得した情報は、以下の目的でのみ利用します。<br/>1.ユーザーの認証、および本人確認のため<br/>2.ユーザーが作成したデータ（メモ、セトリ、お気に入り等）をサーバーに保存し、異なるデバイス間で同期するため</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">データの保存と管理</h4>
                                                         <p>本サービスでは、Googleが提供する Firebase（Firestore）を利用してデータを保存・管理しています。ユーザーの パスワードを本サービス側で直接取得・保持することはありません。</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">第三者への情報提供</h4>
                                                         <p>取得した個人情報を、法令に基づく場合を除き、ユーザーの同意なく第三者に提供することはありません。</p>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-4 text-sm uppercase">クッキー（Cookie）等の利用</h4>
                                                         <p>本サービスでは、ログイン状態の保持や利便性の向上のため、Cookieまたはそれに準ずる技術を利用する場合があります。</p>
                                                     </div>
                                                 )}
-
+ 
                                                 {termsTab === "credits" && (
                                                     <div className="animate-in fade-in duration-300">
                                                         <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">クレジット</h3>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">運営メンバー</h4>
                                                         <ul className="list-disc list-inside space-y-1">
                                                             <li>代表：悠 (@YuSDVX)</li>
@@ -2479,7 +2471,7 @@
                                                             <li>データ協力：KAME (@kame_ver2)</li>
                                                             <li>データ協力：えーこぱふ (@eikopaf)</li>
                                                         </ul>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用ライブラリ</h4>
                                                         <p className="text-xs">本サービスは以下のオープンソースライブラリを使用しています。</p>
                                                         <ul className="list-disc list-inside space-y-1 text-xs">
@@ -2489,7 +2481,7 @@
                                                             <li>Firebase SDK (Apache License 2.0)</li>
                                                             <li>Babel (MIT License)</li>
                                                         </ul>
-
+ 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用フォント</h4>
                                                         <ul className="list-disc list-inside space-y-1 text-xs">
                                                             <li>M PLUS Rounded 1c (SIL Open Font License)</li>
@@ -2507,7 +2499,7 @@
                                         </div>
                                     </div>
                                 )}
-
+ 
                                 {currentPage === "ranking" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         {paginatedSongs.map((song, idx) => {
@@ -2537,7 +2529,7 @@
                                         })}
                                     </div>
                                 )}
-
+ 
                                 {currentPage === "random" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-1">
                                         {randomSongs.length > 0 ? (
@@ -2577,33 +2569,31 @@
                                 {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && (
                                     paginatedSongs.map((song, idx) => {
                                         const songId = getSongId(song);
-                                        // currentPage === "danger" の時は isLoggedIn を false に強制する
-                                        const isDangerPage = currentPage === "danger";
                                         return (
                                             <SongCard 
                                                 key={`${viewToken}-${songId}`} 
                                                 song={song} 
-                                                showDangerBadge={isDangerPage} 
-                                                showTips={isDangerPage} 
-                                                isLoggedIn={isDangerPage ? false : (user && !user.isAnonymous)}
-                                                isFavorite={isDangerPage ? false : favorites.includes(songId)}
+                                                showDangerBadge={currentPage === "danger"} 
+                                                showTips={currentPage === "danger"} 
+                                                isLoggedIn={currentPage === "danger" ? false : (user && !user.isAnonymous)}
+                                                isFavorite={favorites.includes(songId)}
                                                 onToggleFavorite={() => toggleFavorite(songId)}
-                                                isMirror={isDangerPage ? false : mirrors.includes(songId)}
+                                                isMirror={mirrors.includes(songId)}
                                                 onToggleMirror={() => toggleMirror(songId)}
-                                                personalMemo={isDangerPage ? null : personalMemos[songId]}
+                                                personalMemo={personalMemos[songId]}
                                                 onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
                                             />
                                         );
                                     })
                                 )}
-
+ 
                                 {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
                                         <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
                                     </div>
                                 )}
-
+ 
                                 {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
@@ -2618,19 +2608,19 @@
                             </>
                         )}
                     </main>
-
+ 
                     <LogoutConfirmModal 
                         isOpen={isLogoutModalOpen}
                         onConfirm={logout}
                         onCancel={() => setIsLogoutModalOpen(false)}
                     />
-
+ 
                     <ImagePreviewModal 
                         isOpen={!!previewUrl}
                         imageUrl={previewUrl}
                         onCancel={handleClosePreview}
                     />
-
+ 
                     <LinkConfirmModal 
                         isOpen={contactLinkModal.isOpen}
                         onConfirm={() => { window.open(contactLinkModal.url, '_blank', 'noopener,noreferrer'); setContactLinkModal({ ...contactLinkModal, isOpen: false }); }}
@@ -2640,7 +2630,7 @@
                 </div>
             );
         };
-
+ 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
