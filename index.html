@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDVX MEGAMIX_Memo</title>
     
     <!-- 背景画像のプリロード -->
@@ -42,9 +42,6 @@
             position: relative;
             min-height: 100vh;
             margin: 0;
-            /* ドラッグ中にテキスト選択されるのを防ぐ */
-            user-select: none;
-            -webkit-user-select: none;
         }
 
         body::before {
@@ -78,57 +75,6 @@
             border-color: #52b788;
             box-shadow: 6px 6px 0px #52b788;
         }
-
-        /* --- グリッドアイテム用スタイル --- */
-        .grid-item {
-            background: white;
-            border: 2px solid #000;
-            aspect-ratio: 1/1;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 3px 3px 0px #000;
-            transition: all 0.1s;
-        }
-        .grid-item:active {
-            transform: translate(1px, 1px);
-            box-shadow: 1px 1px 0px #000;
-        }
-
-        /* --- ドラッグ＆ドロップ用スタイル --- */
-        .track-item {
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-            touch-action: none; /* スマホのスクロール干渉を抑制 */
-        }
-        .track-item.is-dragging {
-            opacity: 0.6;
-            transform: scale(1.02);
-            box-shadow: 8px 8px 15px rgba(0,0,0,0.3);
-            z-index: 50;
-            pointer-events: none; /* ドラッグ中に自分自身がターゲットになるのを防ぐ */
-        }
-        .track-item.drop-target {
-            border-top: 6px solid #52b788;
-            padding-top: 10px;
-        }
-
-        .grid-title-badge {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            font-size: 7px;
-            font-weight: 700;
-            padding: 2px 4px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            pointer-events: none;
-        }
-
         /* Static card for random selection */
         .static-card {
             background: white;
@@ -470,39 +416,6 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* --- 新設：譜面プレビュー用モーダル --- */
-        .preview-modal-content {
-            background: white;
-            border: 4px solid #000;
-            box-shadow: 8px 8px 0px #000;
-            border-radius: 20px;
-            width: 100%;
-            height: 90vh;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .preview-header {
-            padding: 12px 16px;
-            border-bottom: 3px solid #000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f8fafc;
-        }
-        .preview-iframe-container {
-            flex-grow: 1;
-            position: relative;
-            background: #eee;
-        }
-        .preview-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
         .hit-counter {
             background: #6b7280; 
             color: white;
@@ -699,28 +612,6 @@
             box-shadow: 4px 4px 0px #000;
         }
 
-        /* 改修：干渉を防ぐため絶対配置を廃止し、独立したボタンスタイルへ */
-        .view-mode-badge {
-            background: white;
-            color: black;
-            border: 2px solid #000;
-            border-radius: 10px;
-            padding: 6px 14px;
-            font-size: 11px;
-            font-weight: 900;
-            box-shadow: 3px 3px 0px #000;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            cursor: pointer;
-            width: fit-content;
-        }
-        .view-mode-badge:active {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px #000;
-        }
-
         /* --- Image Export Layout Styles --- */
         #export-container {
             position: fixed;
@@ -844,19 +735,6 @@
             flex-shrink: 0;
             align-items: center;
         }
-        
-        /* カスタムスクロールバー（PC用） */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
     </style>
 </head>
 <body>
@@ -879,9 +757,7 @@
         const MASTER_COLLECTION = 'song_master';
         const MASTER_DOCUMENT = 'all_songs';
 
-        const LIST_ITEMS_PER_PAGE = 30;
-        const GRID_ITEMS_PER_PAGE = 60;
-
+        const ITEMS_PER_PAGE = 30;
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
 
@@ -911,7 +787,6 @@
             }
         };
 
-        // 外部サイト確認用モーダル（主に動画用）
         const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type }) => {
             if (!isOpen) return null;
             return (
@@ -942,182 +817,6 @@
                         </div>
                     </div>
                 </div>
-            );
-        };
-
-        // 譜面プレビュー用モーダル
-        const ChartPreviewModal = ({ isOpen, url, title, onCancel }) => {
-            if (!isOpen) return null;
-            return (
-                <div className="modal-overlay" onClick={onCancel}>
-                    <div className="preview-modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="preview-header">
-                            <div className="flex items-center gap-2">
-                                <i className="ph-bold ph-file-text text-xl"></i>
-                                <span className="text-sm font-black truncate max-w-[200px]">{title}</span>
-                            </div>
-                            <button onClick={onCancel} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center border-2 border-black active:translate-y-0.5">
-                                <i className="ph-bold ph-x"></i>
-                            </button>
-                        </div>
-                        <div className="preview-iframe-container">
-                            <iframe 
-                                src={url} 
-                                className="preview-iframe" 
-                                title="Chart Preview"
-                                allowFullScreen
-                            ></iframe>
-                        </div>
-                        <div className="p-3 border-t-2 border-black bg-white flex justify-between items-center">
-                            <p className="text-[10px] font-black text-gray-400">※譜面保管所(sdvx.in)様を表示しています</p>
-                            <button 
-                                onClick={() => window.open(url, '_blank')}
-                                className="bg-gray-100 border-2 border-black rounded-lg px-3 py-1 text-[10px] font-black flex items-center gap-1 active:translate-y-0.5"
-                            >
-                                <i className="ph-bold ph-arrow-square-out"></i> 別タブで開く
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // 楽曲詳細モーダル（グリッドモード用）
-        const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel }) => {
-            const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
-            const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
-
-            if (!isOpen || !song) return null;
-
-            const handleChartClick = (e, url) => {
-                e.stopPropagation();
-                setChartModal({ isOpen: true, url });
-            };
-
-            const handleVideoClick = (e, url) => {
-                e.stopPropagation();
-                setConfirmModal({ isOpen: true, url, type: 'video' });
-            };
-
-            const confirmVideoNavigation = () => {
-                window.open(confirmModal.url, '_blank', 'noopener,noreferrer');
-                setConfirmModal({ ...confirmModal, isOpen: false });
-            };
-
-            return (
-                <>
-                    <div className="modal-overlay" onClick={onCancel}>
-                        <div className="modal-content !max-w-[380px] !text-left" onClick={e => e.stopPropagation()}>
-                            <div className="flex justify-between items-start mb-4">
-                                <h2 className="text-xl font-black leading-tight pr-4">{song.title}</h2>
-                                <button onClick={onCancel} className="text-gray-400 hover:text-black">
-                                    <i className="ph-bold ph-x text-2xl"></i>
-                                </button>
-                            </div>
-                            
-                            {/* スクロールエリア最下部の余白調整 (pb-8) */}
-                            <div className="max-h-[70vh] overflow-y-auto pr-2 pb-8 custom-scrollbar">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-black flex-shrink-0">
-                                        <img src={song.jacket} className="w-full h-full object-cover" crossOrigin="anonymous" alt="jacket" />
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-[10px] font-black">Lv</span>
-                                            <span className="text-lg font-black italic">{formatLevel(song.level)}</span>
-                                            <span className="text-xs font-black ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
-                                        </div>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-[10px] font-black">BPM</span>
-                                            <span className="text-lg font-black">{song.bpm || "???"}</span>
-                                        </div>
-                                        {isLoggedIn && (
-                                            <div className="flex gap-2 mt-1">
-                                                <button onClick={onToggleFavorite} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isFavorite ? 'bg-yellow-400' : 'bg-white'}`}>
-                                                    <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-sm`}></i>
-                                                </button>
-                                                <button onClick={onToggleMirror} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isMirror ? 'bg-indigo-400 text-white' : 'bg-white'}`}>
-                                                    <i className="ph-bold ph-arrows-left-right text-sm"></i>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div>
-                                        <span className="section-label">第1区間</span>
-                                        <div className="grid grid-cols-3 gap-2 mt-2">
-                                            <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <span className="section-label">第2区間</span>
-                                        <div className="grid grid-cols-3 gap-2 mt-2">
-                                            {/* ラベル重複解消 */}
-                                            <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3 mb-6">
-                                        {song.site_link ? (
-                                            <button className="link-button chart" onClick={(e) => handleChartClick(e, song.site_link)}>
-                                                <i className="ph-bold ph-file-text text-lg"></i>画像で確認
-                                            </button>
-                                        ) : (
-                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>画像なし</div>
-                                        )}
-                                        
-                                        {song.movie_link ? (
-                                            <button className="link-button video" onClick={(e) => handleVideoClick(e, song.movie_link)}>
-                                                <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
-                                            </button>
-                                        ) : (
-                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
-                                        )}
-                                    </div>
-                                    
-                                    {song.memo && (
-                                        <div className="bg-green-50 p-4 rounded-xl border-2 border-black">
-                                            <p className="text-[10px] font-black uppercase mb-1">Tips</p>
-                                            <p className="text-sm font-bold whitespace-pre-wrap">{song.memo}</p>
-                                        </div>
-                                    )}
-
-                                    {isLoggedIn && (
-                                        <div>
-                                            <p className="text-[10px] font-black uppercase mb-1">My Memo</p>
-                                            <textarea 
-                                                className="memo-textarea" 
-                                                value={personalMemo || ""}
-                                                onChange={(e) => onSavePersonalMemo(e.target.value)}
-                                                placeholder="自分だけの攻略メモを入力..."
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <LinkConfirmModal 
-                        isOpen={confirmModal.isOpen}
-                        onConfirm={confirmVideoNavigation}
-                        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-                        type={confirmModal.type}
-                    />
-
-                    <ChartPreviewModal 
-                        isOpen={chartModal.isOpen}
-                        url={chartModal.url}
-                        title={song.title}
-                        onCancel={() => setChartModal({ ...chartModal, isOpen: false })}
-                    />
-                </>
             );
         };
 
@@ -1262,36 +961,9 @@
             );
         };
 
-        const ViewModeSelectModal = ({ isOpen, viewMode, onSelect, onCancel }) => {
-            if (!isOpen) return null;
-            return (
-                <div className="modal-overlay" onClick={onCancel}>
-                    <div className="modal-content" style={{ maxWidth: '320px' }} onClick={e => e.stopPropagation()}>
-                        <h2 className="text-xl font-black mb-6">表示形式を選択</h2>
-                        <div className="flex flex-col gap-4">
-                            <button 
-                                onClick={() => { onSelect('list'); onCancel(); }}
-                                className={`w-full py-4 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
-                            >
-                                <i className="ph-bold ph-list text-2xl"></i> リスト表示
-                            </button>
-                            <button 
-                                onClick={() => { onSelect('grid'); onCancel(); }}
-                                className={`w-full py-4 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
-                            >
-                                <i className="ph-bold ph-squares-four text-2xl"></i> グリッド表示
-                            </button>
-                        </div>
-                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">Close</button>
-                    </div>
-                </div>
-            );
-        };
-
-        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
+        const SongCard = ({ song, showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, tightMode = false, minimalMode = false }) => {
             const [isOpen, setIsOpen] = useState(false);
-            const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
-            const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
+            const [modalInfo, setModalInfo] = useState({ isOpen: false, url: '', type: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
             
             useEffect(() => {
@@ -1301,23 +973,15 @@
             const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
             const borderColor = useMemo(() => getBorderColor(song.difficult) || "#000000", [song.difficult]);
 
-            // 画像で確認（譜面）クリック時：サイト内プレビューを開く
-            const handleChartClick = (e, url) => {
+            const handleLinkClick = (e, url, type) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setChartModal({ isOpen: true, url });
+                setModalInfo({ isOpen: true, url, type });
             };
 
-            // 動画で確認クリック時：外部移動の確認モーダルを出す
-            const handleVideoClick = (e, url) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setConfirmModal({ isOpen: true, url, type: 'video' });
-            };
-
-            const confirmVideoNavigation = () => {
-                window.open(confirmModal.url, '_blank', 'noopener,noreferrer');
-                setConfirmModal({ ...confirmModal, isOpen: false });
+            const confirmNavigation = () => {
+                window.open(modalInfo.url, '_blank', 'noopener,noreferrer');
+                setModalInfo({ ...modalInfo, isOpen: false });
             };
 
             const renderDangerBadges = () => {
@@ -1351,25 +1015,6 @@
                 onSavePersonalMemo(localMemo);
             };
 
-            // グリッド表示の場合
-            if (viewMode === 'grid') {
-                return (
-                    <div onClick={onOpenGridDetail} className="grid-item" style={{ borderColor }}>
-                        <img 
-                            src={song.jacket} 
-                            alt="jacket" 
-                            className="w-full h-full object-cover" 
-                            crossOrigin="anonymous"
-                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
-                        />
-                        <div className="grid-title-badge">
-                            {song.title}
-                        </div>
-                    </div>
-                );
-            }
-
-            // リスト表示の場合
             const cardClassName = minimalMode 
                 ? `static-card rounded-xl p-1.5 mb-1`
                 : `pop-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`;
@@ -1414,7 +1059,8 @@
                             <div className="flex flex-col items-center gap-1.5">
                                 {!minimalMode && (
                                     <>
-                                        {isLoggedIn && (
+                                        {/* isLoggedIn が false の場合は表示されないように明示的にガード */}
+                                        {isLoggedIn === true && (
                                             <div className="flex flex-row gap-1" onClick={e => e.stopPropagation()}>
                                                 <button 
                                                     onClick={handleFavoriteClick} 
@@ -1475,7 +1121,7 @@
 
                                 <div className="grid grid-cols-2 gap-3 mb-6">
                                     {song.site_link ? (
-                                        <button className="link-button chart" onClick={(e) => handleChartClick(e, song.site_link)}>
+                                        <button className="link-button chart" onClick={(e) => handleLinkClick(e, song.site_link, 'chart')}>
                                             <i className="ph-bold ph-file-text text-lg"></i>画像で確認
                                         </button>
                                     ) : (
@@ -1483,7 +1129,7 @@
                                     )}
                                     
                                     {song.movie_link ? (
-                                        <button className="link-button video" onClick={(e) => handleVideoClick(e, song.movie_link)}>
+                                        <button className="link-button video" onClick={(e) => handleLinkClick(e, song.movie_link, 'video')}>
                                             <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
                                         </button>
                                     ) : (
@@ -1505,7 +1151,8 @@
                                     </>
                                 )}
 
-                                {isLoggedIn && (
+                                {/* isLoggedIn が false の場合は自分用メモも表示されない */}
+                                {isLoggedIn === true && (
                                     <div className="mt-4 pt-4 border-t-2 border-gray-100" onClick={e => e.stopPropagation()}>
                                         <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
                                             <i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i>
@@ -1526,17 +1173,10 @@
                     </div>
 
                     <LinkConfirmModal 
-                        isOpen={confirmModal.isOpen}
-                        onConfirm={confirmVideoNavigation}
-                        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-                        type={confirmModal.type}
-                    />
-
-                    <ChartPreviewModal 
-                        isOpen={chartModal.isOpen}
-                        url={chartModal.url}
-                        title={song.title}
-                        onCancel={() => setChartModal({ ...chartModal, isOpen: false })}
+                        isOpen={modalInfo.isOpen}
+                        onConfirm={confirmNavigation}
+                        onCancel={() => setModalInfo({ ...modalInfo, isOpen: false })}
+                        type={modalInfo.type}
                     />
                 </>
             );
@@ -1583,11 +1223,6 @@
             const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
             const [isSelectExportOpen, setIsSelectExportOpen] = useState(false);
 
-            // 長押し移動用のステート
-            const [draggingIndex, setDraggingIndex] = useState(null);
-            const [dropTargetIndex, setDropTargetIndex] = useState(null);
-            const dragTimer = useRef(null);
-
             const handleCreate = () => {
                 if (setlists.length >= 10) {
                     setIsLimitModalOpen(true);
@@ -1627,53 +1262,6 @@
                 newSongs[selectingSlot] = songId;
                 setEditingSetlist({ ...editingSetlist, songs: newSongs });
                 setIsSongModalOpen(false);
-            };
-
-            // トラックの入れ替え
-            const moveTrack = (index, direction) => {
-                const newIndex = index + direction;
-                if (newIndex < 0 || newIndex >= editingSetlist.songs.length) return;
-                
-                const newSongs = [...editingSetlist.songs];
-                const temp = newSongs[index];
-                newSongs[index] = newSongs[newIndex];
-                newSongs[newIndex] = temp;
-                
-                setEditingSetlist({ ...editingSetlist, songs: newSongs });
-            };
-
-            // --- 長押し移動のロジック ---
-            const onPointerDown = (index) => {
-                // 長押し判定タイマー開始 (400ms)
-                dragTimer.current = setTimeout(() => {
-                    setDraggingIndex(index);
-                    // バイブレーションなどでフィードバック（可能な場合）
-                    if (window.navigator.vibrate) window.navigator.vibrate(50);
-                }, 400);
-            };
-
-            const onPointerUp = () => {
-                if (dragTimer.current) {
-                    clearTimeout(dragTimer.current);
-                    dragTimer.current = null;
-                }
-                
-                // ドラッグ終了処理
-                if (draggingIndex !== null && dropTargetIndex !== null && draggingIndex !== dropTargetIndex) {
-                    const newSongs = [...editingSetlist.songs];
-                    const [movedItem] = newSongs.splice(draggingIndex, 1);
-                    newSongs.splice(dropTargetIndex, 0, movedItem);
-                    setEditingSetlist({ ...editingSetlist, songs: newSongs });
-                }
-                
-                setDraggingIndex(null);
-                setDropTargetIndex(null);
-            };
-
-            const onPointerEnter = (index) => {
-                if (draggingIndex !== null) {
-                    setDropTargetIndex(index);
-                }
             };
 
             const handleSave = () => {
@@ -1839,10 +1427,7 @@
 
             return (
                 <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8_8px_0px_#000]">
-                    <div className="flex justify-between items-center mb-4 border-b-4 border-[#52b788] pb-2">
-                        <h3 className="text-xl font-black text-black">セトリ作成</h3>
-                        <p className="text-[9px] font-black text-gray-400 italic">長押しでトラック入れ替え可能</p>
-                    </div>
+                    <h3 className="text-xl font-black mb-4 text-black border-b-4 border-[#52b788] pb-2 inline-block">セトリ作成</h3>
                     
                     <div className="mb-6">
                         <label className="block text-xs font-black uppercase text-gray-500 mb-1">セトリ名</label>
@@ -1858,68 +1443,35 @@
                         <label className="block text-xs font-black uppercase text-gray-500 mb-[-4px]">TRACKS</label>
                         {editingSetlist.songs.map((songId, idx) => {
                             const song = songId ? songMap[songId] : null;
-                            const isDragging = draggingIndex === idx;
-                            const isTarget = dropTargetIndex === idx;
-
                             return (
-                                <div 
-                                    key={idx} 
-                                    className={`flex items-center gap-2 track-item ${isDragging ? 'is-dragging' : ''} ${isTarget && !isDragging ? 'drop-target' : ''}`}
-                                    onPointerDown={() => onPointerDown(idx)}
-                                    onPointerUp={onPointerUp}
-                                    onPointerCancel={onPointerUp}
-                                    onPointerEnter={() => onPointerEnter(idx)}
-                                >
-                                    <div className="flex-grow relative">
-                                        <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
-                                            {idx + 1}
-                                        </div>
-                                        {song ? (
-                                            <div 
-                                                onClick={() => openSongModal(idx)} 
-                                                className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 transition-transform gap-3"
-                                            >
-                                                <img 
-                                                    src={song.jacket} 
-                                                    className="w-12 h-12 border-2 rounded object-cover" 
-                                                    style={{ borderColor: getBorderColor(song.difficult) }}
-                                                    crossOrigin="anonymous"
-                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                                />
-                                                <div className="flex-grow min-w-0">
-                                                    <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                    <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
-                                                        <span className="text-black">Lv {formatLevel(song.level)}</span>
-                                                        <span className="text-black">{song.combo}CHAIN</span>
-                                                    </div>
+                                <div key={idx} className="relative">
+                                    <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
+                                        {idx + 1}
+                                    </div>
+                                    {song ? (
+                                        <div onClick={() => openSongModal(idx)} className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
+                                            <img 
+                                                src={song.jacket} 
+                                                className="w-12 h-12 border-2 rounded object-cover" 
+                                                style={{ borderColor: getBorderColor(song.difficult) }}
+                                                crossOrigin="anonymous"
+                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                            />
+                                            <div className="flex-grow min-w-0">
+                                                <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
+                                                <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
+                                                    <span className="text-black">Lv {formatLevel(song.level)}</span>
+                                                    <span className="text-black">{song.combo}CHAIN</span>
                                                 </div>
-                                                <i className="ph-bold ph-dots-six-vertical text-gray-400 text-lg mr-1"></i>
                                             </div>
-                                        ) : (
-                                            <div onClick={() => openSongModal(idx)} className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 transition-all">
-                                                <i className="ph-bold ph-plus-circle text-2xl text-gray-400 mr-2"></i>
-                                                <span className="text-gray-500 font-bold text-sm">曲を選択する</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    {/* 従来の入れ替えボタンも念のため残す（アクセシビリティのため） */}
-                                    <div className="flex flex-col gap-1 flex-shrink-0">
-                                        <button 
-                                            disabled={idx === 0}
-                                            onClick={(e) => { e.stopPropagation(); moveTrack(idx, -1); }}
-                                            className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg disabled:opacity-20 active:translate-y-0.5 transition-all shadow-[2px_2px_0px_#000] disabled:shadow-none"
-                                        >
-                                            <i className="ph-bold ph-caret-up text-xs"></i>
-                                        </button>
-                                        <button 
-                                            disabled={idx === editingSetlist.songs.length - 1}
-                                            onClick={(e) => { e.stopPropagation(); moveTrack(idx, 1); }}
-                                            className="w-8 h-8 flex items-center justify-center bg-white border-2 border-black rounded-lg disabled:opacity-20 active:translate-y-0.5 transition-all shadow-[2px_2px_0px_#000] disabled:shadow-none"
-                                        >
-                                            <i className="ph-bold ph-caret-down text-xs"></i>
-                                        </button>
-                                    </div>
+                                            <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
+                                        </div>
+                                    ) : (
+                                        <div onClick={() => openSongModal(idx)} className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 active:translate-y-0.5 transition-all">
+                                            <i className="ph-bold ph-plus-circle text-2xl text-gray-400 mr-2"></i>
+                                            <span className="text-gray-500 font-bold text-sm">曲を選択する</span>
+                                        </div>
+                                    )}
                                 </div>
                             )
                         })}
@@ -1962,7 +1514,7 @@
                                     <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
                                 
-                                <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4 custom-scrollbar">
+                                <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4">
                                     {searchTerm.trim() === "" ? (
                                         <div className="flex flex-col items-center justify-center py-12 opacity-40">
                                             <i className="ph-bold ph-magnifying-glass text-5xl mb-3 text-black"></i>
@@ -2026,9 +1578,6 @@
             const [isNavOpen, setIsNavOpen] = useState(false);
             const [pageIndex, setPageIndex] = useState(1);
             const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-            const [viewMode, setViewMode] = useState("list"); 
-            const [isViewModeModalOpen, setIsViewModeModalOpen] = useState(false);
-            const [selectedGridSong, setSelectedGridSong] = useState(null);
             
             // 出力用データ管理
             const [exportData, setExportData] = useState({ 
@@ -2070,12 +1619,9 @@
                 return map;
             }, [songs]);
 
-            // ビューモードによって1ページあたりの件数を切り替え
-            const itemsPerPage = viewMode === 'grid' ? GRID_ITEMS_PER_PAGE : LIST_ITEMS_PER_PAGE;
-
             const viewToken = useMemo(() => {
-                return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), showOnlyFavorites, showOnlyMirrors, viewMode].join('|');
-            }, [currentPage, pageIndex, searchTerm, selectedLevels, showOnlyFavorites, showOnlyMirrors, viewMode]);
+                return [currentPage, pageIndex, searchTerm, selectedLevels.join(','), showOnlyFavorites, showOnlyMirrors].join('|');
+            }, [currentPage, pageIndex, searchTerm, selectedLevels, showOnlyFavorites, showOnlyMirrors]);
 
             useEffect(() => {
                 window.scrollTo({ top: 0, behavior: 'auto' });
@@ -2187,7 +1733,7 @@
 
             useEffect(() => {
                 setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, sortOrder, showOnlyFavorites, showOnlyMirrors, viewMode]);
+            }, [rankSection, searchTerm, selectedLevels, sortOrder, showOnlyFavorites, showOnlyMirrors]);
 
             const login = async () => {
                 if (!firebase || isAuthLoading) return;
@@ -2411,10 +1957,11 @@
                     });
                     
                     const songId = getSongId(s);
-                    const isFavFilterApplied = (currentPage === "main" || currentPage === "danger") && showOnlyFavorites;
+                    // ここで currentPage が main の時だけお気に入りフィルターが効くようにする
+                    const isFavFilterApplied = currentPage === "main" && showOnlyFavorites;
                     const matchesFav = !isFavFilterApplied || favorites.includes(songId);
 
-                    const isMirrorFilterApplied = (currentPage === "main" || currentPage === "danger") && showOnlyMirrors;
+                    const isMirrorFilterApplied = currentPage === "main" && showOnlyMirrors;
                     const matchesMirror = !isMirrorFilterApplied || mirrors.includes(songId);
 
                     if (currentPage === "main") {
@@ -2424,7 +1971,8 @@
                         return matchesLv && matchesSearch && matchesFav && matchesMirror;
                     }
                     
-                    return matchesLv && matchesFav && matchesMirror;
+                    // 要注意曲リストページではレベル絞り込みのみ適用し、お気に入り/ミラー条件は無視（常に表示）
+                    return matchesLv;
                 });
 
                 if (currentPage === "ranking") {
@@ -2440,11 +1988,11 @@
             }, [searchTerm, selectedLevels, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors]);
 
             const paginatedSongs = useMemo(() => {
-                const start = (pageIndex - 1) * itemsPerPage;
-                return allFilteredSongs.slice(start, start + itemsPerPage);
-            }, [allFilteredSongs, pageIndex, itemsPerPage]);
+                const start = (pageIndex - 1) * ITEMS_PER_PAGE;
+                return allFilteredSongs.slice(start, start + ITEMS_PER_PAGE);
+            }, [allFilteredSongs, pageIndex]);
 
-            const totalPages = Math.ceil(allFilteredSongs.length / itemsPerPage);
+            const totalPages = Math.ceil(allFilteredSongs.length / ITEMS_PER_PAGE);
 
             const handlePageChange = (newIndex) => {
                 if (newIndex >= 1 && newIndex <= totalPages) {
@@ -2594,7 +2142,7 @@
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
                         </div>
-                        <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-8 text-white">
+                        <h1 className="text-5xl font-black italic tracking-tighter uppercase mb-6 text-white">
                             MEGAMIX<span className="text-[#52b788]">.</span>MEMO
                         </h1>
 
@@ -2640,16 +2188,6 @@
                                             <p><span className="text-[#e63946]">■</span> 高難易度... 大量失点の可能性がある楽曲など</p>
                                         </div>
                                     </div>
-                                    {user && !user.isAnonymous && (
-                                        <div className="flex flex-col gap-2">
-                                            <div className="toggle-btn-group">
-                                                <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`}>すべて</button>
-                                                <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`}>
-                                                    <i className="ph-fill ph-star"></i> お気に入りのみ
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             )}
 
@@ -2705,17 +2243,12 @@
                                 </div>
                             )}
 
+                            {/* 条件分けエリア: メインページか要注意曲リストページの場合 */}
                             {currentPage !== "setlist" && currentPage !== "terms" && currentPage !== "contact" && (
                                 <div className="px-1 flex flex-col gap-3">
+                                    {/* 検索バーと お気に入りのみボタン はメインページのみに厳密に限定 */}
                                     {currentPage === "main" && (
-                                        <div className="flex flex-col gap-3">
-                                            {/* 改修：干渉しないようにボタンスペースと入力スペースを分ける */}
-                                            <div className="flex justify-end mb-1">
-                                                <div className="view-mode-badge" onClick={() => setIsViewModeModalOpen(true)}>
-                                                    <i className={`ph-bold ${viewMode === 'list' ? 'ph-list' : 'ph-squares-four'}`}></i>
-                                                    表示形式
-                                                </div>
-                                            </div>
+                                        <>
                                             <div className="relative">
                                                 <input
                                                     type="text"
@@ -2727,11 +2260,9 @@
                                                 <i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400"></i>
                                             </div>
                                             {!isLoading && (
-                                                <div className="flex flex-col gap-3">
-                                                    <div className="flex justify-center">
-                                                        <div className="hit-counter">
-                                                            <span>{allFilteredSongs.length} 譜面</span>
-                                                        </div>
+                                                <div className="flex justify-center">
+                                                    <div className="hit-counter">
+                                                        <span>{allFilteredSongs.length} 譜面</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -2751,8 +2282,10 @@
                                                     </div>
                                                 </div>
                                             )}
-                                        </div>
+                                        </>
                                     )}
+                                    
+                                    {/* レベル絞り込みボタンは共通で使用可能（要注意曲リストでも役立つため） */}
                                     <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isLevelFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
                                         <div className="flex items-center gap-3">
                                             <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
@@ -2978,7 +2511,7 @@
                                 {currentPage === "ranking" && (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         {paginatedSongs.map((song, idx) => {
-                                            const globalIdx = (pageIndex - 1) * itemsPerPage + idx;
+                                            const globalIdx = (pageIndex - 1) * ITEMS_PER_PAGE + idx;
                                             let currentRank = globalIdx + 1;
                                             if (globalIdx > 0) {
                                                 let backtrackIdx = globalIdx;
@@ -3042,28 +2575,26 @@
                                 )}
                                 
                                 {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && (
-                                    <div className={viewMode === 'grid' && currentPage === 'main' ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
-                                        {paginatedSongs.map((song, idx) => {
-                                            const songId = getSongId(song);
-                                            return (
-                                                <SongCard 
-                                                    key={`${viewToken}-${songId}`} 
-                                                    song={song} 
-                                                    viewMode={currentPage === 'main' ? viewMode : 'list'}
-                                                    showDangerBadge={currentPage === "danger"} 
-                                                    showTips={currentPage === "danger"} 
-                                                    isLoggedIn={currentPage === "danger" ? (user && !user.isAnonymous) : (user && !user.isAnonymous)}
-                                                    isFavorite={favorites.includes(songId)}
-                                                    onToggleFavorite={() => toggleFavorite(songId)}
-                                                    isMirror={mirrors.includes(songId)}
-                                                    onToggleMirror={() => toggleMirror(songId)}
-                                                    personalMemo={personalMemos[songId]}
-                                                    onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
-                                                    onOpenGridDetail={() => setSelectedGridSong(song)}
-                                                />
-                                            );
-                                        })}
-                                    </div>
+                                    paginatedSongs.map((song, idx) => {
+                                        const songId = getSongId(song);
+                                        // currentPage === "danger" の時は isLoggedIn を false に強制する
+                                        const isDangerPage = currentPage === "danger";
+                                        return (
+                                            <SongCard 
+                                                key={`${viewToken}-${songId}`} 
+                                                song={song} 
+                                                showDangerBadge={isDangerPage} 
+                                                showTips={isDangerPage} 
+                                                isLoggedIn={isDangerPage ? false : (user && !user.isAnonymous)}
+                                                isFavorite={isDangerPage ? false : favorites.includes(songId)}
+                                                onToggleFavorite={() => toggleFavorite(songId)}
+                                                isMirror={isDangerPage ? false : mirrors.includes(songId)}
+                                                onToggleMirror={() => toggleMirror(songId)}
+                                                personalMemo={isDangerPage ? null : personalMemos[songId]}
+                                                onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
+                                            />
+                                        );
+                                    })
                                 )}
 
                                 {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && paginatedSongs.length === 0 && (
@@ -3088,22 +2619,6 @@
                         )}
                     </main>
 
-                    {/* --- グリッドモード用楽曲詳細 --- */}
-                    {selectedGridSong && (
-                        <SongDetailModal 
-                            isOpen={!!selectedGridSong}
-                            song={selectedGridSong}
-                            isLoggedIn={user && !user.isAnonymous}
-                            isFavorite={favorites.includes(getSongId(selectedGridSong))}
-                            onToggleFavorite={() => toggleFavorite(getSongId(selectedGridSong))}
-                            isMirror={mirrors.includes(getSongId(selectedGridSong))}
-                            onToggleMirror={() => toggleMirror(getSongId(selectedGridSong))}
-                            personalMemo={personalMemos[getSongId(selectedGridSong)]}
-                            onSavePersonalMemo={(memo) => savePersonalMemo(getSongId(selectedGridSong), memo)}
-                            onCancel={() => setSelectedGridSong(null)}
-                        />
-                    )}
-
                     <LogoutConfirmModal 
                         isOpen={isLogoutModalOpen}
                         onConfirm={logout}
@@ -3121,13 +2636,6 @@
                         onConfirm={() => { window.open(contactLinkModal.url, '_blank', 'noopener,noreferrer'); setContactLinkModal({ ...contactLinkModal, isOpen: false }); }}
                         onCancel={() => setContactLinkModal({ ...contactLinkModal, isOpen: false })}
                         type={contactLinkModal.type}
-                    />
-
-                    <ViewModeSelectModal 
-                        isOpen={isViewModeModalOpen}
-                        viewMode={viewMode}
-                        onSelect={setViewMode}
-                        onCancel={() => setIsViewModeModalOpen(false)}
                     />
                 </div>
             );
