@@ -25,10 +25,10 @@
     <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, getFirestore, doc, setDoc, getDoc };
+        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, getFirestore, doc, setDoc, getDoc };
     </script>
 
     <style>
@@ -1984,26 +1984,21 @@
             // --- Firebase Initialization & Auth ---
             useEffect(() => {
                 const initFirebase = async () => {
-                    const { initializeApp, getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously, getFirestore } = window.FirebaseSDK;
+                    const { initializeApp, getAuth, onAuthStateChanged, signInAnonymously, getFirestore } = window.FirebaseSDK;
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
                     const db = getFirestore(app);
                     
                     setFirebase({ auth, db });
 
-                    const initAuth = async () => {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    };
-                    initAuth();
-
                     onAuthStateChanged(auth, (currentUser) => {
+                        if (!currentUser) {
+                            signInAnonymously(auth);
+                            return;
+                        }
                         setUser(currentUser);
                         setIsAuthLoading(false);
-                        if (!currentUser) {
+                        if (currentUser.isAnonymous) {
                             setFavorites([]);
                             setMirrors([]);
                             setPersonalMemos({});
@@ -2897,11 +2892,21 @@
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">運営メンバー</h4>
                                                         <ul className="list-disc list-inside space-y-1">
-                                                            <li>代表：悠 (@YuSDVX)</li>
-                                                            <li>開発＆運営：Yuya_M (@Yuuya1202)</li>
-                                                            <li>動画編集：加藤 (@katosv)</li>
-                                                            <li>データ協力：KAME (@kame_ver2)</li>
-                                                            <li>データ協力：えーこぱふ (@eikopaf)</li>
+                                                            <li>代表：悠（@YuSDVX）</li>
+                                                            <li>開発・運営：Yuya_M（@Yuuya1202）</li>
+                                                            <li>動画編集：加藤（@katosv_）</li>
+                                                            <li>データ協力：かめ（@kame_ver2）</li>
+                                                            <li>データ協力：えーこぱふ（@eikopaf）</li>
+                                                            <li>データ協力：あめじすと（@4methyst____）</li>
+                                                            <li>データ協力：たび（@traveler8）</li>
+                                                            <li>データ協力：ぜむ（@them_suzaku）</li>
+                                                            <li>データ協力：imura（@freaky_s_ran）</li>
+                                                            <li>データ協力：ひらつ（@963sv）</li>
+                                                            <li>データ協力：ばる（@Baltin129_）</li>
+                                                            <li>データ協力：あせろら（@aserora_yoo）</li>
+                                                            <li>データ協力：こよみ（@nt_kym2）</li>
+                                                            <li>データ協力：核（@-）</li>
+                                                            <li>データ協力：PAN.GOD（@-）</li>
                                                         </ul>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用ライブラリ</h4>
