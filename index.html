@@ -1270,8 +1270,10 @@
             );
         };
 
-        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
-            const [isOpen, setIsOpen] = useState(false);
+        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false, openCardId, onCardOpen }) => {
+            const songId = `${song.title}_${song.difficult}`;
+            const isOpen = openCardId === songId;
+            const setIsOpen = (val) => onCardOpen && onCardOpen(val ? songId : null);
             const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
@@ -1927,6 +1929,7 @@
             const [viewMode, setViewMode] = useState("list"); 
             const [isViewModeModalOpen, setIsViewModeModalOpen] = useState(false);
             const [selectedGridSong, setSelectedGridSong] = useState(null);
+            const [openCardId, setOpenCardId] = useState(null);
             
             // 出力用データ管理
             const [exportData, setExportData] = useState({ 
@@ -2080,11 +2083,13 @@
                 setPageIndex(1);
                 setShowOnlyFavorites(false);
                 setShowOnlyMirrors(false);
+                setOpenCardId(null);
                 if (currentPage !== "terms") setTermsTab("terms");
             }, [currentPage]);
 
             useEffect(() => {
                 setPageIndex(1);
+                setOpenCardId(null);
             }, [rankSection, searchTerm, selectedLevels, sortOrder, showOnlyFavorites, showOnlyMirrors, viewMode]);
 
             const login = async () => {
@@ -2626,7 +2631,16 @@
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
                                                 />
-                                                <i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400"></i>
+                                                {searchTerm ? (
+                                                    <button
+                                                        onClick={() => setSearchTerm("")}
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                                                    >
+                                                        <i className="ph-bold ph-x-circle text-xl"></i>
+                                                    </button>
+                                                ) : (
+                                                    <i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400"></i>
+                                                )}
                                             </div>
                                             {!isLoading && (
                                                 <div className="flex flex-col gap-3">
@@ -2954,7 +2968,7 @@
                                                     viewMode={currentPage === 'main' ? viewMode : 'list'}
                                                     showDangerBadge={currentPage === "danger"} 
                                                     showTips={currentPage === "danger"} 
-                                                    isLoggedIn={currentPage === "danger" ? false : (user && !user.isAnonymous)}
+                                                    isLoggedIn={currentPage !== "danger" && (user && !user.isAnonymous)}
                                                     isFavorite={favorites.includes(songId)}
                                                     onToggleFavorite={() => toggleFavorite(songId)}
                                                     isMirror={mirrors.includes(songId)}
@@ -2962,6 +2976,8 @@
                                                     personalMemo={personalMemos[songId]}
                                                     onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
                                                     onOpenGridDetail={() => setSelectedGridSong(song)}
+                                                    openCardId={openCardId}
+                                                    onCardOpen={setOpenCardId}
                                                 />
                                             );
                                         })}
@@ -2980,7 +2996,12 @@
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
                                             <i className="ph-bold ph-caret-left"></i> 前へ
                                         </button>
-                                        <div className="page-info">{pageIndex} / {totalPages}</div>
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="page-info">{pageIndex} / {totalPages}</div>
+                                            <div className="text-[10px] font-bold text-white/70">
+                                                {(pageIndex - 1) * itemsPerPage + 1}〜{Math.min(pageIndex * itemsPerPage, allFilteredSongs.length)}件 / 全{allFilteredSongs.length}件
+                                            </div>
+                                        </div>
                                         <button onClick={() => handlePageChange(pageIndex + 1)} disabled={pageIndex >= totalPages} className="page-btn">
                                             次へ <i className="ph-bold ph-caret-right"></i>
                                         </button>
