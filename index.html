@@ -865,6 +865,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
+        const MASTER_DATA_UPDATED_AT = "2025-10-11";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -1270,10 +1271,8 @@
             );
         };
 
-        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false, openCardId, onCardOpen }) => {
-            const songId = `${song.title}_${song.difficult}`;
-            const isOpen = openCardId === songId;
-            const setIsOpen = (val) => onCardOpen && onCardOpen(val ? songId : null);
+        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
+            const [isOpen, setIsOpen] = useState(false);
             const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
@@ -1929,7 +1928,6 @@
             const [viewMode, setViewMode] = useState("list"); 
             const [isViewModeModalOpen, setIsViewModeModalOpen] = useState(false);
             const [selectedGridSong, setSelectedGridSong] = useState(null);
-            const [openCardId, setOpenCardId] = useState(null);
             
             // 出力用データ管理
             const [exportData, setExportData] = useState({ 
@@ -2083,13 +2081,11 @@
                 setPageIndex(1);
                 setShowOnlyFavorites(false);
                 setShowOnlyMirrors(false);
-                setOpenCardId(null);
                 if (currentPage !== "terms") setTermsTab("terms");
             }, [currentPage]);
 
             useEffect(() => {
                 setPageIndex(1);
-                setOpenCardId(null);
             }, [rankSection, searchTerm, selectedLevels, sortOrder, showOnlyFavorites, showOnlyMirrors, viewMode]);
 
             const login = async () => {
@@ -2976,8 +2972,6 @@
                                                     personalMemo={personalMemos[songId]}
                                                     onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
                                                     onOpenGridDetail={() => setSelectedGridSong(song)}
-                                                    openCardId={openCardId}
-                                                    onCardOpen={setOpenCardId}
                                                 />
                                             );
                                         })}
@@ -3010,6 +3004,12 @@
                             </>
                         )}
                     </main>
+
+                    <footer className="text-center py-6 mt-4">
+                        <p className="text-white/40 text-[11px] font-bold">
+                            データ最終更新日: {MASTER_DATA_UPDATED_AT}
+                        </p>
+                    </footer>
 
                     {/* --- グリッドモード用楽曲詳細 --- */}
                     {selectedGridSong && (
