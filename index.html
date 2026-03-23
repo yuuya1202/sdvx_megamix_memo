@@ -26,9 +26,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, query };
+        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, getFirestore, doc, setDoc, getDoc, onSnapshot };
     </script>
 
     <style>
@@ -860,6 +860,7 @@
 
         const LIST_ITEMS_PER_PAGE = 30;
         const GRID_ITEMS_PER_PAGE = 60;
+        const SETLIST_TRACK_COUNT = 5;
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/YuSDVX";
@@ -901,7 +902,7 @@
                                 <i className={`ph-bold ${type === 'video' ? 'ph-youtube-logo' : (type === 'contact' ? 'ph-chat-centered-text' : (type === 'x' ? 'ph-x-logo' : 'ph-file-text'))} text-3xl text-black`}></i>
                             </div>
                             <h2 className="text-xl font-black mb-2">確認</h2>
-                            <p className="text-sm font-bold text-gray-600設計 leading-relaxed px-4">
+                            <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
                                 外部サイトへ移動してもよろしいですか？
                             </p>
                         </div>
@@ -1073,8 +1074,10 @@
                                             <textarea 
                                                 className="memo-textarea" 
                                                 value={personalMemo || ""}
-                                                onChange={(e) => onSavePersonalMemo(e.target.value)}
+                                                onChange={(e) => onSavePersonalMemo(e.target.value.slice(0, 200))}
+                                                maxLength={200}
                                             />
+                                            <p className="text-right text-[10px] font-bold text-gray-400">{(personalMemo || "").length} / 200</p>
                                         </div>
                                     )}
                                 </div>
@@ -1493,9 +1496,11 @@
                                             <textarea 
                                                 className="memo-textarea" 
                                                 value={localMemo}
-                                                onChange={(e) => setLocalMemo(e.target.value)}
+                                                onChange={(e) => setLocalMemo(e.target.value.slice(0, 200))}
                                                 onBlur={handleMemoSave}
+                                                maxLength={200}
                                             />
+                                            <p className="text-right text-[10px] font-bold text-gray-400">{localMemo.length} / 200</p>
                                         </div>
                                     </div>
                                 )}
@@ -1566,7 +1571,7 @@
                     setIsLimitModalOpen(true);
                     return;
                 }
-                setEditingSetlist({ id: Date.now().toString(), name: "", songs: [null, null, null, null, null], memo: "" });
+                setEditingSetlist({ id: Date.now().toString(), name: "", songs: Array(SETLIST_TRACK_COUNT).fill(null), memo: "" });
                 setView("edit");
             };
 
@@ -1764,7 +1769,7 @@
             }
 
             return (
-                <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8_8px_0px_#000]">
+                <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
                     <h3 className="text-xl font-black mb-4 text-black border-b-4 border-[#52b788] pb-2 inline-block">セトリ作成</h3>
                     
                     <div className="mb-6">
@@ -1819,9 +1824,11 @@
                         <label className="block text-xs font-black uppercase text-gray-500 mb-1">自分用メモ</label>
                         <textarea 
                             value={editingSetlist.memo || ""} 
-                            onChange={e => setEditingSetlist({...editingSetlist, memo: e.target.value})}
+                            onChange={e => setEditingSetlist({...editingSetlist, memo: e.target.value.slice(0, 200)})}
                             className="memo-textarea"
+                            maxLength={200}
                         />
+                        <p className="text-right text-[10px] font-bold text-gray-400">{(editingSetlist.memo || "").length} / 200</p>
                     </div>
 
                     <div className="flex gap-4 justify-center mt-2">
@@ -2208,11 +2215,15 @@
                     return matchesLv;
                 });
 
-                if (filtered.length < 5) {
+                if (filtered.length < SETLIST_TRACK_COUNT) {
                     setRandomSongs([]);
                 } else {
-                    const shuffled = [...filtered].sort(() => 0.5 - Math.random());
-                    const selected = shuffled.slice(0, 5);
+                    const shuffled = [...filtered];
+                    for (let i = shuffled.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    }
+                    const selected = shuffled.slice(0, SETLIST_TRACK_COUNT);
                     setRandomSongs(selected);
                     // ランダム用のデータ設定
                     setExportData({
@@ -2378,7 +2389,7 @@
                                     </div>
                                 ))}
                                 {/* 空スロットの穴埋め */}
-                                {[...Array(Math.max(0, 5 - exportData.songs.length))].map((_, i) => (
+                                {[...Array(Math.max(0, SETLIST_TRACK_COUNT - exportData.songs.length))].map((_, i) => (
                                     <div key={`exp-jack-empty-${i}`} className="export-jacket-box opacity-20 border-dashed border-white"></div>
                                 ))}
                             </div>
