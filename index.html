@@ -1948,6 +1948,7 @@
             const [user, setUser] = useState(null);
             const [isAuthLoading, setIsAuthLoading] = useState(true);
             const [authError, setAuthError] = useState(null);
+            const [saveError, setSaveError] = useState(null);
             const [favorites, setFavorites] = useState([]); 
             const [mirrors, setMirrors] = useState([]); 
             const [personalMemos, setPersonalMemos] = useState({});
@@ -2146,11 +2147,16 @@
             const updateFirestoreProfile = async (newFavs, newMemos, newMirrors) => {
                 if (!user || !firebase || user.isAnonymous) return;
                 const { doc, setDoc } = window.FirebaseSDK;
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), {
-                    favorites: newFavs,
-                    memos: newMemos,
-                    mirrors: newMirrors
-                }, { merge: true });
+                try {
+                    await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), {
+                        favorites: newFavs,
+                        memos: newMemos,
+                        mirrors: newMirrors
+                    }, { merge: true });
+                } catch (err) {
+                    console.error("Firestore Profile Write Error:", err);
+                    setSaveError("保存に失敗しました。時間をおいて再度お試しください。");
+                }
             };
 
             const toggleFavorite = async (songId) => {
@@ -2181,11 +2187,15 @@
                 const newItems = setlists.find(s => s.id === newSetlist.id)
                     ? setlists.map(s => s.id === newSetlist.id ? newSetlist : s)
                     : [...setlists, newSetlist];
-                
                 setSetlists(newItems);
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
-                    items: newItems
-                });
+                try {
+                    await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
+                        items: newItems
+                    });
+                } catch (err) {
+                    console.error("Firestore Setlist Write Error:", err);
+                    setSaveError("保存に失敗しました。時間をおいて再度お試しください。");
+                }
             };
 
             const deleteSetlist = async (id) => {
@@ -2193,9 +2203,14 @@
                 const { doc, setDoc } = window.FirebaseSDK;
                 const newItems = setlists.filter(s => s.id !== id);
                 setSetlists(newItems);
-                await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
-                    items: newItems
-                });
+                try {
+                    await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'setlists', 'data'), {
+                        items: newItems
+                    });
+                } catch (err) {
+                    console.error("Firestore Setlist Delete Error:", err);
+                    setSaveError("保存に失敗しました。時間をおいて再度お試しください。");
+                }
             };
 
             const toggleLevel = (lv) => {
@@ -2439,6 +2454,16 @@
                             <div className="flex flex-col items-center gap-2">
                                 <i className="ph-bold ph-warning-circle text-2xl"></i>
                                 <p>{authError}</p>
+                                <span className="text-[10px] opacity-70 mt-1">[タップで閉じる]</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {saveError && (
+                        <div className="error-toast" onClick={() => setSaveError(null)}>
+                            <div className="flex flex-col items-center gap-2">
+                                <i className="ph-bold ph-cloud-slash text-2xl"></i>
+                                <p>{saveError}</p>
                                 <span className="text-[10px] opacity-70 mt-1">[タップで閉じる]</span>
                             </div>
                         </div>
