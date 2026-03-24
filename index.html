@@ -6,9 +6,9 @@
     <title>SDVX MEGAMIX_Memo</title>
     
     <!-- 背景画像のプリロード -->
-    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg" as="image">
-    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/okumono_sf13.png" as="image">
-    <link rel="preload" href="https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" as="image">
+    <link rel="preload" href="https://yuuya1202.github.io/Image_Background/IMG_Background.jpg" as="image">
+    <link rel="preload" href="https://yuuya1202.github.io/Image_Background/IMG_SetlistBackground.png" as="image">
+    <link rel="preload" href="https://yuuya1202.github.io/Image_Background/IMG_Random_Background.png" as="image">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -53,7 +53,7 @@
             height: 100%;
             background: 
                 linear-gradient(rgba(19, 42, 19, 0.75), rgba(19, 42, 19, 0.75)),
-                url('https://raw.githubusercontent.com/yuuya1202/image/main/IMG_1788.jpg');
+                url('https://yuuya1202.github.io/Image_Background/IMG_Background.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -1076,10 +1076,10 @@
                                             <textarea 
                                                 className="memo-textarea" 
                                                 value={personalMemo || ""}
-                                                onChange={(e) => onSavePersonalMemo(e.target.value.slice(0, 200))}
-                                                maxLength={200}
+                                                onChange={(e) => onSavePersonalMemo(e.target.value.slice(0, 30))}
+                                                maxLength={30}
                                             />
-                                            <p className="text-right text-[10px] font-bold text-gray-400">{(personalMemo || "").length} / 200</p>
+                                            <p className="text-right text-[10px] font-bold text-gray-400">{(personalMemo || "").length} / 30</p>
                                         </div>
                                     )}
                                 </div>
@@ -1498,11 +1498,11 @@
                                             <textarea 
                                                 className="memo-textarea" 
                                                 value={localMemo}
-                                                onChange={(e) => setLocalMemo(e.target.value.slice(0, 200))}
+                                                onChange={(e) => setLocalMemo(e.target.value.slice(0, 30))}
                                                 onBlur={handleMemoSave}
-                                                maxLength={200}
+                                                maxLength={30}
                                             />
-                                            <p className="text-right text-[10px] font-bold text-gray-400">{localMemo.length} / 200</p>
+                                            <p className="text-right text-[10px] font-bold text-gray-400">{localMemo.length} / 30</p>
                                         </div>
                                     </div>
                                 )}
@@ -1826,11 +1826,11 @@
                         <label className="block text-xs font-black uppercase text-gray-500 mb-1">自分用メモ</label>
                         <textarea 
                             value={editingSetlist.memo || ""} 
-                            onChange={e => setEditingSetlist({...editingSetlist, memo: e.target.value.slice(0, 200)})}
+                            onChange={e => setEditingSetlist({...editingSetlist, memo: e.target.value.slice(0, 60)})}
                             className="memo-textarea"
-                            maxLength={200}
+                            maxLength={60}
                         />
-                        <p className="text-right text-[10px] font-bold text-gray-400">{(editingSetlist.memo || "").length} / 200</p>
+                        <p className="text-right text-[10px] font-bold text-gray-400">{(editingSetlist.memo || "").length} / 60</p>
                     </div>
 
                     <div className="flex gap-4 justify-center mt-2">
@@ -1933,7 +1933,7 @@
             const [exportData, setExportData] = useState({ 
                 title: "ランダム選曲 結果", 
                 songs: [], 
-                bg: "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png" 
+                bg: "https://yuuya1202.github.io/Image_Background/IMG_Random_Background.png" 
             });
             const [previewUrl, setPreviewUrl] = useState(null);
             
@@ -2261,7 +2261,7 @@
                     setExportData({
                         title: "ランダム選曲 結果",
                         songs: selected,
-                        bg: "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/image_Setlist_Background.png"
+                        bg: "https://yuuya1202.github.io/Image_Background/IMG_Random_Background.png"
                     });
                 }
                 
@@ -2301,7 +2301,7 @@
                 setExportData({
                     title: sl.name,
                     songs: slSongs,
-                    bg: "https://raw.githubusercontent.com/yuuya1202/image_Setlist_Background/main/okumono_sf13.png"
+                    bg: "https://yuuya1202.github.io/Image_Background/IMG_SetlistBackground.png"
                 });
                 // データセット後にエクスポートを実行
                 performImageExport();
