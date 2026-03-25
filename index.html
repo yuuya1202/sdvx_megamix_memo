@@ -1305,11 +1305,12 @@
 
             const renderDangerBadges = () => {
                 if (!showDangerBadge) return null;
+                const d = String(song.danger1);
                 const badges = [];
-                if (String(song.danger1) === "1") {
+                if (d === "1" || d === "3") {
                     badges.push(<div key="d1" className="danger-badge danger-badge-1">要予習</div>);
                 }
-                if (String(song.danger2) === "1") {
+                if (d === "2" || d === "3") {
                     badges.push(<div key="d2" className="danger-badge danger-badge-2">高難易度</div>);
                 }
                 if (badges.length === 0) return null;
@@ -1420,6 +1421,28 @@
                         </div>
                         {!minimalMode && (
                             <div className={`memo-area ${isOpen ? 'open' : ''}`}>
+                                {showTips && song.danger2 && (
+                                    (() => {
+                                        const DANGER2_LABELS = {
+                                            "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
+                                            "4": "片手トリルFX", "5": "縦トリル", "6": "片手3鍵",
+                                            "7": "ハントリ", "8": "つまみ", "9": "壁",
+                                            "10": "二重鍵盤", "11": "回転", "12": "６鍵階段",
+                                            "13": "ロング", "14": "リズム難", "15": "女神特有"
+                                        };
+                                        const tags = String(song.danger2).split(",").map(s => s.trim()).filter(s => DANGER2_LABELS[s]);
+                                        if (tags.length === 0) return null;
+                                        return (
+                                            <div className="flex flex-wrap gap-1 mb-3">
+                                                {tags.map(code => (
+                                                    <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
+                                                        {DANGER2_LABELS[code]}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        );
+                                    })()
+                                )}
                                 <div className="flex items-center mb-3 text-black">
                                     <span className="section-label">第1区間</span>
                                 </div>
@@ -2330,7 +2353,7 @@
                 let baseList = processedSongs;
 
                 if (currentPage === "danger") {
-                    baseList = processedSongs.filter(s => String(s.danger1) === "1" || String(s.danger2) === "1");
+                    baseList = processedSongs.filter(s => ["1", "2", "3"].includes(String(s.danger1)));
                 }
 
                 const result = baseList.filter(s => {
