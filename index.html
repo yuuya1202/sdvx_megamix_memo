@@ -2008,7 +2008,7 @@
             // --- Firebase Initialization & Auth ---
             useEffect(() => {
                 const initFirebase = async () => {
-                    const { initializeApp, getAuth, onAuthStateChanged, signInAnonymously, getFirestore } = window.FirebaseSDK;
+                    const { initializeApp, getAuth, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
                     const db = getFirestore(app);
@@ -2016,13 +2016,9 @@
                     setFirebase({ auth, db });
 
                     onAuthStateChanged(auth, (currentUser) => {
-                        if (!currentUser) {
-                            signInAnonymously(auth);
-                            return;
-                        }
-                        setUser(currentUser);
+                        setUser(currentUser || null);
                         setIsAuthLoading(false);
-                        if (currentUser.isAnonymous) {
+                        if (!currentUser) {
                             setFavorites([]);
                             setMirrors([]);
                             setPersonalMemos({});
@@ -2042,9 +2038,9 @@
                 }, 100);
             }, []);
 
-            // --- Master Data Fetch ---
+            // --- Master Data Fetch（認証不要）---
             useEffect(() => {
-                if (!firebase || !user) return;
+                if (!firebase) return;
 
                 const fetchMasterData = async () => {
                     const CACHE_KEY = `sdvx_songs_${MASTER_DATA_UPDATED_AT}`;
@@ -2082,11 +2078,11 @@
                 };
 
                 fetchMasterData();
-            }, [firebase, user]);
+            }, [firebase]);
 
             // --- User Profile & Setlists Fetch（onSnapshot→getDocに変更）---
             useEffect(() => {
-                if (!user || !firebase || user.isAnonymous) return;
+                if (!user || !firebase) return;
 
                 const fetchUserData = async () => {
                     const { doc, getDoc } = window.FirebaseSDK;
@@ -2164,7 +2160,7 @@
             };
 
             const updateFirestoreProfile = async (newFavs, newMemos, newMirrors) => {
-                if (!user || !firebase || user.isAnonymous) return;
+                if (!user || !firebase) return;
                 const { doc, setDoc } = window.FirebaseSDK;
                 try {
                     await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'), {
@@ -2201,7 +2197,7 @@
             };
 
             const saveSetlist = async (newSetlist) => {
-                if (!user || !firebase || user.isAnonymous) return;
+                if (!user || !firebase) return;
                 const { doc, setDoc } = window.FirebaseSDK;
                 const newItems = setlists.find(s => s.id === newSetlist.id)
                     ? setlists.map(s => s.id === newSetlist.id ? newSetlist : s)
@@ -2218,7 +2214,7 @@
             };
 
             const deleteSetlist = async (id) => {
-                if (!user || !firebase || user.isAnonymous) return;
+                if (!user || !firebase) return;
                 const { doc, setDoc } = window.FirebaseSDK;
                 const newItems = setlists.filter(s => s.id !== id);
                 setSetlists(newItems);
@@ -2504,7 +2500,7 @@
                                     <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-music-notes text-base"></i> メインページ
                                     </button>
-                                    {user && !user.isAnonymous && (
+                                    {user && (
                                         <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
                                             <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
                                         </button>
@@ -2525,7 +2521,7 @@
                                     <button onClick={() => setCurrentPage("contact")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "contact" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-chat-centered-text text-base"></i> お問い合わせ
                                     </button>
-                                    {user && !user.isAnonymous && (
+                                    {user && (
                                         <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
                                             <i className="ph-bold ph-sign-out text-base"></i> ログアウト
                                         </button>
@@ -2536,7 +2532,7 @@
                     </div>
 
                     <div className="fixed top-4 right-4 z-50">
-                        {user && !user.isAnonymous ? (
+                        {user ? (
                             <div className="bg-white border-2 border-black px-3 py-2 rounded-xl shadow-[3px_3px_0px_#000] flex items-center gap-2">
                                 {user.photoURL ? (
                                     <img src={user.photoURL} className="w-5 h-5 rounded-full border border-black" alt="avatar" />
@@ -2666,7 +2662,7 @@
                                     </div>
 
                                     <div className="mt-4">
-                                        {user && !user.isAnonymous && (
+                                        {user && (
                                             <div className="mb-4">
                                                 <div className="toggle-btn-group">
                                                     <button onClick={() => setRandomPoolFilter("all")} className={`toggle-btn-small ${randomPoolFilter === "all" ? 'active' : ''}`}>すべて</button>
@@ -2717,7 +2713,7 @@
                                                     </div>
                                                 </div>
                                             )}
-                                            {user && !user.isAnonymous && (
+                                            {user && (
                                                 <div className="flex flex-col gap-2">
                                                     <div className="toggle-btn-group">
                                                         <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`}>すべて</button>
@@ -3045,7 +3041,7 @@
                                                     viewMode={currentPage === 'main' ? viewMode : 'list'}
                                                     showDangerBadge={currentPage === "danger"} 
                                                     showTips={currentPage === "danger"} 
-                                                    isLoggedIn={currentPage !== "danger" && (user && !user.isAnonymous)}
+                                                    isLoggedIn={currentPage !== "danger" && (user)}
                                                     isFavorite={favorites.includes(songId)}
                                                     onToggleFavorite={() => toggleFavorite(songId)}
                                                     isMirror={mirrors.includes(songId)}
@@ -3106,7 +3102,7 @@
                         <SongDetailModal 
                             isOpen={!!selectedGridSong}
                             song={selectedGridSong}
-                            isLoggedIn={user && !user.isAnonymous}
+                            isLoggedIn={user}
                             isFavorite={favorites.includes(getSongId(selectedGridSong))}
                             onToggleFavorite={() => toggleFavorite(getSongId(selectedGridSong))}
                             isMirror={mirrors.includes(getSongId(selectedGridSong))}
