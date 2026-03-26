@@ -965,7 +965,7 @@
         };
 
         // 楽曲詳細モーダル（グリッドモード用）
-        const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel }) => {
+        const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel }) => {
             const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
 
@@ -1018,9 +1018,6 @@
                                                 <button onClick={onToggleFavorite} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isFavorite ? 'bg-yellow-400' : 'bg-white'}`}>
                                                     <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-sm`}></i>
                                                 </button>
-                                                <button onClick={onToggleMirror} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isMirror ? 'bg-indigo-400 text-white' : 'bg-white'}`}>
-                                                    <i className="ph-bold ph-arrows-left-right text-sm"></i>
-                                                </button>
                                             </div>
                                         )}
                                     </div>
@@ -1028,7 +1025,14 @@
 
                                 <div className="space-y-6">
                                     <div>
-                                        <span className="section-label">第1区間</span>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="section-label">第1区間</span>
+                                            {isLoggedIn && (
+                                                <button onClick={() => onToggleMirror('first')} className={`mirror-btn ${(mirrorData && mirrorData.first) ? 'active' : ''}`}>
+                                                    <i className="ph-bold ph-arrows-left-right text-sm"></i>
+                                                </button>
+                                            )}
+                                        </div>
                                         <div className="grid grid-cols-3 gap-2 mt-2">
                                             <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
                                             <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
@@ -1036,7 +1040,14 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <span className="section-label">第2区間</span>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="section-label">第2区間</span>
+                                            {isLoggedIn && (
+                                                <button onClick={() => onToggleMirror('second')} className={`mirror-btn ${(mirrorData && mirrorData.second) ? 'active' : ''}`}>
+                                                    <i className="ph-bold ph-arrows-left-right text-sm"></i>
+                                                </button>
+                                            )}
+                                        </div>
                                         <div className="grid grid-cols-3 gap-2 mt-2">
                                             {/* ラベル重複解消 */}
                                             <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
@@ -1271,7 +1282,7 @@
             );
         };
 
-        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, isMirror, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
+        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
@@ -1323,10 +1334,10 @@
                 onToggleFavorite();
             };
 
-            const handleMirrorClick = (e) => {
+            const handleMirrorClick = (e, section) => {
                 e.stopPropagation();
                 if (!isLoggedIn) return;
-                onToggleMirror();
+                onToggleMirror(section);
             };
 
             const handleMemoSave = () => {
@@ -1406,13 +1417,7 @@
                                                 >
                                                     <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-base`}></i>
                                                 </button>
-                                                <button 
-                                                    onClick={handleMirrorClick} 
-                                                    className={`mirror-btn ${isMirror ? 'active' : ''}`}
-                                                >
-                                                    <i className={`ph-bold ph-arrows-left-right text-base`}></i>
-                                                </button>
-                                            </div>
+                                                    </div>
                                         )}
                                         <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl text-black"></i></div>
                                     </>
@@ -1443,8 +1448,16 @@
                                         );
                                     })()
                                 )}
-                                <div className="flex items-center mb-3 text-black">
+                                <div className="flex items-center justify-between mb-3 text-black">
                                     <span className="section-label">第1区間</span>
+                                    {isLoggedIn && (
+                                        <button
+                                            onClick={(e) => handleMirrorClick(e, 'first')}
+                                            className={`mirror-btn ${(mirrorData && mirrorData.first) ? 'active' : ''}`}
+                                        >
+                                            <i className="ph-bold ph-arrows-left-right text-base"></i>
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-3 gap-2 mb-6">
                                     <div className="stat-box">
@@ -1461,8 +1474,16 @@
                                     </div>
                                 </div>
 
-                                <div className="flex items-center mb-3 text-black">
+                                <div className="flex items-center justify-between mb-3 text-black">
                                     <span className="section-label">第2区間</span>
+                                    {isLoggedIn && (
+                                        <button
+                                            onClick={(e) => handleMirrorClick(e, 'second')}
+                                            className={`mirror-btn ${(mirrorData && mirrorData.second) ? 'active' : ''}`}
+                                        >
+                                            <i className="ph-bold ph-arrows-left-right text-base"></i>
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-3 gap-2 mb-6">
                                     <div className="stat-box">
@@ -1709,7 +1730,7 @@
                                                 {sl.songs.map((songId, sIdx) => {
                                                     const song = songMap[songId];
                                                     if (!song) return null;
-                                                    const isMirrorActive = mirrors.includes(songId);
+                                                    const mirrorEntry = mirrors[songId];
                                                     return (
                                                         <div key={sIdx} className="relative">
                                                             <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
@@ -1730,11 +1751,18 @@
                                                                         <span className="text-black">{song.combo}CHAIN</span>
                                                                     </div>
                                                                 </div>
-                                                                {isMirrorActive && (
-                                                                    <div className="mirror-icon-badge flex-shrink-0">
-                                                                        <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
-                                                                    </div>
-                                                                )}
+                                                                <div className="flex flex-col gap-1 flex-shrink-0">
+                                                                    {mirrorEntry && mirrorEntry.first && (
+                                                                        <div className="mirror-icon-badge" title="第1区間ミラー">
+                                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                                        </div>
+                                                                    )}
+                                                                    {mirrorEntry && mirrorEntry.second && (
+                                                                        <div className="mirror-icon-badge" title="第2区間ミラー">
+                                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     )
@@ -1973,7 +2001,7 @@
             const [authError, setAuthError] = useState(null);
             const [saveError, setSaveError] = useState(null);
             const [favorites, setFavorites] = useState([]); 
-            const [mirrors, setMirrors] = useState([]); 
+            const [mirrors, setMirrors] = useState({}); 
             const [personalMemos, setPersonalMemos] = useState({});
             const [setlists, setSetlists] = useState([]);
             const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
@@ -2020,7 +2048,7 @@
                         setIsAuthLoading(false);
                         if (!currentUser) {
                             setFavorites([]);
-                            setMirrors([]);
+                            setMirrors({});
                             setPersonalMemos({});
                             setSetlists([]);
                             setShowOnlyFavorites(false);
@@ -2091,7 +2119,7 @@
                         if (profileSnap.exists()) {
                             const data = profileSnap.data();
                             setFavorites(data.favorites || []);
-                            setMirrors(data.mirrors || []);
+                            setMirrors(data.mirrors || {});
                             setPersonalMemos(data.memos || {});
                         }
                     } catch (err) {
@@ -2182,10 +2210,13 @@
                 await updateFirestoreProfile(newFavs, personalMemos, mirrors);
             };
 
-            const toggleMirror = async (songId) => {
-                const newMirrors = mirrors.includes(songId) 
-                    ? mirrors.filter(id => id !== songId) 
-                    : [...mirrors, songId];
+            const toggleMirror = async (songId, section) => {
+                const current = mirrors[songId] || { first: false, second: false };
+                const updated = { ...current, [section]: !current[section] };
+                // 両方falseなら削除
+                const newMirrors = (!updated.first && !updated.second)
+                    ? Object.fromEntries(Object.entries(mirrors).filter(([k]) => k !== songId))
+                    : { ...mirrors, [songId]: updated };
                 setMirrors(newMirrors);
                 await updateFirestoreProfile(favorites, personalMemos, newMirrors);
             };
@@ -2373,7 +2404,8 @@
                     const matchesFav = !isFavFilterApplied || favorites.includes(songId);
 
                     const isMirrorFilterApplied = currentPage === "main" && showOnlyMirrors;
-                    const matchesMirror = !isMirrorFilterApplied || mirrors.includes(songId);
+                    const mirrorData = mirrors[songId];
+                    const matchesMirror = !isMirrorFilterApplied || (mirrorData && (mirrorData.first || mirrorData.second));
 
                     if (currentPage === "main") {
                         const matchesSearch = 
@@ -3010,7 +3042,7 @@
                                                         isLoggedIn={false}
                                                         isFavorite={false}
                                                         onToggleFavorite={() => {}}
-                                                        isMirror={false}
+                                                        mirrorData={null}
                                                         onToggleMirror={() => {}}
                                                         personalMemo={null}
                                                         onSavePersonalMemo={() => {}}
@@ -3044,8 +3076,8 @@
                                                     isLoggedIn={currentPage !== "danger" && (user)}
                                                     isFavorite={favorites.includes(songId)}
                                                     onToggleFavorite={() => toggleFavorite(songId)}
-                                                    isMirror={mirrors.includes(songId)}
-                                                    onToggleMirror={() => toggleMirror(songId)}
+                                                    mirrorData={mirrors[songId]}
+                                                    onToggleMirror={(section) => toggleMirror(songId, section)}
                                                     personalMemo={personalMemos[songId]}
                                                     onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
                                                     onOpenGridDetail={() => setSelectedGridSong(song)}
@@ -3105,8 +3137,8 @@
                             isLoggedIn={user}
                             isFavorite={favorites.includes(getSongId(selectedGridSong))}
                             onToggleFavorite={() => toggleFavorite(getSongId(selectedGridSong))}
-                            isMirror={mirrors.includes(getSongId(selectedGridSong))}
-                            onToggleMirror={() => toggleMirror(getSongId(selectedGridSong))}
+                            mirrorData={mirrors[getSongId(selectedGridSong)]}
+                            onToggleMirror={(section) => toggleMirror(getSongId(selectedGridSong), section)}
                             personalMemo={personalMemos[getSongId(selectedGridSong)]}
                             onSavePersonalMemo={(memo) => savePersonalMemo(getSongId(selectedGridSong), memo)}
                             onCancel={() => setSelectedGridSong(null)}
