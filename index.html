@@ -1753,13 +1753,15 @@
                                                                 </div>
                                                                 <div className="flex flex-col gap-1 flex-shrink-0">
                                                                     {mirrorEntry && mirrorEntry.first && (
-                                                                        <div className="mirror-icon-badge" title="第1区間ミラー">
+                                                                        <div className="mirror-icon-badge relative" title="第1区間ミラー">
                                                                             <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                                            <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'7px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
                                                                         </div>
                                                                     )}
                                                                     {mirrorEntry && mirrorEntry.second && (
-                                                                        <div className="mirror-icon-badge" title="第2区間ミラー">
+                                                                        <div className="mirror-icon-badge relative" title="第2区間ミラー">
                                                                             <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
+                                                                            <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'7px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
                                                                         </div>
                                                                     )}
                                                                 </div>
