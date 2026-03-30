@@ -527,7 +527,7 @@
 
         .fav-btn {
             background: white;
-            border: 2px solid #e5e7eb;
+            border: 1.5px solid #000;
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -535,7 +535,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            color: #d1d5db;
+            color: #000;
         }
         .fav-btn.active {
             border-color: #fbbf24;
@@ -546,7 +546,7 @@
 
         .mirror-btn {
             background: white;
-            border: 2px solid #e5e7eb;
+            border: 1.5px solid #000;
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -554,7 +554,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            color: #d1d5db;
+            color: #000;
         }
         .mirror-btn.active {
             border-color: #6366f1;
@@ -1015,7 +1015,7 @@
                                         </div>
                                         {isLoggedIn && (
                                             <div className="flex gap-2 mt-1">
-                                                <button onClick={onToggleFavorite} className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transition-all ${isFavorite ? 'bg-yellow-400' : 'bg-white'}`}>
+                                                <button onClick={onToggleFavorite} className={`fav-btn ${isFavorite ? 'active' : ''}`}>
                                                     <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-sm`}></i>
                                                 </button>
                                             </div>
