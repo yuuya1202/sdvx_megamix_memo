@@ -1367,14 +1367,14 @@
             // リスト表示の場合
             const cardClassName = minimalMode 
                 ? `static-card rounded-xl p-1.5 mb-1`
-                : `pop-card rounded-2xl p-3 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`;
+                : `pop-card rounded-2xl p-2 ${tightMode ? 'mb-2' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`;
 
             return (
                 <>
                     <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName}>
                         {renderDangerBadges()}
-                        <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-4'}`}>
-                            <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : 'w-[72px] h-[72px]'} relative overflow-hidden rounded-lg`}>
+                        <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-3'}`}>
+                            <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : 'w-[58px] h-[58px]'} relative overflow-hidden rounded-lg`}>
                                 {song.jacket ? (
                                     <img 
                                         src={song.jacket} 
@@ -1389,20 +1389,20 @@
                                         className="border-[3px] w-full h-full bg-gray-100 flex items-center justify-center rounded-lg"
                                         style={{ borderColor: borderColor }}
                                     >
-                                        <i className={`ph-bold ph-music-note text-gray-400 ${minimalMode ? 'text-lg' : 'text-xl'}`}></i>
+                                        <i className={`ph-bold ph-music-note text-gray-400 ${minimalMode ? 'text-lg' : 'text-base'}`}></i>
                                     </div>
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className={`${minimalMode ? 'text-sm' : 'text-lg'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
-                                <div className={`flex flex-nowrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-4'} gap-y-0.5 whitespace-nowrap`}>
+                                <h3 className={`${minimalMode ? 'text-sm' : 'text-base'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
+                                <div className={`flex flex-nowrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-3'} gap-y-0.5 whitespace-nowrap`}>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
-                                        <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
-                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none`}>{displayLevel}</span>
+                                        <span className={`${minimalMode ? 'text-[8px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
+                                        <span className={`${minimalMode ? 'text-base' : 'text-lg'} tracking-tight leading-none`}>{displayLevel}</span>
                                     </div>
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
-                                        <span className={`${minimalMode ? 'text-[8px]' : 'text-[10px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
-                                        <span className={`${minimalMode ? 'text-base' : 'text-xl'} tracking-tight leading-none whitespace-nowrap`}>{song.bpm || "???"}</span>
+                                        <span className={`${minimalMode ? 'text-[8px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
+                                        <span className={`${minimalMode ? 'text-base' : 'text-lg'} tracking-tight leading-none whitespace-nowrap`}>{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                             </div>
