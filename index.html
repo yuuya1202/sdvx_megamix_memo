@@ -2285,7 +2285,7 @@
                 setHasGeneratedRandom(true);
                 const filtered = songs.filter(s => {
                     const songId = getSongId(s);
-                    const matchesFav = randomPoolFilter === "all" || (user && favorites.includes(songId));
+                    const matchesFav = randomPoolFilter === "all" || (user && !user.isAnonymous && favorites.includes(songId));
                     if (!matchesFav) return false;
 
                     const lvStr = String(s.level || "");
@@ -2534,7 +2534,7 @@
                                     <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-music-notes text-base"></i> メインページ
                                     </button>
-                                    {user && (
+                                    {user && !user.isAnonymous && (
                                         <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
                                             <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
                                         </button>
@@ -2555,7 +2555,7 @@
                                     <button onClick={() => setCurrentPage("contact")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "contact" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-chat-centered-text text-base"></i> お問い合わせ
                                     </button>
-                                    {user && (
+                                    {user && !user.isAnonymous && (
                                         <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
                                             <i className="ph-bold ph-sign-out text-base"></i> ログアウト
                                         </button>
@@ -2566,7 +2566,7 @@
                     </div>
 
                     <div className="fixed top-4 right-4 z-50">
-                        {user ? (
+                        {user && !user.isAnonymous ? (
                             <div className="bg-white border-2 border-black px-3 py-2 rounded-xl shadow-[3px_3px_0px_#000] flex items-center gap-2">
                                 {user.photoURL ? (
                                     <img src={user.photoURL} className="w-5 h-5 rounded-full border border-black" alt="avatar" />
@@ -2696,7 +2696,7 @@
                                     </div>
 
                                     <div className="mt-4">
-                                        {user && (
+                                        {user && !user.isAnonymous && (
                                             <div className="mb-4">
                                                 <div className="toggle-btn-group">
                                                     <button onClick={() => setRandomPoolFilter("all")} className={`toggle-btn-small ${randomPoolFilter === "all" ? 'active' : ''}`}>すべて</button>
@@ -2747,7 +2747,7 @@
                                                     </div>
                                                 </div>
                                             )}
-                                            {user && (
+                                            {user && !user.isAnonymous && (
                                                 <div className="flex flex-col gap-2">
                                                     <div className="toggle-btn-group">
                                                         <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`}>すべて</button>
@@ -3075,7 +3075,7 @@
                                                     viewMode={currentPage === 'main' ? viewMode : 'list'}
                                                     showDangerBadge={currentPage === "danger"} 
                                                     showTips={currentPage === "danger"} 
-                                                    isLoggedIn={currentPage !== "danger" && (user)}
+                                                    isLoggedIn={currentPage !== "danger" && (user && !user.isAnonymous)}
                                                     isFavorite={favorites.includes(songId)}
                                                     onToggleFavorite={() => toggleFavorite(songId)}
                                                     mirrorData={mirrors[songId]}
@@ -3136,7 +3136,7 @@
                         <SongDetailModal 
                             isOpen={!!selectedGridSong}
                             song={selectedGridSong}
-                            isLoggedIn={user}
+                            isLoggedIn={user && !user.isAnonymous}
                             isFavorite={favorites.includes(getSongId(selectedGridSong))}
                             onToggleFavorite={() => toggleFavorite(getSongId(selectedGridSong))}
                             mirrorData={mirrors[getSongId(selectedGridSong)]}
