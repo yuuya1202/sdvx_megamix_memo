@@ -1408,19 +1408,21 @@
                             </div>
                             <div className="flex flex-col items-center gap-1.5">
                                 {!minimalMode && (
-                                    <>
+                                    <div className="flex flex-row items-center gap-1">
                                         {isLoggedIn && (
-                                            <div className="flex flex-row gap-1" onClick={e => e.stopPropagation()}>
+                                            <div onClick={e => e.stopPropagation()}>
                                                 <button 
                                                     onClick={handleFavoriteClick} 
                                                     className={`fav-btn ${isFavorite ? 'active' : ''}`}
                                                 >
                                                     <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-base`}></i>
                                                 </button>
-                                                    </div>
+                                            </div>
                                         )}
-                                        <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><i className="ph-bold ph-caret-circle-down text-2xl text-black"></i></div>
-                                    </>
+                                        <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+                                            <i className="ph-bold ph-caret-circle-down text-2xl text-black"></i>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </div>
