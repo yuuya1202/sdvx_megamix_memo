@@ -2846,16 +2846,15 @@
                                                 )}
                                             </div>
                                             <div className="space-y-2">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-[11px] font-black uppercase tracking-wider text-gray-500">難易度</span>
+                                                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                                    <div className="text-[10px] font-black text-black uppercase leading-none">難易度</div>
                                                 </div>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {["MXM","EXH","GRV","HVN","INF","VVD","XCD","ULT"].map(diff => (
+                                                <div className="grid grid-cols-4 gap-2">
+                                                    {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(diff => (
                                                         <button
                                                             key={diff}
                                                             onClick={() => toggleDifficulty(diff)}
                                                             className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedDifficulties.includes(diff) ? 'active' : ''}`}
-                                                            style={selectedDifficulties.includes(diff) ? {} : {borderColor: getBorderColor(diff), color: getBorderColor(diff)}}
                                                         >
                                                             {diff}
                                                         </button>
