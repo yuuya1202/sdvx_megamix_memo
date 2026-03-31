@@ -678,7 +678,6 @@
             box-shadow: 4px 4px 0px #000;
         }
 
-        /* 改修：干渉を防ぐため絶対配置を廃止し、独立したボタンスタイルへ */
         .view-mode-badge {
             background: white;
             color: black;
@@ -865,12 +864,22 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-03-29";
+        const MASTER_DATA_UPDATED_AT = "2026-03-30";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
         const LV19_LIST = Array.from({length: 10}, (_, i) => `19.${i}`);
         const LV20_LIST = Array.from({length: 10}, (_, i) => `20.${i}`);
+
+        const VERSION_LIST = [
+            { value: "1", label: "BOOTH" },
+            { value: "2", label: "infinite infection" },
+            { value: "3", label: "GRAVITY WARS" },
+            { value: "4", label: "HEAVENLY HAVEN" },
+            { value: "5", label: "VIVID WAVE" },
+            { value: "6", label: "EXCEED GEAR" },
+            { value: "7", label: "∇" },
+        ];
 
         const formatLevel = (lv) => {
             const lvStr = String(lv || "");
@@ -2050,6 +2059,7 @@
             const [searchTerm, setSearchTerm] = useState("");
             const [selectedLevels, setSelectedLevels] = useState([]); 
             const [selectedDifficulties, setSelectedDifficulties] = useState([]);
+            const [selectedVersions, setSelectedVersions] = useState([]);
             const [sortOrder, setSortOrder] = useState("desc");
             const [rankSection, setRankSection] = useState("section1"); 
             const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -2224,6 +2234,7 @@
             useEffect(() => {
                 setSelectedLevels([]);
                 setSelectedDifficulties([]);
+                setSelectedVersions([]);
                 setIsFilterOpen(false);
                 setPageIndex(1);
                 setShowOnlyFavorites(false);
@@ -2233,7 +2244,7 @@
 
             useEffect(() => {
                 setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, selectedDifficulties, sortOrder, showOnlyFavorites, showOnlyMirrors, viewMode]);
+            }, [rankSection, searchTerm, selectedLevels, selectedDifficulties, selectedVersions, sortOrder, showOnlyFavorites, showOnlyMirrors, viewMode]);
 
             const login = async () => {
                 if (!firebase || isAuthLoading) return;
@@ -2363,13 +2374,19 @@
                 );
             };
 
+            const toggleVersion = (ver) => {
+                setSelectedVersions(prev =>
+                    prev.includes(ver) ? prev.filter(v => v !== ver) : [...prev, ver]
+                );
+            };
+
             const isLevelFilterActive = useMemo(() => {
                 return selectedLevels.length > 0;
             }, [selectedLevels]);
 
             const isFilterActive = useMemo(() => {
-                return selectedLevels.length > 0 || selectedDifficulties.length > 0;
-            }, [selectedLevels, selectedDifficulties]);
+                return selectedLevels.length > 0 || selectedDifficulties.length > 0 || selectedVersions.length > 0;
+            }, [selectedLevels, selectedDifficulties, selectedVersions]);
 
             const generateRandomSongs = () => {
                 setIsGenerating(true);
@@ -2389,8 +2406,10 @@
                     });
 
                     const matchesDiff = selectedDifficulties.length === 0 || selectedDifficulties.includes(String(s.difficult || "").toUpperCase());
-                    
-                    return matchesLv && matchesDiff;
+
+                    const matchesVer = selectedVersions.length === 0 || selectedVersions.includes(String(s.version || ""));
+
+                    return matchesLv && matchesDiff && matchesVer;
                 });
 
                 if (filtered.length < SETLIST_TRACK_COUNT) {
@@ -2495,6 +2514,8 @@
                     });
 
                     const matchesDiff = selectedDifficulties.length === 0 || selectedDifficulties.includes(String(s.difficult || "").toUpperCase());
+
+                    const matchesVer = selectedVersions.length === 0 || selectedVersions.includes(String(s.version || ""));
                     
                     const songId = getSongId(s);
                     const isFavFilterApplied = currentPage === "main" && showOnlyFavorites;
@@ -2508,10 +2529,10 @@
                         const matchesSearch = 
                             String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                             String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
-                        return matchesLv && matchesDiff && matchesSearch && matchesFav && matchesMirror;
+                        return matchesLv && matchesDiff && matchesVer && matchesSearch && matchesFav && matchesMirror;
                     }
                     
-                    return matchesLv && matchesDiff && matchesFav && matchesMirror;
+                    return matchesLv && matchesDiff && matchesVer && matchesFav && matchesMirror;
                 });
 
                 if (currentPage === "ranking") {
@@ -2524,7 +2545,7 @@
                 }
 
                 return result;
-            }, [searchTerm, selectedLevels, selectedDifficulties, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
+            }, [searchTerm, selectedLevels, selectedDifficulties, selectedVersions, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * itemsPerPage;
@@ -2871,10 +2892,26 @@
                                         <div className="space-y-6 text-black">
                                             <div className="flex justify-end border-b-2 border-gray-100 pb-2">
                                                 {isFilterActive && (
-                                                    <button onClick={() => { setSelectedLevels([]); setSelectedDifficulties([]); }} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
+                                                    <button onClick={() => { setSelectedLevels([]); setSelectedDifficulties([]); setSelectedVersions([]); }} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
                                                         <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
                                                     </button>
                                                 )}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                                    <div className="text-[10px] font-black text-black uppercase leading-none">バージョン</div>
+                                                </div>
+                                                <div className="flex flex-col gap-1.5">
+                                                    {VERSION_LIST.map(v => (
+                                                        <button
+                                                            key={v.value}
+                                                            onClick={() => toggleVersion(v.value)}
+                                                            className={`filter-btn px-2 py-1.5 rounded-lg text-[10px] font-black w-full text-left ${selectedVersions.includes(v.value) ? 'active' : ''}`}
+                                                        >
+                                                            {v.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
