@@ -1410,13 +1410,24 @@
                                 {!minimalMode && (
                                     <div className="flex flex-row items-center gap-1">
                                         {isLoggedIn && (
-                                            <div onClick={e => e.stopPropagation()}>
-                                                <button 
-                                                    onClick={handleFavoriteClick} 
-                                                    className={`fav-btn ${isFavorite ? 'active' : ''}`}
-                                                >
-                                                    <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-base`}></i>
-                                                </button>
+                                            <div className="flex flex-row items-center gap-1">
+                                                {isFavorite && (
+                                                    <div className="w-5 h-5 rounded-full bg-yellow-50 border border-yellow-400 flex items-center justify-center">
+                                                        <i className="ph-fill ph-star text-yellow-400" style={{fontSize:'9px'}}></i>
+                                                    </div>
+                                                )}
+                                                {mirrorData && mirrorData.first && (
+                                                    <div className="mirror-icon-badge relative" style={{width:'20px',height:'20px'}}>
+                                                        <i className="ph-bold ph-arrows-left-right text-[9px]"></i>
+                                                        <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
+                                                    </div>
+                                                )}
+                                                {mirrorData && mirrorData.second && (
+                                                    <div className="mirror-icon-badge relative" style={{width:'20px',height:'20px'}}>
+                                                        <i className="ph-bold ph-arrows-left-right text-[9px]"></i>
+                                                        <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                         <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
@@ -1449,6 +1460,17 @@
                                             </div>
                                         );
                                     })()
+                                )}
+                                {isLoggedIn && (
+                                    <div className="flex items-center justify-between mb-3" onClick={e => e.stopPropagation()}>
+                                        <span className="text-[11px] font-black uppercase tracking-wide text-gray-500">お気に入り</span>
+                                        <button
+                                            onClick={handleFavoriteClick}
+                                            className={`fav-btn ${isFavorite ? 'active' : ''}`}
+                                        >
+                                            <i className={`${isFavorite ? 'ph-fill' : 'ph-bold'} ph-star text-base`}></i>
+                                        </button>
+                                    </div>
                                 )}
                                 <div className="flex items-center justify-between mb-3 text-black">
                                     <span className="section-label">第1区間</span>
@@ -1663,6 +1685,14 @@
                 setView("list");
             };
 
+            const moveSong = (idx, direction) => {
+                const newSongs = [...editingSetlist.songs];
+                const targetIdx = idx + direction;
+                if (targetIdx < 0 || targetIdx >= newSongs.length) return;
+                [newSongs[idx], newSongs[targetIdx]] = [newSongs[targetIdx], newSongs[idx]];
+                setEditingSetlist({ ...editingSetlist, songs: newSongs });
+            };
+
             const requestDelete = (id) => {
                 setDeletingId(id);
                 setIsDeleteModalOpen(true);
@@ -1844,10 +1874,11 @@
                         {editingSetlist.songs.map((songId, idx) => {
                             const song = songId ? songMap[songId] : null;
                             return (
-                                <div key={idx} className="relative">
+                                <div key={idx} className="relative flex items-center gap-2">
                                     <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
                                         {idx + 1}
                                     </div>
+                                    <div className="flex-grow">
                                     {song ? (
                                         <div onClick={() => openSongModal(idx)} className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
                                             <img 
@@ -1872,6 +1903,23 @@
                                             <span className="text-gray-500 font-bold text-sm">曲を選択する</span>
                                         </div>
                                     )}
+                                    </div>
+                                    <div className="flex flex-col gap-1 flex-shrink-0">
+                                        <button
+                                            onClick={() => moveSong(idx, -1)}
+                                            disabled={idx === 0}
+                                            className={`w-7 h-7 rounded-lg border-2 border-black flex items-center justify-center font-black transition-all ${idx === 0 ? 'opacity-20 cursor-not-allowed' : 'bg-white shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none'}`}
+                                        >
+                                            <i className="ph-bold ph-caret-up text-xs"></i>
+                                        </button>
+                                        <button
+                                            onClick={() => moveSong(idx, 1)}
+                                            disabled={idx === editingSetlist.songs.length - 1}
+                                            className={`w-7 h-7 rounded-lg border-2 border-black flex items-center justify-center font-black transition-all ${idx === editingSetlist.songs.length - 1 ? 'opacity-20 cursor-not-allowed' : 'bg-white shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none'}`}
+                                        >
+                                            <i className="ph-bold ph-caret-down text-xs"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             )
                         })}
