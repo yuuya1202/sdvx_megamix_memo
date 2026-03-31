@@ -634,6 +634,11 @@
             to { transform: translate(-50%, 0); opacity: 1; }
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .mirror-tag {
             display: inline-flex;
             align-items: center;
@@ -2082,6 +2087,8 @@
             const [hasGeneratedRandom, setHasGeneratedRandom] = useState(false);
             const [randomPoolFilter, setRandomPoolFilter] = useState("all");
             const [isSavingImage, setIsSavingImage] = useState(false);
+            const [randomVisibleCount, setRandomVisibleCount] = useState(0);
+            const [isRandomComplete, setIsRandomComplete] = useState(false);
 
             const [user, setUser] = useState(null);
             const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -2386,6 +2393,9 @@
             const generateRandomSongs = () => {
                 setIsGenerating(true);
                 setHasGeneratedRandom(true);
+                setIsFilterOpen(false);
+                setRandomVisibleCount(0);
+                setIsRandomComplete(false);
                 const filtered = songs.filter(s => {
                     const songId = getSongId(s);
                     const matchesFav = randomPoolFilter === "all" || (user && !user.isAnonymous && favorites.includes(songId));
@@ -2409,6 +2419,7 @@
 
                 if (filtered.length < SETLIST_TRACK_COUNT) {
                     setRandomSongs([]);
+                    setTimeout(() => setIsGenerating(false), 300);
                 } else {
                     const shuffled = [...filtered];
                     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -2417,15 +2428,22 @@
                     }
                     const selected = shuffled.slice(0, SETLIST_TRACK_COUNT);
                     setRandomSongs(selected);
-                    // ランダム用のデータ設定
                     setExportData({
                         title: "ランダム選曲 結果",
                         songs: selected,
                         bg: "https://yuuya1202.github.io/Image_Background/IMG_Random_Background.png"
                     });
+                    setIsGenerating(false);
+                    // 1枚ずつ時間差で表示
+                    selected.forEach((_, i) => {
+                        setTimeout(() => {
+                            setRandomVisibleCount(i + 1);
+                            if (i === selected.length - 1) {
+                                setTimeout(() => setIsRandomComplete(true), 300);
+                            }
+                        }, i * 300);
+                    });
                 }
-                
-                setTimeout(() => setIsGenerating(false), 500);
             };
 
             const performImageExport = async () => {
@@ -3172,30 +3190,47 @@
                                 )}
 
                                 {currentPage === "random" && (
-                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-1">
+                                    <div className="mt-1">
                                         {randomSongs.length > 0 ? (
-                                            randomSongs.map((song, idx) => (
-                                                <div key={`random-group-${idx}`} className="mb-1">
-                                                    <div className="flex items-center gap-2 mb-0.5 ml-1">
-                                                        <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
-                                                            TRACK {idx + 1}
+                                            <>
+                                                {randomSongs.map((song, idx) => (
+                                                    <div
+                                                        key={`random-group-${idx}`}
+                                                        className="mb-1"
+                                                        style={{
+                                                            opacity: idx < randomVisibleCount ? 1 : 0,
+                                                            transform: idx < randomVisibleCount ? 'translateY(0)' : 'translateY(12px)',
+                                                            transition: 'opacity 0.4s ease, transform 0.4s ease',
+                                                        }}
+                                                    >
+                                                        <div className="flex items-center gap-2 mb-0.5 ml-1">
+                                                            <div className="bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded transform -rotate-1">
+                                                                TRACK {idx + 1}
+                                                            </div>
                                                         </div>
+                                                        <SongCard 
+                                                            key={`random-${getSongId(song)}-${idx}`} 
+                                                            song={song} 
+                                                            isLoggedIn={false}
+                                                            isFavorite={false}
+                                                            onToggleFavorite={() => {}}
+                                                            mirrorData={null}
+                                                            onToggleMirror={() => {}}
+                                                            personalMemo={null}
+                                                            onSavePersonalMemo={() => {}}
+                                                            tightMode={true}
+                                                            minimalMode={true}
+                                                        />
                                                     </div>
-                                                    <SongCard 
-                                                        key={`random-${getSongId(song)}-${idx}`} 
-                                                        song={song} 
-                                                        isLoggedIn={false}
-                                                        isFavorite={false}
-                                                        onToggleFavorite={() => {}}
-                                                        mirrorData={null}
-                                                        onToggleMirror={() => {}}
-                                                        personalMemo={null}
-                                                        onSavePersonalMemo={() => {}}
-                                                        tightMode={true}
-                                                        minimalMode={true}
-                                                    />
-                                                </div>
-                                            ))
+                                                ))}
+                                                {isRandomComplete && (
+                                                    <div className="text-center mt-3" style={{animation: 'fadeIn 0.5s ease'}}>
+                                                        <span className="text-white/60 text-[11px] font-black uppercase tracking-widest">
+                                                            <i className="ph-bold ph-check-circle mr-1"></i>生成完了
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </>
                                         ) : (
                                             hasGeneratedRandom && !isGenerating && (
                                                 <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
