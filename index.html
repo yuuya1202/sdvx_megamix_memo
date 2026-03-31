@@ -1373,6 +1373,27 @@
                 <>
                     <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName}>
                         {renderDangerBadges()}
+                        {isLoggedIn && !isOpen && !minimalMode && (isFavorite || (mirrorData && (mirrorData.first || mirrorData.second))) && (
+                            <div style={{position:'absolute', top:'-8px', right:'10px', display:'flex', gap:'4px', zIndex:10}}>
+                                {isFavorite && (
+                                    <div className="w-5 h-5 rounded-full bg-yellow-50 border border-yellow-400 flex items-center justify-center" style={{boxShadow:'1px 1px 0px #000'}}>
+                                        <i className="ph-fill ph-star text-yellow-400" style={{fontSize:'9px'}}></i>
+                                    </div>
+                                )}
+                                {mirrorData && mirrorData.first && (
+                                    <div className="mirror-icon-badge relative" style={{width:'20px',height:'20px'}}>
+                                        <i className="ph-bold ph-arrows-left-right text-[9px]"></i>
+                                        <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
+                                    </div>
+                                )}
+                                {mirrorData && mirrorData.second && (
+                                    <div className="mirror-icon-badge relative" style={{width:'20px',height:'20px'}}>
+                                        <i className="ph-bold ph-arrows-left-right text-[9px]"></i>
+                                        <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-3'}`}>
                             <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : 'w-[58px] h-[58px]'} relative overflow-hidden rounded-lg`}>
                                 {song.jacket ? (
@@ -1409,27 +1430,6 @@
                             <div className="flex flex-col items-center gap-1.5">
                                 {!minimalMode && (
                                     <div className="flex flex-row items-center gap-1">
-                                        {isLoggedIn && (
-                                            <div className="flex flex-row items-center gap-1">
-                                                {isFavorite && (
-                                                    <div className="w-5 h-5 rounded-full bg-yellow-50 border border-yellow-400 flex items-center justify-center">
-                                                        <i className="ph-fill ph-star text-yellow-400" style={{fontSize:'9px'}}></i>
-                                                    </div>
-                                                )}
-                                                {mirrorData && mirrorData.first && (
-                                                    <div className="mirror-icon-badge relative" style={{width:'20px',height:'20px'}}>
-                                                        <i className="ph-bold ph-arrows-left-right text-[9px]"></i>
-                                                        <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
-                                                    </div>
-                                                )}
-                                                {mirrorData && mirrorData.second && (
-                                                    <div className="mirror-icon-badge relative" style={{width:'20px',height:'20px'}}>
-                                                        <i className="ph-bold ph-arrows-left-right text-[9px]"></i>
-                                                        <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
                                         <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
                                             <i className="ph-bold ph-caret-circle-down text-2xl text-black"></i>
                                         </div>
@@ -1463,7 +1463,7 @@
                                 )}
                                 {isLoggedIn && (
                                     <div className="flex items-center justify-between mb-3" onClick={e => e.stopPropagation()}>
-                                        <span className="text-[11px] font-black uppercase tracking-wide text-gray-500">お気に入り</span>
+                                        <span className="section-label" style={{textDecorationColor: '#3b82f6'}}>お気に入り</span>
                                         <button
                                             onClick={handleFavoriteClick}
                                             className={`fav-btn ${isFavorite ? 'active' : ''}`}
