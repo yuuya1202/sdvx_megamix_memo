@@ -2807,7 +2807,25 @@
                                             </button>
                                         )}
                                     </div>
+
                                     <div className="flex flex-col gap-3">
+                                        {/* 補足コメント */}
+                                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md text-white">
+                                            <div className="text-[12px] font-black leading-relaxed">
+                                                <p>「生成する」ボタンを押すと、条件に合う楽曲からランダムに5曲が選ばれます。</p>
+                                                <p>絞り込みやお気に入りフィルターを活用することで、抽選範囲を自分好みにカスタマイズできます。</p>
+                                            </div>
+                                        </div>
+
+                                        {/* お気に入りフィルター */}
+                                        {user && !user.isAnonymous && (
+                                            <div className="toggle-btn-group">
+                                                <button onClick={() => setRandomPoolFilter("all")} className={`toggle-btn-small ${randomPoolFilter === "all" ? 'active' : ''}`}>すべて</button>
+                                                <button onClick={() => setRandomPoolFilter("fav")} className={`toggle-btn-small ${randomPoolFilter === "fav" ? 'active' : ''}`}>お気に入りのみ</button>
+                                            </div>
+                                        )}
+
+                                        {/* 生成ボタン */}
                                         <button 
                                             onClick={generateRandomSongs} 
                                             disabled={isGenerating}
@@ -2822,23 +2840,6 @@
                                                 </>
                                             )}
                                         </button>
-                                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md text-white">
-                                            <div className="text-[12px] font-black leading-relaxed">
-                                                <p>「生成する」ボタンを押すと、条件に合う楽曲からランダムに5曲が選ばれます。</p>
-                                                <p>絞り込みやお気に入りフィルターを活用することで、抽選範囲を自分好みにカスタマイズできます。</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4">
-                                        {user && !user.isAnonymous && (
-                                            <div className="mb-4">
-                                                <div className="toggle-btn-group">
-                                                    <button onClick={() => setRandomPoolFilter("all")} className={`toggle-btn-small ${randomPoolFilter === "all" ? 'active' : ''}`}>すべて</button>
-                                                    <button onClick={() => setRandomPoolFilter("fav")} className={`toggle-btn-small ${randomPoolFilter === "fav" ? 'active' : ''}`}>お気に入りのみ</button>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             )}
