@@ -2358,8 +2358,10 @@
                         }
                         return lvStr === targetLv;
                     });
+
+                    const matchesDiff = selectedDifficulties.length === 0 || selectedDifficulties.includes(String(s.difficult || "").toUpperCase());
                     
-                    return matchesLv;
+                    return matchesLv && matchesDiff;
                 });
 
                 if (filtered.length < SETLIST_TRACK_COUNT) {
@@ -2832,7 +2834,7 @@
                                     <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
                                         <div className="flex items-center gap-3">
                                             <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
-                                            <span>絞り込む{isFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
+                                            <span>絞り込み{isFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
                                         </div>
                                         <i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i>
                                     </button>
