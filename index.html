@@ -1780,16 +1780,10 @@
                                                                 crossOrigin="anonymous"
                                                                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
                                                             />
-                                                            <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-black text-white rounded-full flex items-center justify-center font-black border border-white" style={{fontSize:'8px'}}>
-                                                                {sIdx + 1}
-                                                            </div>
                                                         </div>
                                                     ) : (
-                                                        <div key={sIdx} className="flex-1 aspect-square rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center relative">
+                                                        <div key={sIdx} className="flex-1 aspect-square rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
                                                             <i className="ph-bold ph-music-note text-gray-300 text-xs"></i>
-                                                            <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-gray-300 text-white rounded-full flex items-center justify-center font-black border border-white" style={{fontSize:'8px'}}>
-                                                                {sIdx + 1}
-                                                            </div>
                                                         </div>
                                                     );
                                                 })}
