@@ -2825,6 +2825,50 @@
                                             </div>
                                         )}
 
+                                        {/* 絞り込み */}
+                                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
+                                            <div className="flex items-center gap-3">
+                                                <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
+                                                <span>絞り込み{isFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
+                                            </div>
+                                            <i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i>
+                                        </button>
+                                        <div className={`filter-area ${isFilterOpen ? 'show' : ''}`}>
+                                            <div className="space-y-6 text-black">
+                                                <div className="flex justify-end border-b-2 border-gray-100 pb-2">
+                                                    {isFilterActive && (
+                                                        <button onClick={() => { setSelectedLevels([]); setSelectedDifficulties([]); setSelectedVersions([]); }} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
+                                                            <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                                        <div className="text-[10px] font-black text-black uppercase leading-none">バージョン</div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-1.5">
+                                                        {VERSION_LIST.map(v => (
+                                                            <button key={v.value} onClick={() => toggleVersion(v.value)} className={`filter-btn px-2 py-1.5 rounded-lg text-[10px] font-black w-full text-left ${selectedVersions.includes(v.value) ? 'active' : ''}`}>{v.label}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                                        <div className="text-[10px] font-black text-black uppercase leading-none">難易度</div>
+                                                    </div>
+                                                    <div className="grid grid-cols-4 gap-2">
+                                                        {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(diff => (
+                                                            <button key={diff} onClick={() => toggleDifficulty(diff)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedDifficulties.includes(diff) ? 'active' : ''}`}>{diff}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                                <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                                <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                                <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                                            </div>
+                                        </div>
+
                                         {/* 生成ボタン */}
                                         <button 
                                             onClick={generateRandomSongs} 
@@ -2901,7 +2945,8 @@
                                             )}
                                         </div>
                                     )}
-                                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
+                                    {currentPage !== "random" && (
+                                    <><button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
                                         <div className="flex items-center gap-3">
                                             <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
                                             <span>絞り込み{isFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
@@ -2955,6 +3000,8 @@
                                             <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                                         </div>
                                     </div>
+                                    </>
+                                    )}
                                 </div>
                             )}
                         </div>
