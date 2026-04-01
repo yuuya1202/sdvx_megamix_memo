@@ -2055,8 +2055,8 @@
             )
         };
 
-        // Twitterアプリ内ブラウザ検知モーダル
-        const TwitterBrowserModal = ({ isOpen, onClose }) => {
+        // アプリ内ブラウザ案内モーダル（X・LINE対応）
+        const InAppBrowserModal = ({ isOpen, onClose }) => {
             if (!isOpen) return null;
             const currentUrl = window.location.href;
             const handleCopy = () => {
@@ -2082,7 +2082,7 @@
                             </div>
                             <h2 className="text-lg font-black mb-3 leading-snug">ブラウザアプリで<br/>開いてください</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed">
-                                Xアプリ内のブラウザではログイン機能が使えない場合があります。<br/><br/>
+                                XやLINEのアプリ内ブラウザではGoogleログインが使えません。<br/><br/>
                                 下のボタンでURLをコピーして、<span className="font-black text-black">Safari / Chrome</span> などのブラウザに貼り付けて開いてください。
                             </p>
                         </div>
@@ -2165,15 +2165,12 @@
 
             const exportRef = useRef(null);
 
-            // Twitterアプリ内ブラウザ検知
-            const [isTwitterBrowserModalOpen, setIsTwitterBrowserModalOpen] = useState(false);
-            useEffect(() => {
+            // アプリ内ブラウザ検知（X・LINE）
+            const [isInAppBrowserModalOpen, setIsInAppBrowserModalOpen] = useState(false);
+            const isInAppBrowser = () => {
                 const ua = navigator.userAgent || "";
-                const isTwitter = /Twitter for (iPhone|Android|iPad)/i.test(ua);
-                if (isTwitter) {
-                    setIsTwitterBrowserModalOpen(true);
-                }
-            }, []);
+                return /Twitter for (iPhone|Android|iPad)/i.test(ua) || /Line\//i.test(ua);
+            };
 
             const getSongId = (song) => `${song.title}_${song.difficult}`;
 
@@ -2319,6 +2316,11 @@
 
             const login = async () => {
                 if (!firebase || isAuthLoading) return;
+                // アプリ内ブラウザ検知
+                if (isInAppBrowser()) {
+                    setIsInAppBrowserModalOpen(true);
+                    return;
+                }
                 setIsAuthLoading(true);
                 setAuthError(null);
                 const { GoogleAuthProvider, signInWithPopup } = window.FirebaseSDK;
@@ -3454,9 +3456,9 @@
                         onCancel={() => setIsLogoutModalOpen(false)}
                     />
 
-                    <TwitterBrowserModal
-                        isOpen={isTwitterBrowserModalOpen}
-                        onClose={() => setIsTwitterBrowserModalOpen(false)}
+                    <InAppBrowserModal
+                        isOpen={isInAppBrowserModalOpen}
+                        onClose={() => setIsInAppBrowserModalOpen(false)}
                     />
 
                     <ImagePreviewModal 
