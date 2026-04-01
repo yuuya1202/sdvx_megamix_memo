@@ -25,10 +25,10 @@
     <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, getFirestore, doc, setDoc, getDoc };
+        window.FirebaseSDK = { initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc };
     </script>
 
     <style>
@@ -2270,10 +2270,9 @@
 
             const logout = async () => {
                 if (!firebase) return;
-                const { signOut, signInAnonymously } = window.FirebaseSDK;
+                const { signOut } = window.FirebaseSDK;
                 try {
                     await signOut(firebase.auth);
-                    await signInAnonymously(firebase.auth);
                     setShowOnlyFavorites(false);
                     setShowOnlyMirrors(false);
                     setCurrentPage("main");
@@ -3049,7 +3048,7 @@
                                             <div className="contact-method-card">
                                                 <div className="flex items-center gap-2">
                                                     <i className="ph-fill ph-x-logo text-xl text-black"></i>
-                                                    <h3 className="text-sm font-black text-black">X(旧Twitter)で連絡</h3>
+                                                    <h3 className="text-sm font-black text-black">代表者へX(旧Twitter)で連絡</h3>
                                                 </div>
                                                 <p className="text-xs font-bold text-gray-600 leading-relaxed">
                                                     管理者のアカウント(@Yuuya1202)へ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。
