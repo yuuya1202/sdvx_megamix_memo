@@ -2057,20 +2057,22 @@
 
         // アプリ内ブラウザ案内モーダル（X・LINE対応）
         const InAppBrowserModal = ({ isOpen, onClose }) => {
+            const [copied, setCopied] = useState(false);
             if (!isOpen) return null;
             const currentUrl = window.location.href;
             const handleCopy = () => {
-                navigator.clipboard.writeText(currentUrl).then(() => {
-                    alert("URLをコピーしました！");
-                }).catch(() => {
-                    // fallback
+                const doCopy = () => {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 3000);
+                };
+                navigator.clipboard.writeText(currentUrl).then(doCopy).catch(() => {
                     const el = document.createElement('textarea');
                     el.value = currentUrl;
                     document.body.appendChild(el);
                     el.select();
                     document.execCommand('copy');
                     document.body.removeChild(el);
-                    alert("URLをコピーしました！");
+                    doCopy();
                 });
             };
             return (
@@ -2095,10 +2097,10 @@
                         <div className="flex flex-col gap-3">
                             <button
                                 onClick={handleCopy}
-                                className="w-full bg-[#1d9bf0] text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2"
+                                className={`w-full font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 ${copied ? 'bg-[#52b788] text-white border-[#2d6a4f] shadow-[4px_4px_0px_#2d6a4f]' : 'bg-[#1d9bf0] text-white'}`}
                             >
-                                <i className="ph-bold ph-copy text-lg"></i>
-                                URLをコピーする
+                                <i className={`ph-bold ${copied ? 'ph-check' : 'ph-copy'} text-lg`}></i>
+                                {copied ? 'コピーしました！' : 'URLをコピーする'}
                             </button>
                             <button
                                 onClick={onClose}
@@ -2108,6 +2110,33 @@
                             </button>
                         </div>
                     </div>
+
+                    {/* コピー完了トースト */}
+                    {copied && (
+                        <div style={{
+                            position: 'fixed',
+                            bottom: '28px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: '#52b788',
+                            color: 'white',
+                            padding: '14px 24px',
+                            border: '3px solid black',
+                            borderRadius: '16px',
+                            boxShadow: '6px 6px 0px black',
+                            zIndex: 10000,
+                            fontWeight: 900,
+                            fontSize: '13px',
+                            whiteSpace: 'nowrap',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            animation: 'toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                        }}>
+                            <i className="ph-bold ph-check-circle text-xl"></i>
+                            URLをコピーしました！
+                        </div>
+                    )}
                 </div>
             );
         };
