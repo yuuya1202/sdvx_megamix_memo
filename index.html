@@ -2254,6 +2254,7 @@
                 setAuthError(null);
                 const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
                 const provider = new TwitterAuthProvider();
+                provider.setCustomParameters({ force_login: 'true' });
 
                 try {
                     await signInWithPopup(firebase.auth, provider);
