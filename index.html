@@ -25,10 +25,10 @@
     <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, TwitterAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, TwitterAuthProvider, signInWithPopup, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc };
+        window.FirebaseSDK = { initializeApp, getAuth, TwitterAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, getFirestore, doc, setDoc, getDoc };
     </script>
 
     <style>
@@ -2150,6 +2150,14 @@
                             setRandomPoolFilter("all");
                         }
                     });
+
+                    // リダイレクトログイン結果の処理
+                    const { getRedirectResult } = window.FirebaseSDK;
+                    try {
+                        await getRedirectResult(auth);
+                    } catch (error) {
+                        console.error("Redirect Result Error:", error);
+                    }
                 };
 
                 const interval = setInterval(() => {
@@ -2252,12 +2260,10 @@
                 if (!firebase || isAuthLoading) return;
                 setIsAuthLoading(true);
                 setAuthError(null);
-                const { TwitterAuthProvider, signInWithPopup } = window.FirebaseSDK;
+                const { TwitterAuthProvider, signInWithRedirect } = window.FirebaseSDK;
                 const provider = new TwitterAuthProvider();
-                provider.setCustomParameters({ force_login: 'true' });
-
                 try {
-                    await signInWithPopup(firebase.auth, provider);
+                    await signInWithRedirect(firebase.auth, provider);
                 } catch (error) {
                     console.error("Twitter Login Error:", error);
                     setAuthError("ログインに失敗しました.");
