@@ -2167,11 +2167,9 @@
 
             // Twitterアプリ内ブラウザ検知
             const [isTwitterBrowserModalOpen, setIsTwitterBrowserModalOpen] = useState(false);
-            const [debugUA, setDebugUA] = useState("");
             useEffect(() => {
                 const ua = navigator.userAgent || "";
-                setDebugUA(ua);
-                const isTwitter = /TwitterAndroid|Twitter\/|TwitteriPhone/.test(ua);
+                const isTwitter = /Twitter for (iPhone|Android|iPad)/i.test(ua);
                 if (isTwitter) {
                     setIsTwitterBrowserModalOpen(true);
                 }
@@ -3432,7 +3430,6 @@
                         <p className="text-white/40 text-[11px] font-bold">
                             データ最終更新日: {MASTER_DATA_UPDATED_AT}
                         </p>
-                        <p className="text-white/30 text-[9px] font-bold mt-2 break-all px-2">[DEBUG UA] {debugUA}</p>
                     </footer>
 
                     {/* --- グリッドモード用楽曲詳細 --- */}
