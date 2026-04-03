@@ -796,15 +796,16 @@
             background: #ffffff;
             border: 3px solid #000;
             border-radius: 12px;
-            padding: 0px 20px 0px 16px; 
+            padding: 0px 20px 0px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
-            min-height: 68px;
+            height: 68px;
             position: relative;
             overflow: hidden;
             gap: 16px;
+            box-sizing: border-box;
         }
         .export-info-main {
             display: flex;
@@ -812,21 +813,14 @@
             gap: 16px;
             flex: 1;
             min-width: 0;
-            height: 100%;
         }
         .export-info-num {
-            font-size: 14px;
+            font-size: 22px;
             font-weight: 900;
-            color: #fff;
-            background: #1a1a2e;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: #000;
+            font-style: italic;
             flex-shrink: 0;
-            border: 2px solid #000;
+            line-height: 1;
         }
         .export-info-title {
             font-size: 24px;
@@ -835,10 +829,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.2;
-            display: flex;
-            align-items: center;
-            height: 100%;
+            line-height: 1;
         }
         .export-info-meta {
             display: flex;
@@ -854,11 +845,13 @@
             border-radius: 6px;
             border: 2px solid #000;
             letter-spacing: 0.05em;
+            line-height: 1;
         }
         .export-meta-text {
             font-size: 18px;
             font-weight: 900;
             color: #000;
+            line-height: 1;
         }
         
         /* カスタムスクロールバー（PC用） */
@@ -2753,7 +2746,7 @@
                                     return (
                                         <div key={`exp-info-${i}`} className="export-info-row">
                                             <div className="export-info-main">
-                                                <div className="export-info-num">{i + 1}</div>
+                                                <div className="export-info-num">#{i + 1}</div>
                                                 <div className="export-info-title">{song.title}</div>
                                             </div>
                                             <div className="export-info-meta">
