@@ -797,7 +797,7 @@
             background: #ffffff;
             border: 3px solid #000;
             border-radius: 12px;
-            padding: 0px 20px 0px 16px;
+            padding: 0px 24px 0px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -805,58 +805,43 @@
             height: 62px;
             position: relative;
             overflow: hidden;
-            gap: 16px;
             box-sizing: border-box;
         }
         .export-info-main {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
             flex: 1;
             min-width: 0;
+            height: 100%;
         }
         .export-info-num {
             font-size: 22px;
             font-weight: 900;
             color: #000;
             font-style: italic;
-            flex-shrink: 0;
-            line-height: 1;
+            width: 40px;
         }
         .export-info-title {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 900;
             color: #000;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1;
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            height: 100%;
         }
         .export-info-meta {
             display: flex;
-            gap: 10px;
-            flex-shrink: 0;
-            align-items: center;
-        }
-        .export-diff-badge {
-            font-size: 14px;
-            font-weight: 900;
-            color: #fff;
-            padding: 0 12px;
-            height: 30px;
-            border-radius: 6px;
-            border: 2px solid #000;
-            letter-spacing: 0.05em;
-            line-height: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .export-meta-text {
+            gap: 24px;
             font-size: 18px;
             font-weight: 900;
             color: #000;
-            line-height: 1;
+            flex-shrink: 0;
+            align-items: center;
         }
         
         /* カスタムスクロールバー（PC用） */
@@ -2739,34 +2724,25 @@
                                         />
                                     </div>
                                 ))}
-                                {/* 空スロットの穴埋め */}
                                 {[...Array(Math.max(0, SETLIST_TRACK_COUNT - exportData.songs.length))].map((_, i) => (
                                     <div key={`exp-jack-empty-${i}`} className="export-jacket-box opacity-20 border-dashed border-white"></div>
                                 ))}
                             </div>
 
                             <div className="export-info-list">
-                                {exportData.songs.map((song, i) => {
-                                    const diffColor = getBorderColor(song.difficult);
-                                    return (
-                                        <div key={`exp-info-${i}`} className="export-info-row">
-                                            <div className="export-info-main">
-                                                <div className="export-info-num">#{i + 1}</div>
-                                                <div className="export-info-title">{song.title}</div>
-                                            </div>
-                                            <div className="export-info-meta">
-                                                <span className="export-meta-text">Lv {formatLevel(song.level)}</span>
-                                                <span
-                                                    className="export-diff-badge"
-                                                    style={{ backgroundColor: diffColor === '#000000' ? '#1a1a2e' : diffColor }}
-                                                >
-                                                    {song.difficult}
-                                                </span>
-                                                <span className="export-meta-text">BPM {song.bpm}</span>
-                                            </div>
+                                {exportData.songs.map((song, i) => (
+                                    <div key={`exp-info-${i}`} className="export-info-row">
+                                        <div className="export-info-main">
+                                            <div className="export-info-num">#{i + 1}</div>
+                                            <div className="export-info-title">{song.title}</div>
                                         </div>
-                                    );
-                                })}
+                                        <div className="export-info-meta">
+                                            <span style={{ color: '#000' }}>Lv {formatLevel(song.level)}</span>
+                                            <span style={{ color: getBorderColor(song.difficult) === '#000000' ? '#1a1a2e' : getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                            <span style={{ color: '#000' }}>BPM {song.bpm}</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
