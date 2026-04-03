@@ -788,10 +788,10 @@
         .export-info-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 5px;
             width: 100%;
             flex-grow: 1;
-            padding: 0 20px; 
+            padding: 0 20px;
         }
         .export-info-row {
             background: #ffffff;
@@ -802,7 +802,7 @@
             align-items: center;
             justify-content: space-between;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
-            height: 68px;
+            height: 62px;
             position: relative;
             overflow: hidden;
             gap: 16px;
@@ -2578,8 +2578,10 @@
                 setIsSavingImage(true);
                 
                 try {
-                    // 少し待機して状態の反映を確実にする
-                    await new Promise(r => setTimeout(r, 100));
+                    // Webフォントのロード完了を待つ
+                    await document.fonts.ready;
+                    // 状態反映とレンダリング確定を待つ
+                    await new Promise(r => setTimeout(r, 300));
                     
                     const element = document.getElementById('export-container');
                     const canvas = await html2canvas(element, {
