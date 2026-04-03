@@ -742,13 +742,24 @@
         }
         .export-header {
             width: 100%;
-            text-align: right;
+            margin-bottom: 28px;
+            line-height: 1;
+        }
+        .export-header-label {
+            font-size: 14px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+        .export-header-title {
             font-size: 38px;
             font-weight: 900;
-            color: #000;
-            margin-bottom: 35px; 
-            text-shadow: 2px 2px 0px #fff;
-            line-height: 1;
+            color: #fff;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+            line-height: 1.1;
         }
         .export-jackets-row {
             display: flex;
@@ -782,36 +793,43 @@
             padding: 0 20px; 
         }
         .export-info-row {
-            background: rgba(255, 255, 255, 0.94);
-            border: 4px solid #000;
-            border-left-width: 14px; 
+            background: #ffffff;
+            border: 3px solid #000;
             border-radius: 12px;
-            padding: 0px 24px 4px 18px; 
+            padding: 0px 20px 0px 16px; 
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
             min-height: 68px;
             position: relative;
             overflow: hidden;
+            gap: 16px;
         }
         .export-info-main {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
             flex: 1;
             min-width: 0;
             height: 100%;
         }
         .export-info-num {
-            font-size: 22px;
+            font-size: 14px;
             font-weight: 900;
-            color: #000;
-            font-style: italic;
-            width: 40px;
+            color: #fff;
+            background: #1a1a2e;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 2px solid #000;
         }
         .export-info-title {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 900;
             color: #000;
             white-space: nowrap;
@@ -824,12 +842,23 @@
         }
         .export-info-meta {
             display: flex;
-            gap: 24px;
+            gap: 10px;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .export-diff-badge {
+            font-size: 14px;
+            font-weight: 900;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 2px solid #000;
+            letter-spacing: 0.05em;
+        }
+        .export-meta-text {
             font-size: 18px;
             font-weight: 900;
             color: #000;
-            flex-shrink: 0;
-            align-items: center;
         }
         
         /* カスタムスクロールバー（PC用） */
@@ -2696,7 +2725,10 @@
                             alt="background"
                         />
                         <div className="export-content-wrapper">
-                            <div className="export-header">{exportData.title}</div>
+                            <div className="export-header">
+                                <div className="export-header-label">MY SETLIST</div>
+                                <div className="export-header-title">{exportData.title}</div>
+                            </div>
                             
                             <div className="export-jackets-row">
                                 {exportData.songs.map((song, i) => (
@@ -2716,19 +2748,27 @@
                             </div>
 
                             <div className="export-info-list">
-                                {exportData.songs.map((song, i) => (
-                                    <div key={`exp-info-${i}`} className="export-info-row" style={{ borderLeft: `14px solid #000` }}>
-                                        <div className="export-info-main">
-                                            <div className="export-info-num">#{i + 1}</div>
-                                            <div className="export-info-title">{song.title}</div>
+                                {exportData.songs.map((song, i) => {
+                                    const diffColor = getBorderColor(song.difficult);
+                                    return (
+                                        <div key={`exp-info-${i}`} className="export-info-row">
+                                            <div className="export-info-main">
+                                                <div className="export-info-num">{i + 1}</div>
+                                                <div className="export-info-title">{song.title}</div>
+                                            </div>
+                                            <div className="export-info-meta">
+                                                <span className="export-meta-text">Lv {formatLevel(song.level)}</span>
+                                                <span 
+                                                    className="export-diff-badge"
+                                                    style={{ backgroundColor: diffColor === '#000000' ? '#1a1a2e' : diffColor }}
+                                                >
+                                                    {song.difficult}
+                                                </span>
+                                                <span className="export-meta-text">BPM {song.bpm}</span>
+                                            </div>
                                         </div>
-                                        <div className="export-info-meta">
-                                            <span style={{ color: '#000' }}>Lv {formatLevel(song.level)}</span>
-                                            <span style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
-                                            <span style={{ color: '#000' }}>BPM {song.bpm}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
