@@ -2580,15 +2580,33 @@
                 try {
                     // Webフォントのロード完了を待つ
                     await document.fonts.ready;
-                    // 状態反映とレンダリング確定を待つ
-                    await new Promise(r => setTimeout(r, 300));
+                    
+                    // フォントを明示的にロードしてhtml2canvasに認識させる
+                    await Promise.all([
+                        document.fonts.load('900 24px "M PLUS Rounded 1c"'),
+                        document.fonts.load('900 38px "M PLUS Rounded 1c"'),
+                        document.fonts.load('900 18px "M PLUS Rounded 1c"'),
+                        document.fonts.load('900 14px "M PLUS Rounded 1c"'),
+                    ]);
+
+                    // レンダリング確定を待つ
+                    await new Promise(r => setTimeout(r, 500));
                     
                     const element = document.getElementById('export-container');
                     const canvas = await html2canvas(element, {
                         useCORS: true,
                         allowTaint: false,
                         scale: 2,
-                        backgroundColor: "#132a13"
+                        backgroundColor: "#132a13",
+                        onclone: (clonedDoc) => {
+                            const container = clonedDoc.getElementById('export-container');
+                            if (container) {
+                                container.style.fontFamily = "'M PLUS Rounded 1c', sans-serif";
+                                container.querySelectorAll('*').forEach(el => {
+                                    el.style.fontFamily = "'M PLUS Rounded 1c', sans-serif";
+                                });
+                            }
+                        }
                     });
                     
                     canvas.toBlob((blob) => {
