@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -722,7 +723,6 @@
             align-items: center;
             padding: 24px 40px 30px 40px; 
             z-index: -100;
-            font-family: 'M PLUS Rounded 1c', sans-serif;
         }
         .export-bg {
             position: absolute;
@@ -791,7 +791,7 @@
             gap: 5px;
             width: 100%;
             flex-grow: 1;
-            padding: 0 20px;
+            padding: 0 20px; 
         }
         .export-info-row {
             background: #ffffff;
@@ -2578,46 +2578,15 @@
                 setIsSavingImage(true);
                 
                 try {
-                    // Webフォントのロード完了を待つ
-                    await document.fonts.ready;
-                    await Promise.all([
-                        document.fonts.load('900 24px "M PLUS Rounded 1c"'),
-                        document.fonts.load('900 38px "M PLUS Rounded 1c"'),
-                        document.fonts.load('900 18px "M PLUS Rounded 1c"'),
-                        document.fonts.load('900 14px "M PLUS Rounded 1c"'),
-                    ]);
-                    await new Promise(r => setTimeout(r, 300));
+                    // 少し待機して状態の反映を確実にする
+                    await new Promise(r => setTimeout(r, 100));
                     
                     const element = document.getElementById('export-container');
                     const canvas = await html2canvas(element, {
                         useCORS: true,
                         allowTaint: false,
                         scale: 2,
-                        backgroundColor: "#132a13",
-                        onclone: (clonedDoc) => {
-                            // メインドキュメントのstyleタグを全てコピー（フォント定義含む）
-                            Array.from(document.styleSheets).forEach(sheet => {
-                                try {
-                                    if (sheet.cssRules) {
-                                        const style = clonedDoc.createElement('style');
-                                        style.textContent = Array.from(sheet.cssRules).map(r => r.cssText).join('\n');
-                                        clonedDoc.head.appendChild(style);
-                                    }
-                                } catch(e) {}
-                            });
-                            // フォントFaceをクローンDocumentに転送
-                            document.fonts.forEach(fontFace => {
-                                try { clonedDoc.fonts.add(fontFace); } catch(e) {}
-                            });
-                            // 全要素にフォントを適用
-                            const container = clonedDoc.getElementById('export-container');
-                            if (container) {
-                                container.style.fontFamily = "'M PLUS Rounded 1c', sans-serif";
-                                container.querySelectorAll('*').forEach(el => {
-                                    el.style.fontFamily = "'M PLUS Rounded 1c', sans-serif";
-                                });
-                            }
-                        }
+                        backgroundColor: "#132a13"
                     });
                     
                     canvas.toBlob((blob) => {
@@ -2787,7 +2756,7 @@
                                             </div>
                                             <div className="export-info-meta">
                                                 <span className="export-meta-text">Lv {formatLevel(song.level)}</span>
-                                                <span 
+                                                <span
                                                     className="export-diff-badge"
                                                     style={{ backgroundColor: diffColor === '#000000' ? '#1a1a2e' : diffColor }}
                                                 >
