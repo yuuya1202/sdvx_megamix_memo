@@ -2580,17 +2580,13 @@
                 try {
                     // Webフォントのロード完了を待つ
                     await document.fonts.ready;
-                    
-                    // フォントを明示的にロードしてhtml2canvasに認識させる
                     await Promise.all([
                         document.fonts.load('900 24px "M PLUS Rounded 1c"'),
                         document.fonts.load('900 38px "M PLUS Rounded 1c"'),
                         document.fonts.load('900 18px "M PLUS Rounded 1c"'),
                         document.fonts.load('900 14px "M PLUS Rounded 1c"'),
                     ]);
-
-                    // レンダリング確定を待つ
-                    await new Promise(r => setTimeout(r, 500));
+                    await new Promise(r => setTimeout(r, 300));
                     
                     const element = document.getElementById('export-container');
                     const canvas = await html2canvas(element, {
@@ -2599,6 +2595,21 @@
                         scale: 2,
                         backgroundColor: "#132a13",
                         onclone: (clonedDoc) => {
+                            // メインドキュメントのstyleタグを全てコピー（フォント定義含む）
+                            Array.from(document.styleSheets).forEach(sheet => {
+                                try {
+                                    if (sheet.cssRules) {
+                                        const style = clonedDoc.createElement('style');
+                                        style.textContent = Array.from(sheet.cssRules).map(r => r.cssText).join('\n');
+                                        clonedDoc.head.appendChild(style);
+                                    }
+                                } catch(e) {}
+                            });
+                            // フォントFaceをクローンDocumentに転送
+                            document.fonts.forEach(fontFace => {
+                                try { clonedDoc.fonts.add(fontFace); } catch(e) {}
+                            });
+                            // 全要素にフォントを適用
                             const container = clonedDoc.getElementById('export-container');
                             if (container) {
                                 container.style.fontFamily = "'M PLUS Rounded 1c', sans-serif";
