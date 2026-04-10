@@ -2784,11 +2784,6 @@
                                             <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
                                         </button>
                                     )}
-                                    {user && !user.isAnonymous && (
-                                        <button onClick={() => setCurrentPage("simulation")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "simulation" ? 'active' : ''}`}>
-                                            <i className="ph-bold ph-sword text-base"></i> シミュレーション
-                                        </button>
-                                    )}
                                     <button onClick={() => setCurrentPage("random")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "random" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-shuffle text-base"></i> ランダム選曲
                                     </button>
@@ -2798,6 +2793,11 @@
                                     <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-warning-octagon text-base"></i> 要注意曲リスト
                                     </button>
+                                    {user && !user.isAnonymous && (
+                                        <button onClick={() => setCurrentPage("simulation")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "simulation" ? 'active' : ''}`}>
+                                            <i className="ph-bold ph-sword text-base"></i> シミュレーション
+                                        </button>
+                                    )}
                                     <div className="border-t-2 border-gray-100 my-1"></div>
                                     <button onClick={() => setCurrentPage("terms")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "terms" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-file-text text-base"></i> ガイドライン
@@ -3552,94 +3552,86 @@
 
         // ===== シミュレーションページ =====
         const SimulationPage = ({ setlists, songMap, user }) => {
-            // phase: "top" | "setup" | "battle" | "result"
             const [phase, setPhase] = useState("top");
 
             // 設定
-            const [side, setSide] = useState("先攻"); // 先攻/後攻
+            const [side, setSide] = useState("先攻");
             const [selectedSetlistId, setSelectedSetlistId] = useState("");
-            const [introOutroSongId, setIntroOutroSongId] = useState(""); // 先攻→アウトロ、後攻→イントロ
+            const [introOutroSongId, setIntroOutroSongId] = useState("");
 
             // バトル状態
-            const [turn, setTurn] = useState(1); // 1〜12
+            const [turn, setTurn] = useState(1);
             const [myStars, setMyStars] = useState(0);
             const [opponentStars, setOpponentStars] = useState(0);
-            const [usedMySongIds, setUsedMySongIds] = useState([]); // 使用済み自選曲
-            const [history, setHistory] = useState([]); // ターン履歴
+            // 【修正】イントロ/アウトロは使用済みに含めない→自選5曲専用のカウント
+            const [usedMySongIds, setUsedMySongIds] = useState([]);
+            const [history, setHistory] = useState([]);
 
             // 現在ターン入力
             const [currentSongId, setCurrentSongId] = useState("");
-            const [myGear, setMyGear] = useState(0);    // 0=なし 1,2,3
+            const [myGear, setMyGear] = useState(0);
             const [oppGear, setOppGear] = useState(0);
-            const [result, setResult] = useState(""); // "win"|"lose"|"draw"
-
-            const isLoggedIn = user && !user.isAnonymous;
+            const [result, setResult] = useState("");
 
             const selectedSetlist = setlists.find(s => s.id === selectedSetlistId);
             const setlistSongs = selectedSetlist
                 ? selectedSetlist.songs.map(id => songMap[id]).filter(Boolean)
                 : [];
 
-            // ターン種別判定（先攻視点）
-            // ターン1: 後攻曲からイントロを先攻が選ぶ → 相手曲ターン
-            // 2,4,6,8,10: 先攻曲
-            // 3,5,7,9,11: 後攻曲
-            // 12: 先攻曲からアウトロを後攻が選ぶ → 自曲ターン
+            // 【修正】先攻: 2,4,6,8,10が自選（5曲）、12はアウトロ（イントロ/アウトロ扱い）
+            // 後攻: 3,5,7,9,11が自選（5曲）、1はイントロ（イントロ/アウトロ扱い）
+            const isIntroOutroTurn = (t) =>
+                (t === 1 && side === "後攻") || (t === 12 && side === "先攻");
+
             const isMySongTurn = (t) => {
-                if (side === "先攻") return t === 12 || (t >= 2 && t <= 11 && t % 2 === 0);
-                // 後攻: 1=自曲(イントロ), 3,5,7,9,11=自曲, 12=相手曲
-                return t === 1 || (t >= 3 && t <= 11 && t % 2 === 1);
+                if (side === "先攻") return [2,4,6,8,10,12].includes(t);
+                return [1,3,5,7,9,11].includes(t);
             };
 
-            const isSpecialTurn = (t) => t === 1 || t === 12;
+            // 自選5曲を消化するターン（イントロ/アウトロ除く）
+            const isMySelectTurn = (t) => {
+                if (side === "先攻") return [2,4,6,8,10].includes(t);
+                return [3,5,7,9,11].includes(t);
+            };
 
             const getTurnLabel = (t) => {
-                if (t === 1) return side === "先攻" ? "イントロ（相手選曲）" : "イントロ（自選）";
-                if (t === 12) return side === "先攻" ? "アウトロ（自選）" : "アウトロ（相手選曲）";
-                return isMySongTurn(t) ? `ターン ${t}（自選曲）` : `ターン ${t}（相手選曲）`;
+                if (t === 1 && side === "先攻") return "イントロ（相手の選曲）";
+                if (t === 1 && side === "後攻") return "イントロ（あなたの選曲）";
+                if (t === 12 && side === "先攻") return "アウトロ（あなたの選曲）";
+                if (t === 12 && side === "後攻") return "アウトロ（相手の選曲）";
+                return isMySongTurn(t) ? `ターン ${t}（あなたの選曲）` : `ターン ${t}（相手の選曲）`;
             };
 
-            // ★計算
             const calcStars = (myG, oppG, res) => {
-                // res: "win"|"lose"|"draw"
-                let myAdd = 0;
-                let oppAdd = 0;
-
+                let myAdd = 0, oppAdd = 0;
+                const bonusMap = {1: 2, 2: 5, 3: 8};
                 if (myG === 0 && oppG === 0) {
-                    // 通常
-                    if (res === "win")  { myAdd = 1; }
-                    else if (res === "lose") { oppAdd = 1; }
+                    if (res === "win") myAdd = 1;
+                    else if (res === "lose") oppAdd = 1;
                     else { myAdd = 1; oppAdd = 1; }
                 } else if (myG > 0 && oppG === 0) {
-                    // 自分のみEG
-                    const bonusMap = {1: 2, 2: 5, 3: 8};
-                    if (res === "win") { myAdd = bonusMap[myG]; }
-                    else if (res === "lose") { oppAdd = 1; }
-                    else { myAdd = bonusMap[myG]; } // 同点でも自分がEG発動→ボーナス獲得
+                    if (res === "win") myAdd = bonusMap[myG];
+                    else if (res === "lose") oppAdd = 1;
+                    else myAdd = bonusMap[myG];
                 } else if (myG === 0 && oppG > 0) {
-                    // 相手のみEG
-                    const bonusMap = {1: 2, 2: 5, 3: 8};
-                    if (res === "win") { myAdd = 1; }
-                    else if (res === "lose") { oppAdd = bonusMap[oppG]; }
-                    else { oppAdd = bonusMap[oppG]; } // 同点でも相手EG→相手ボーナス
+                    if (res === "win") myAdd = 1;
+                    else if (res === "lose") oppAdd = bonusMap[oppG];
+                    else oppAdd = bonusMap[oppG];
                 } else {
-                    // 両者EG
-                    const bonusMap = {1: 2, 2: 5, 3: 8};
-                    if (res === "win")  { myAdd = bonusMap[myG]; }
-                    else if (res === "lose") { oppAdd = bonusMap[oppG]; }
+                    if (res === "win") myAdd = bonusMap[myG];
+                    else if (res === "lose") oppAdd = bonusMap[oppG];
                     else { myAdd = bonusMap[myG]; oppAdd = bonusMap[oppG]; }
                 }
                 return { myAdd, oppAdd };
             };
 
             const handleStart = () => {
-                if (!selectedSetlistId) return;
-                if (!introOutroSongId) return;
+                if (!selectedSetlistId || !introOutroSongId) return;
                 setPhase("battle");
                 setTurn(1);
                 setMyStars(0);
                 setOpponentStars(0);
-                setUsedMySongIds([introOutroSongId]);
+                setUsedMySongIds([]); // 【修正】イントロ/アウトロは使用済み扱いにしない
                 setHistory([]);
                 setCurrentSongId("");
                 setMyGear(0);
@@ -3649,8 +3641,10 @@
 
             const handleTurnSubmit = () => {
                 if (!result) return;
-                const my = isMySongTurn(turn);
-                if (my && !currentSongId && !isSpecialTurn(turn)) return;
+                const mySelect = isMySelectTurn(turn);
+                const myIntroOutro = isIntroOutroTurn(turn);
+                // 自選ターンで曲未選択はNG
+                if (mySelect && !currentSongId) return;
 
                 const { myAdd, oppAdd } = calcStars(myGear, oppGear, result);
                 const newMyStars = myStars + myAdd;
@@ -3658,17 +3652,29 @@
                 setMyStars(newMyStars);
                 setOpponentStars(newOppStars);
 
-                const song = my ? songMap[currentSongId] : null;
+                // 【修正】履歴の曲名：イントロ/アウトロは設定済みの曲を使う
+                let songTitle;
+                if (myIntroOutro) {
+                    const s = songMap[introOutroSongId];
+                    songTitle = s ? s.title : "（設定曲）";
+                } else if (mySelect) {
+                    const s = songMap[currentSongId];
+                    songTitle = s ? s.title : "（未選択）";
+                } else {
+                    songTitle = "相手の選曲";
+                }
+
                 setHistory(prev => [...prev, {
                     turn,
                     label: getTurnLabel(turn),
                     isMine: isMySongTurn(turn),
-                    songTitle: song ? song.title : (isMySongTurn(turn) ? "（未選択）" : `相手の曲`),
+                    songTitle,
                     myGear, oppGear, result, myAdd, oppAdd,
                     myTotal: newMyStars, oppTotal: newOppStars,
                 }]);
 
-                if (my && currentSongId) {
+                // 【修正】自選5曲のみ使用済みに追加（イントロ/アウトロは含まない）
+                if (mySelect && currentSongId) {
                     setUsedMySongIds(prev => [...prev, currentSongId]);
                 }
 
@@ -3699,6 +3705,7 @@
                 setResult("");
             };
 
+            // 【修正】イントロ/アウトロに選んだ曲も自選で使用可能（使用済みに含まない）
             const availableSongs = setlistSongs.filter(s => {
                 const id = `${s.title}_${s.difficult}`;
                 return !usedMySongIds.includes(id);
@@ -3707,10 +3714,11 @@
             const gearBtnClass = (val, cur) =>
                 `flex-1 py-2 rounded-lg font-black text-xs border-2 border-black transition-all ${cur === val ? 'bg-[#6366f1] text-white shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`;
 
+            // 【修正】同点の色を明確に（グレー系→オレンジ系で視認性UP）
             const resultBtnClass = (val) => {
                 const active = result === val;
-                const colors = { win: 'bg-[#52b788] text-white', lose: 'bg-[#e63946] text-white', draw: 'bg-[#f8f8f8] text-black' };
-                return `flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all ${active ? colors[val] + ' shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`;
+                const activeColors = { win: 'bg-[#52b788] text-white border-[#52b788] shadow-[2px_2px_0px_#1b4332]', lose: 'bg-[#e63946] text-white border-[#e63946] shadow-[2px_2px_0px_#7f1d1d]', draw: 'bg-[#f59e0b] text-white border-[#f59e0b] shadow-[2px_2px_0px_#78350f]' };
+                return `flex-1 py-3 rounded-xl font-black text-sm border-2 transition-all ${active ? activeColors[val] : 'border-black bg-white text-black'}`;
             };
 
             // ===== TOP =====
@@ -3748,10 +3756,11 @@
 
             // ===== SETUP =====
             if (phase === "setup") {
-                const introOutroLabel = side === "先攻" ? "アウトロ曲を選択" : "イントロ曲を選択";
+                // 【修正】先攻→アウトロ曲、後攻→イントロ曲のニュアンス変更
+                const introOutroLabel = side === "先攻" ? "アウトロ曲の想定" : "イントロ曲の想定";
                 const introOutroDesc = side === "先攻"
-                    ? "ターン12で使用するアウトロ曲（あなたの選曲から）"
-                    : "ターン1で使用するイントロ曲（あなたの選曲から）";
+                    ? "ターン12：相手があなたのセトリからアウトロに選んだと仮定する曲はどれですか？"
+                    : "ターン1：相手があなたのセトリからイントロに選んだと仮定する曲はどれですか？";
                 const canStart = selectedSetlistId && introOutroSongId;
 
                 return (
@@ -3775,7 +3784,7 @@
                                 </div>
                             </div>
 
-                            {/* セトリ選択 */}
+                            {/* セトリ選択（【修正】曲数表示削除） */}
                             <div>
                                 <p className="section-label mb-3">2. 使用セトリ</p>
                                 <div className="flex flex-col gap-2">
@@ -3788,18 +3797,17 @@
                                             <div className="flex items-center gap-2">
                                                 <i className={`ph-bold ph-list-numbers ${selectedSetlistId === sl.id ? 'text-[#6366f1]' : 'text-black'}`}></i>
                                                 {sl.name}
-                                                <span className="ml-auto text-[10px] font-black text-gray-400">{sl.songs.length}曲</span>
                                             </div>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* イントロ/アウトロ曲 */}
+                            {/* イントロ/アウトロ想定曲 */}
                             {selectedSetlistId && (
                                 <div>
                                     <p className="section-label mb-1">3. {introOutroLabel}</p>
-                                    <p className="text-[11px] text-gray-500 font-bold mb-3">{introOutroDesc}</p>
+                                    <p className="text-[11px] text-gray-500 font-bold mb-3 leading-relaxed">{introOutroDesc}</p>
                                     <div className="flex flex-col gap-2">
                                         {setlistSongs.map(song => {
                                             const id = `${song.title}_${song.difficult}`;
@@ -3842,51 +3850,36 @@
             // ===== BATTLE =====
             if (phase === "battle") {
                 const myTurn = isMySongTurn(turn);
-                const special = isSpecialTurn(turn);
+                const mySelect = isMySelectTurn(turn);
+                const myIntroOutro = isIntroOutroTurn(turn);
                 const turnLabel = getTurnLabel(turn);
                 const isLastTurn = turn === 12;
 
-                // イントロ/アウトロターンの特殊ケース
-                const isIntroOutroMyTurn =
-                    (turn === 1 && side === "後攻") ||
-                    (turn === 12 && side === "先攻");
+                const introOutroSong = songMap[introOutroSongId];
+                const selectedSong = mySelect && currentSongId ? songMap[currentSongId] : null;
 
-                const songToShow = isIntroOutroMyTurn
-                    ? songMap[introOutroSongId]
-                    : (myTurn && currentSongId ? songMap[currentSongId] : null);
-
-                const canSubmit = result && (
-                    !myTurn ||
-                    isIntroOutroMyTurn ||
-                    currentSongId
-                );
+                const canSubmit = result && (!mySelect || currentSongId);
 
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                        {/* ヘッダー：スコア */}
+                        {/* スコアボード */}
                         <div className="mb-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <i className="ph-fill ph-sword text-2xl text-[#a78bfa]"></i>
                                 <span className="text-lg font-black italic text-white uppercase tracking-tighter">バトル中</span>
                                 <span className="ml-auto text-sm font-black text-white/60">{turn} / 12 ターン</span>
                             </div>
-                            {/* スコアボード */}
                             <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] flex items-center gap-4">
                                 <div className="flex-1 text-center">
                                     <div className="text-[10px] font-black text-gray-400 uppercase mb-1">YOU</div>
-                                    <div className="text-4xl font-black text-black leading-none">
-                                        {myStars}<span className="text-lg ml-0.5">★</span>
-                                    </div>
+                                    <div className="text-4xl font-black text-black leading-none">{myStars}<span className="text-lg ml-0.5">★</span></div>
                                 </div>
                                 <div className="text-2xl font-black text-gray-300">VS</div>
                                 <div className="flex-1 text-center">
                                     <div className="text-[10px] font-black text-gray-400 uppercase mb-1">OPP</div>
-                                    <div className="text-4xl font-black text-black leading-none">
-                                        {opponentStars}<span className="text-lg ml-0.5">★</span>
-                                    </div>
+                                    <div className="text-4xl font-black text-black leading-none">{opponentStars}<span className="text-lg ml-0.5">★</span></div>
                                 </div>
                             </div>
-                            {/* ターンバー */}
                             <div className="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
                                 <div className="h-full bg-[#a78bfa] rounded-full transition-all duration-500" style={{width: `${(turn/12)*100}%`}}></div>
                             </div>
@@ -3901,12 +3894,14 @@
                                 </div>
                                 <div>
                                     <div className="font-black text-sm text-black">{turnLabel}</div>
-                                    {special && <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? "イントロターン" : "アウトロターン"}</div>}
+                                    {(turn === 1 || turn === 12) && (
+                                        <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? "イントロターン" : "アウトロターン"}</div>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* 楽曲選択 */}
-                            {myTurn && !isIntroOutroMyTurn && (
+                            {/* 楽曲表示 */}
+                            {mySelect && (
                                 <div>
                                     <p className="section-label mb-2">使用曲</p>
                                     <select
@@ -3920,25 +3915,25 @@
                                             return <option key={id} value={id}>{song.title} (Lv {formatLevel(song.level)})</option>;
                                         })}
                                     </select>
-                                    {songToShow && (
+                                    {selectedSong && (
                                         <div className="mt-2 flex items-center gap-3 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
-                                            {songToShow.jacket && <img src={songToShow.jacket} className="w-10 h-10 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
+                                            {selectedSong.jacket && <img src={selectedSong.jacket} className="w-10 h-10 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
                                             <div className="min-w-0">
-                                                <div className="font-black text-sm truncate">{songToShow.title}</div>
-                                                <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(songToShow.level)} · {songToShow.bpm}BPM</div>
+                                                <div className="font-black text-sm truncate">{selectedSong.title}</div>
+                                                <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(selectedSong.level)} · {selectedSong.bpm}BPM</div>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             )}
-                            {isIntroOutroMyTurn && songToShow && (
+                            {myIntroOutro && introOutroSong && (
                                 <div>
                                     <p className="section-label mb-2">使用曲（{turn === 1 ? "イントロ" : "アウトロ"}）</p>
                                     <div className="flex items-center gap-3 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
-                                        {songToShow.jacket && <img src={songToShow.jacket} className="w-10 h-10 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
+                                        {introOutroSong.jacket && <img src={introOutroSong.jacket} className="w-10 h-10 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
                                         <div className="min-w-0">
-                                            <div className="font-black text-sm truncate">{songToShow.title}</div>
-                                            <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(songToShow.level)} · {songToShow.bpm}BPM</div>
+                                            <div className="font-black text-sm truncate">{introOutroSong.title}</div>
+                                            <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(introOutroSong.level)} · {introOutroSong.bpm}BPM</div>
                                         </div>
                                     </div>
                                 </div>
@@ -3982,7 +3977,7 @@
                                 </div>
                             </div>
 
-                            {/* 勝敗 */}
+                            {/* 勝敗（【修正】同点はオレンジで視認性UP） */}
                             <div>
                                 <p className="section-label mb-2">勝敗</p>
                                 <div className="flex gap-2">
@@ -4016,11 +4011,11 @@
                                 </div>
                             )}
 
-                            {/* 確定ボタン */}
+                            {/* 【修正】確定ボタン：黒→緑系で雰囲気に合わせる */}
                             <button
                                 onClick={handleTurnSubmit}
                                 disabled={!canSubmit}
-                                className={`w-full py-4 rounded-2xl font-black text-base border-2 border-black transition-all flex items-center justify-center gap-2 ${canSubmit ? 'bg-black text-white shadow-[4px_4px_0px_#6366f1] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                                className={`w-full py-4 rounded-2xl font-black text-base border-2 border-black transition-all flex items-center justify-center gap-2 ${canSubmit ? 'bg-[#40916c] text-white shadow-[4px_4px_0px_#1b4332] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                             >
                                 {isLastTurn ? (
                                     <><i className="ph-bold ph-flag-checkered"></i> 試合終了</>
@@ -4030,16 +4025,16 @@
                             </button>
                         </div>
 
-                        {/* 履歴 */}
+                        {/* 【修正】履歴：古い順（上から1,2,3...）で表示 */}
                         {history.length > 0 && (
                             <div className="mt-4 bg-white/10 border border-white/20 rounded-2xl p-4">
                                 <p className="text-[11px] font-black text-white/60 uppercase mb-3">ターン履歴</p>
                                 <div className="flex flex-col gap-1.5">
-                                    {[...history].reverse().map((h, i) => (
+                                    {history.map((h, i) => (
                                         <div key={i} className="flex items-center gap-2 text-[11px] font-black">
                                             <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] border border-black flex-shrink-0 ${h.isMine ? 'bg-[#6366f1] text-white' : 'bg-white text-black'}`}>{h.turn}</span>
                                             <span className="text-white/70 truncate flex-1">{h.songTitle}</span>
-                                            <span className={`flex-shrink-0 ${h.result === 'win' ? 'text-[#52b788]' : h.result === 'lose' ? 'text-[#e63946]' : 'text-white/50'}`}>
+                                            <span className={`flex-shrink-0 ${h.result === 'win' ? 'text-[#52b788]' : h.result === 'lose' ? 'text-[#e63946]' : 'text-[#f59e0b]'}`}>
                                                 {h.result === 'win' ? '勝' : h.result === 'lose' ? '負' : '引'}
                                             </span>
                                             <span className="text-[#a78bfa] flex-shrink-0">{h.myTotal}★</span>
@@ -4056,7 +4051,6 @@
             if (phase === "result") {
                 const win = myStars > opponentStars;
                 const lose = myStars < opponentStars;
-                const draw = myStars === opponentStars;
 
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
@@ -4065,7 +4059,6 @@
                             <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">試合終了</h2>
                         </div>
 
-                        {/* 結果カード */}
                         <div className="bg-white border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_#000] mb-4 text-center">
                             <div className={`text-5xl font-black mb-2 ${win ? 'text-[#52b788]' : lose ? 'text-[#e63946]' : 'text-gray-400'}`}>
                                 {win ? '🏆 WIN' : lose ? '💔 LOSE' : '🤝 DRAW'}
@@ -4083,7 +4076,6 @@
                             </div>
                         </div>
 
-                        {/* 全ターン履歴 */}
                         <div className="bg-white border-4 border-black rounded-3xl p-4 shadow-[6px_6px_0px_#000] mb-4">
                             <p className="font-black text-sm mb-3 border-b-2 border-gray-100 pb-2">全ターン結果</p>
                             <div className="flex flex-col gap-1.5">
@@ -4094,7 +4086,7 @@
                                         {(h.myGear > 0 || h.oppGear > 0) && (
                                             <span className="text-[#6366f1] text-[9px]">EG{h.myGear > 0 ? `自Lv${h.myGear}` : ''}{h.oppGear > 0 ? `相Lv${h.oppGear}` : ''}</span>
                                         )}
-                                        <span className={`flex-shrink-0 ${h.result === 'win' ? 'text-[#52b788]' : h.result === 'lose' ? 'text-[#e63946]' : 'text-gray-400'}`}>
+                                        <span className={`flex-shrink-0 ${h.result === 'win' ? 'text-[#52b788]' : h.result === 'lose' ? 'text-[#e63946]' : 'text-[#f59e0b]'}`}>
                                             {h.result === 'win' ? '勝' : h.result === 'lose' ? '負' : '引'}
                                         </span>
                                         <span className="text-black flex-shrink-0">{h.myTotal}★</span>
@@ -4103,7 +4095,6 @@
                             </div>
                         </div>
 
-                        {/* もう一度 */}
                         <div className="flex gap-3">
                             <button onClick={() => { setPhase("setup"); setSelectedSetlistId(""); setIntroOutroSongId(""); }} className="flex-1 py-3 bg-[#6366f1] text-white font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-2">
                                 <i className="ph-bold ph-arrow-counter-clockwise"></i> もう一度
