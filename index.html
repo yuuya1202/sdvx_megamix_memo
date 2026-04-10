@@ -2784,6 +2784,11 @@
                                             <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
                                         </button>
                                     )}
+                                    {user && !user.isAnonymous && (
+                                        <button onClick={() => setCurrentPage("simulation")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "simulation" ? 'active' : ''}`}>
+                                            <i className="ph-bold ph-sword text-base"></i> シミュレーション
+                                        </button>
+                                    )}
                                     <button onClick={() => setCurrentPage("random")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "random" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-shuffle text-base"></i> ランダム選曲
                                     </button>
@@ -2847,8 +2852,9 @@
 
                         {/* プレリリース告知バー */}
                         <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#52b788] animate-pulse flex-shrink-0"></span>
                             <span className="text-[11px] font-black text-white/80 tracking-wide">
-                                📋 現在 Lv17・18 のみ区間情報が登録されています。Lv19・20 の区間情報は順次対応予定です。
+                                📋 現在 Lv17・18 のみ対応｜Lv19・20 は順次追加予定
                             </span>
                         </div>
 
@@ -3068,7 +3074,7 @@
                                             )}
                                         </div>
                                     )}
-                                    {currentPage !== "random" && (
+                                    {currentPage !== "random" && currentPage !== "simulation" && (
                                     <><button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
                                         <div className="flex items-center gap-3">
                                             <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
@@ -3419,7 +3425,15 @@
                                     </div>
                                 )}
                                 
-                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && (
+                                {currentPage === "simulation" && (
+                                    <SimulationPage
+                                        setlists={setlists}
+                                        songMap={songMap}
+                                        user={user}
+                                    />
+                                )}
+
+                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && (
                                     <div className={viewMode === 'grid' && currentPage === 'main' ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
                                         {paginatedSongs.map((song, idx) => {
                                             const songId = getSongId(song);
@@ -3444,14 +3458,14 @@
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && paginatedSongs.length === 0 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
                                         <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && totalPages > 1 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
                                             <i className="ph-bold ph-caret-left"></i> 前へ
@@ -3534,6 +3548,575 @@
                     />
                 </div>
             );
+        };
+
+        // ===== シミュレーションページ =====
+        const SimulationPage = ({ setlists, songMap, user }) => {
+            // phase: "top" | "setup" | "battle" | "result"
+            const [phase, setPhase] = useState("top");
+
+            // 設定
+            const [side, setSide] = useState("先攻"); // 先攻/後攻
+            const [selectedSetlistId, setSelectedSetlistId] = useState("");
+            const [introOutroSongId, setIntroOutroSongId] = useState(""); // 先攻→アウトロ、後攻→イントロ
+
+            // バトル状態
+            const [turn, setTurn] = useState(1); // 1〜12
+            const [myStars, setMyStars] = useState(0);
+            const [opponentStars, setOpponentStars] = useState(0);
+            const [usedMySongIds, setUsedMySongIds] = useState([]); // 使用済み自選曲
+            const [history, setHistory] = useState([]); // ターン履歴
+
+            // 現在ターン入力
+            const [currentSongId, setCurrentSongId] = useState("");
+            const [myGear, setMyGear] = useState(0);    // 0=なし 1,2,3
+            const [oppGear, setOppGear] = useState(0);
+            const [result, setResult] = useState(""); // "win"|"lose"|"draw"
+
+            const isLoggedIn = user && !user.isAnonymous;
+
+            const selectedSetlist = setlists.find(s => s.id === selectedSetlistId);
+            const setlistSongs = selectedSetlist
+                ? selectedSetlist.songs.map(id => songMap[id]).filter(Boolean)
+                : [];
+
+            // ターン種別判定（先攻視点）
+            // ターン1: 後攻曲からイントロを先攻が選ぶ → 相手曲ターン
+            // 2,4,6,8,10: 先攻曲
+            // 3,5,7,9,11: 後攻曲
+            // 12: 先攻曲からアウトロを後攻が選ぶ → 自曲ターン
+            const isMySongTurn = (t) => {
+                if (side === "先攻") return t === 12 || (t >= 2 && t <= 11 && t % 2 === 0);
+                // 後攻: 1=自曲(イントロ), 3,5,7,9,11=自曲, 12=相手曲
+                return t === 1 || (t >= 3 && t <= 11 && t % 2 === 1);
+            };
+
+            const isSpecialTurn = (t) => t === 1 || t === 12;
+
+            const getTurnLabel = (t) => {
+                if (t === 1) return side === "先攻" ? "イントロ（相手選曲）" : "イントロ（自選）";
+                if (t === 12) return side === "先攻" ? "アウトロ（自選）" : "アウトロ（相手選曲）";
+                return isMySongTurn(t) ? `ターン ${t}（自選曲）` : `ターン ${t}（相手選曲）`;
+            };
+
+            // ★計算
+            const calcStars = (myG, oppG, res) => {
+                // res: "win"|"lose"|"draw"
+                let myAdd = 0;
+                let oppAdd = 0;
+
+                if (myG === 0 && oppG === 0) {
+                    // 通常
+                    if (res === "win")  { myAdd = 1; }
+                    else if (res === "lose") { oppAdd = 1; }
+                    else { myAdd = 1; oppAdd = 1; }
+                } else if (myG > 0 && oppG === 0) {
+                    // 自分のみEG
+                    const bonusMap = {1: 2, 2: 5, 3: 8};
+                    if (res === "win") { myAdd = bonusMap[myG]; }
+                    else if (res === "lose") { oppAdd = 1; }
+                    else { myAdd = bonusMap[myG]; } // 同点でも自分がEG発動→ボーナス獲得
+                } else if (myG === 0 && oppG > 0) {
+                    // 相手のみEG
+                    const bonusMap = {1: 2, 2: 5, 3: 8};
+                    if (res === "win") { myAdd = 1; }
+                    else if (res === "lose") { oppAdd = bonusMap[oppG]; }
+                    else { oppAdd = bonusMap[oppG]; } // 同点でも相手EG→相手ボーナス
+                } else {
+                    // 両者EG
+                    const bonusMap = {1: 2, 2: 5, 3: 8};
+                    if (res === "win")  { myAdd = bonusMap[myG]; }
+                    else if (res === "lose") { oppAdd = bonusMap[oppG]; }
+                    else { myAdd = bonusMap[myG]; oppAdd = bonusMap[oppG]; }
+                }
+                return { myAdd, oppAdd };
+            };
+
+            const handleStart = () => {
+                if (!selectedSetlistId) return;
+                if (!introOutroSongId) return;
+                setPhase("battle");
+                setTurn(1);
+                setMyStars(0);
+                setOpponentStars(0);
+                setUsedMySongIds([introOutroSongId]);
+                setHistory([]);
+                setCurrentSongId("");
+                setMyGear(0);
+                setOppGear(0);
+                setResult("");
+            };
+
+            const handleTurnSubmit = () => {
+                if (!result) return;
+                const my = isMySongTurn(turn);
+                if (my && !currentSongId && !isSpecialTurn(turn)) return;
+
+                const { myAdd, oppAdd } = calcStars(myGear, oppGear, result);
+                const newMyStars = myStars + myAdd;
+                const newOppStars = opponentStars + oppAdd;
+                setMyStars(newMyStars);
+                setOpponentStars(newOppStars);
+
+                const song = my ? songMap[currentSongId] : null;
+                setHistory(prev => [...prev, {
+                    turn,
+                    label: getTurnLabel(turn),
+                    isMine: isMySongTurn(turn),
+                    songTitle: song ? song.title : (isMySongTurn(turn) ? "（未選択）" : `相手の曲`),
+                    myGear, oppGear, result, myAdd, oppAdd,
+                    myTotal: newMyStars, oppTotal: newOppStars,
+                }]);
+
+                if (my && currentSongId) {
+                    setUsedMySongIds(prev => [...prev, currentSongId]);
+                }
+
+                if (turn >= 12) {
+                    setPhase("result");
+                } else {
+                    setTurn(t => t + 1);
+                    setCurrentSongId("");
+                    setMyGear(0);
+                    setOppGear(0);
+                    setResult("");
+                }
+            };
+
+            const handleReset = () => {
+                setPhase("top");
+                setSelectedSetlistId("");
+                setIntroOutroSongId("");
+                setSide("先攻");
+                setTurn(1);
+                setMyStars(0);
+                setOpponentStars(0);
+                setUsedMySongIds([]);
+                setHistory([]);
+                setCurrentSongId("");
+                setMyGear(0);
+                setOppGear(0);
+                setResult("");
+            };
+
+            const availableSongs = setlistSongs.filter(s => {
+                const id = `${s.title}_${s.difficult}`;
+                return !usedMySongIds.includes(id);
+            });
+
+            const gearBtnClass = (val, cur) =>
+                `flex-1 py-2 rounded-lg font-black text-xs border-2 border-black transition-all ${cur === val ? 'bg-[#6366f1] text-white shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`;
+
+            const resultBtnClass = (val) => {
+                const active = result === val;
+                const colors = { win: 'bg-[#52b788] text-white', lose: 'bg-[#e63946] text-white', draw: 'bg-[#f8f8f8] text-black' };
+                return `flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all ${active ? colors[val] + ' shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`;
+            };
+
+            // ===== TOP =====
+            if (phase === "top") {
+                return (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                        <div className="flex items-center gap-2 mb-4">
+                            <i className="ph-fill ph-sword text-3xl text-[#a78bfa]"></i>
+                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">シミュレーション</h2>
+                        </div>
+                        <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
+                            <p className="text-sm font-bold text-gray-600 leading-relaxed mb-6">
+                                メガミックスバトルの試合をシミュレートします。<br/>
+                                セトリを使って12ターンの★獲得数をリアルタイムで記録できます。
+                            </p>
+                            {setlists.length === 0 ? (
+                                <div className="text-center py-8 border-4 border-dashed border-gray-200 rounded-2xl">
+                                    <i className="ph-bold ph-list-numbers text-4xl text-gray-300 mb-3 block"></i>
+                                    <p className="font-black text-gray-400 text-sm mb-1">セトリがありません</p>
+                                    <p className="text-xs text-gray-400 font-bold">先にセトリ管理から<br/>セトリを作成してください</p>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setPhase("setup")}
+                                    className="w-full bg-[#6366f1] text-white font-black py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-2"
+                                >
+                                    <i className="ph-bold ph-play-circle text-xl"></i>
+                                    開始する
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ===== SETUP =====
+            if (phase === "setup") {
+                const introOutroLabel = side === "先攻" ? "アウトロ曲を選択" : "イントロ曲を選択";
+                const introOutroDesc = side === "先攻"
+                    ? "ターン12で使用するアウトロ曲（あなたの選曲から）"
+                    : "ターン1で使用するイントロ曲（あなたの選曲から）";
+                const canStart = selectedSetlistId && introOutroSongId;
+
+                return (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                        <div className="flex items-center gap-2 mb-4">
+                            <i className="ph-fill ph-gear text-3xl text-[#a78bfa]"></i>
+                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">設定</h2>
+                        </div>
+                        <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000] space-y-6">
+
+                            {/* 先攻/後攻 */}
+                            <div>
+                                <p className="section-label mb-3">1. 先攻 / 後攻</p>
+                                <div className="toggle-btn-group">
+                                    <button onClick={() => { setSide("先攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "先攻" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-arrow-right"></i> 先攻
+                                    </button>
+                                    <button onClick={() => { setSide("後攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "後攻" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-arrow-left"></i> 後攻
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* セトリ選択 */}
+                            <div>
+                                <p className="section-label mb-3">2. 使用セトリ</p>
+                                <div className="flex flex-col gap-2">
+                                    {setlists.map(sl => (
+                                        <button
+                                            key={sl.id}
+                                            onClick={() => { setSelectedSetlistId(sl.id); setIntroOutroSongId(""); }}
+                                            className={`w-full text-left px-4 py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedSetlistId === sl.id ? 'border-[#6366f1] bg-[#eef2ff] shadow-[3px_3px_0px_#6366f1]' : 'border-black bg-white shadow-[2px_2px_0px_#000]'}`}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <i className={`ph-bold ph-list-numbers ${selectedSetlistId === sl.id ? 'text-[#6366f1]' : 'text-black'}`}></i>
+                                                {sl.name}
+                                                <span className="ml-auto text-[10px] font-black text-gray-400">{sl.songs.length}曲</span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* イントロ/アウトロ曲 */}
+                            {selectedSetlistId && (
+                                <div>
+                                    <p className="section-label mb-1">3. {introOutroLabel}</p>
+                                    <p className="text-[11px] text-gray-500 font-bold mb-3">{introOutroDesc}</p>
+                                    <div className="flex flex-col gap-2">
+                                        {setlistSongs.map(song => {
+                                            const id = `${song.title}_${song.difficult}`;
+                                            return (
+                                                <button
+                                                    key={id}
+                                                    onClick={() => setIntroOutroSongId(id)}
+                                                    className={`w-full text-left px-3 py-2 rounded-xl border-2 font-black text-sm transition-all flex items-center gap-3 ${introOutroSongId === id ? 'border-[#6366f1] bg-[#eef2ff] shadow-[2px_2px_0px_#6366f1]' : 'border-black bg-white shadow-[2px_2px_0px_#000]'}`}
+                                                >
+                                                    {song.jacket && <img src={song.jacket} className="w-9 h-9 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
+                                                    <div className="min-w-0">
+                                                        <div className="truncate text-sm">{song.title}</div>
+                                                        <div className="text-[10px] text-gray-500">Lv {formatLevel(song.level)} / {song.difficult}</div>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* スタートボタン */}
+                            <div className="flex gap-3 pt-2">
+                                <button onClick={() => setPhase("top")} className="flex-none px-4 py-3 bg-gray-100 border-2 border-black rounded-xl font-black text-sm shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
+                                    <i className="ph-bold ph-arrow-left"></i>
+                                </button>
+                                <button
+                                    onClick={handleStart}
+                                    disabled={!canStart}
+                                    className={`flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all flex items-center justify-center gap-2 ${canStart ? 'bg-[#6366f1] text-white shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                                >
+                                    <i className="ph-bold ph-play-circle"></i> スタート！
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ===== BATTLE =====
+            if (phase === "battle") {
+                const myTurn = isMySongTurn(turn);
+                const special = isSpecialTurn(turn);
+                const turnLabel = getTurnLabel(turn);
+                const isLastTurn = turn === 12;
+
+                // イントロ/アウトロターンの特殊ケース
+                const isIntroOutroMyTurn =
+                    (turn === 1 && side === "後攻") ||
+                    (turn === 12 && side === "先攻");
+
+                const songToShow = isIntroOutroMyTurn
+                    ? songMap[introOutroSongId]
+                    : (myTurn && currentSongId ? songMap[currentSongId] : null);
+
+                const canSubmit = result && (
+                    !myTurn ||
+                    isIntroOutroMyTurn ||
+                    currentSongId
+                );
+
+                return (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                        {/* ヘッダー：スコア */}
+                        <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <i className="ph-fill ph-sword text-2xl text-[#a78bfa]"></i>
+                                <span className="text-lg font-black italic text-white uppercase tracking-tighter">バトル中</span>
+                                <span className="ml-auto text-sm font-black text-white/60">{turn} / 12 ターン</span>
+                            </div>
+                            {/* スコアボード */}
+                            <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] flex items-center gap-4">
+                                <div className="flex-1 text-center">
+                                    <div className="text-[10px] font-black text-gray-400 uppercase mb-1">YOU</div>
+                                    <div className="text-4xl font-black text-black leading-none">
+                                        {myStars}<span className="text-lg ml-0.5">★</span>
+                                    </div>
+                                </div>
+                                <div className="text-2xl font-black text-gray-300">VS</div>
+                                <div className="flex-1 text-center">
+                                    <div className="text-[10px] font-black text-gray-400 uppercase mb-1">OPP</div>
+                                    <div className="text-4xl font-black text-black leading-none">
+                                        {opponentStars}<span className="text-lg ml-0.5">★</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* ターンバー */}
+                            <div className="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
+                                <div className="h-full bg-[#a78bfa] rounded-full transition-all duration-500" style={{width: `${(turn/12)*100}%`}}></div>
+                            </div>
+                        </div>
+
+                        {/* 入力カード */}
+                        <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000] space-y-5">
+                            {/* ターンラベル */}
+                            <div className="flex items-center gap-2">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-2 border-black ${myTurn ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-black'}`}>
+                                    {turn}
+                                </div>
+                                <div>
+                                    <div className="font-black text-sm text-black">{turnLabel}</div>
+                                    {special && <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? "イントロターン" : "アウトロターン"}</div>}
+                                </div>
+                            </div>
+
+                            {/* 楽曲選択 */}
+                            {myTurn && !isIntroOutroMyTurn && (
+                                <div>
+                                    <p className="section-label mb-2">使用曲</p>
+                                    <select
+                                        value={currentSongId}
+                                        onChange={e => setCurrentSongId(e.target.value)}
+                                        className="w-full border-2 border-black rounded-xl px-3 py-2 font-bold text-sm bg-gray-50 focus:outline-none focus:border-[#6366f1]"
+                                    >
+                                        <option value="">― 曲を選択 ―</option>
+                                        {availableSongs.map(song => {
+                                            const id = `${song.title}_${song.difficult}`;
+                                            return <option key={id} value={id}>{song.title} (Lv {formatLevel(song.level)})</option>;
+                                        })}
+                                    </select>
+                                    {songToShow && (
+                                        <div className="mt-2 flex items-center gap-3 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
+                                            {songToShow.jacket && <img src={songToShow.jacket} className="w-10 h-10 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
+                                            <div className="min-w-0">
+                                                <div className="font-black text-sm truncate">{songToShow.title}</div>
+                                                <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(songToShow.level)} · {songToShow.bpm}BPM</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            {isIntroOutroMyTurn && songToShow && (
+                                <div>
+                                    <p className="section-label mb-2">使用曲（{turn === 1 ? "イントロ" : "アウトロ"}）</p>
+                                    <div className="flex items-center gap-3 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
+                                        {songToShow.jacket && <img src={songToShow.jacket} className="w-10 h-10 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
+                                        <div className="min-w-0">
+                                            <div className="font-black text-sm truncate">{songToShow.title}</div>
+                                            <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(songToShow.level)} · {songToShow.bpm}BPM</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {!myTurn && (
+                                <div>
+                                    <p className="section-label mb-2">使用曲（相手）</p>
+                                    <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 text-sm font-black text-gray-400 flex items-center gap-2">
+                                        <i className="ph-bold ph-user"></i> 相手の選曲
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* EXCEED GEAR */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-[11px] font-black text-black uppercase mb-2 flex items-center gap-1">
+                                        <span className="w-4 h-4 rounded-full bg-[#6366f1] text-white text-[8px] font-black flex items-center justify-center">自</span>
+                                        自分のEG
+                                    </p>
+                                    <div className="flex gap-1">
+                                        {[0,1,2,3].map(v => (
+                                            <button key={v} onClick={() => setMyGear(v)} className={gearBtnClass(v, myGear)}>
+                                                {v === 0 ? 'なし' : `Lv${v}`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-black text-black uppercase mb-2 flex items-center gap-1">
+                                        <span className="w-4 h-4 rounded-full bg-gray-400 text-white text-[8px] font-black flex items-center justify-center">相</span>
+                                        相手のEG
+                                    </p>
+                                    <div className="flex gap-1">
+                                        {[0,1,2,3].map(v => (
+                                            <button key={v} onClick={() => setOppGear(v)} className={gearBtnClass(v, oppGear)}>
+                                                {v === 0 ? 'なし' : `Lv${v}`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 勝敗 */}
+                            <div>
+                                <p className="section-label mb-2">勝敗</p>
+                                <div className="flex gap-2">
+                                    <button onClick={() => setResult("win")} className={resultBtnClass("win")}>
+                                        <i className="ph-bold ph-trophy"></i> 勝ち
+                                    </button>
+                                    <button onClick={() => setResult("draw")} className={resultBtnClass("draw")}>
+                                        <i className="ph-bold ph-equals"></i> 同点
+                                    </button>
+                                    <button onClick={() => setResult("lose")} className={resultBtnClass("lose")}>
+                                        <i className="ph-bold ph-x-circle"></i> 負け
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* ★プレビュー */}
+                            {result && (
+                                <div className="bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between text-sm font-black" style={{animation:'fadeIn 0.2s ease'}}>
+                                    <span className="text-gray-500 text-xs">このターンの獲得★</span>
+                                    <div className="flex gap-4">
+                                        {(() => {
+                                            const { myAdd, oppAdd } = calcStars(myGear, oppGear, result);
+                                            return (
+                                                <>
+                                                    <span className="text-[#6366f1]">YOU +{myAdd}★</span>
+                                                    <span className="text-gray-400">OPP +{oppAdd}★</span>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 確定ボタン */}
+                            <button
+                                onClick={handleTurnSubmit}
+                                disabled={!canSubmit}
+                                className={`w-full py-4 rounded-2xl font-black text-base border-2 border-black transition-all flex items-center justify-center gap-2 ${canSubmit ? 'bg-black text-white shadow-[4px_4px_0px_#6366f1] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                            >
+                                {isLastTurn ? (
+                                    <><i className="ph-bold ph-flag-checkered"></i> 試合終了</>
+                                ) : (
+                                    <><i className="ph-bold ph-arrow-right"></i> 次のターンへ</>
+                                )}
+                            </button>
+                        </div>
+
+                        {/* 履歴 */}
+                        {history.length > 0 && (
+                            <div className="mt-4 bg-white/10 border border-white/20 rounded-2xl p-4">
+                                <p className="text-[11px] font-black text-white/60 uppercase mb-3">ターン履歴</p>
+                                <div className="flex flex-col gap-1.5">
+                                    {[...history].reverse().map((h, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-[11px] font-black">
+                                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] border border-black flex-shrink-0 ${h.isMine ? 'bg-[#6366f1] text-white' : 'bg-white text-black'}`}>{h.turn}</span>
+                                            <span className="text-white/70 truncate flex-1">{h.songTitle}</span>
+                                            <span className={`flex-shrink-0 ${h.result === 'win' ? 'text-[#52b788]' : h.result === 'lose' ? 'text-[#e63946]' : 'text-white/50'}`}>
+                                                {h.result === 'win' ? '勝' : h.result === 'lose' ? '負' : '引'}
+                                            </span>
+                                            <span className="text-[#a78bfa] flex-shrink-0">{h.myTotal}★</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            // ===== RESULT =====
+            if (phase === "result") {
+                const win = myStars > opponentStars;
+                const lose = myStars < opponentStars;
+                const draw = myStars === opponentStars;
+
+                return (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                        <div className="flex items-center gap-2 mb-4">
+                            <i className="ph-fill ph-flag-checkered text-3xl text-[#a78bfa]"></i>
+                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">試合終了</h2>
+                        </div>
+
+                        {/* 結果カード */}
+                        <div className="bg-white border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_#000] mb-4 text-center">
+                            <div className={`text-5xl font-black mb-2 ${win ? 'text-[#52b788]' : lose ? 'text-[#e63946]' : 'text-gray-400'}`}>
+                                {win ? '🏆 WIN' : lose ? '💔 LOSE' : '🤝 DRAW'}
+                            </div>
+                            <div className="flex items-center justify-center gap-6 mt-4">
+                                <div>
+                                    <div className="text-[10px] font-black text-gray-400 uppercase">YOU</div>
+                                    <div className="text-5xl font-black text-black">{myStars}<span className="text-2xl">★</span></div>
+                                </div>
+                                <div className="text-2xl font-black text-gray-300">VS</div>
+                                <div>
+                                    <div className="text-[10px] font-black text-gray-400 uppercase">OPP</div>
+                                    <div className="text-5xl font-black text-black">{opponentStars}<span className="text-2xl">★</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 全ターン履歴 */}
+                        <div className="bg-white border-4 border-black rounded-3xl p-4 shadow-[6px_6px_0px_#000] mb-4">
+                            <p className="font-black text-sm mb-3 border-b-2 border-gray-100 pb-2">全ターン結果</p>
+                            <div className="flex flex-col gap-1.5">
+                                {history.map((h, i) => (
+                                    <div key={i} className="flex items-center gap-2 text-xs font-black py-1 border-b border-gray-50">
+                                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] border border-black flex-shrink-0 ${h.isMine ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-black'}`}>{h.turn}</span>
+                                        <span className="text-gray-600 flex-1 truncate">{h.songTitle}</span>
+                                        {(h.myGear > 0 || h.oppGear > 0) && (
+                                            <span className="text-[#6366f1] text-[9px]">EG{h.myGear > 0 ? `自Lv${h.myGear}` : ''}{h.oppGear > 0 ? `相Lv${h.oppGear}` : ''}</span>
+                                        )}
+                                        <span className={`flex-shrink-0 ${h.result === 'win' ? 'text-[#52b788]' : h.result === 'lose' ? 'text-[#e63946]' : 'text-gray-400'}`}>
+                                            {h.result === 'win' ? '勝' : h.result === 'lose' ? '負' : '引'}
+                                        </span>
+                                        <span className="text-black flex-shrink-0">{h.myTotal}★</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* もう一度 */}
+                        <div className="flex gap-3">
+                            <button onClick={() => { setPhase("setup"); setSelectedSetlistId(""); setIntroOutroSongId(""); }} className="flex-1 py-3 bg-[#6366f1] text-white font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-2">
+                                <i className="ph-bold ph-arrow-counter-clockwise"></i> もう一度
+                            </button>
+                            <button onClick={handleReset} className="flex-none px-4 py-3 bg-gray-100 border-2 border-black rounded-xl font-black text-sm shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
+                                <i className="ph-bold ph-house"></i>
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
