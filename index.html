@@ -3563,7 +3563,6 @@
             const [turn, setTurn] = useState(1);
             const [myStars, setMyStars] = useState(0);
             const [opponentStars, setOpponentStars] = useState(0);
-            // 【修正】イントロ/アウトロは使用済みに含めない→自選5曲専用のカウント
             const [usedMySongIds, setUsedMySongIds] = useState([]);
             const [history, setHistory] = useState([]);
 
@@ -3578,8 +3577,7 @@
                 ? selectedSetlist.songs.map(id => songMap[id]).filter(Boolean)
                 : [];
 
-            // 【修正】先攻: 2,4,6,8,10が自選（5曲）、12はアウトロ（イントロ/アウトロ扱い）
-            // 後攻: 3,5,7,9,11が自選（5曲）、1はイントロ（イントロ/アウトロ扱い）
+            // ターン種別判定
             const isIntroOutroTurn = (t) =>
                 (t === 1 && side === "後攻") || (t === 12 && side === "先攻");
 
@@ -3588,18 +3586,17 @@
                 return [1,3,5,7,9,11].includes(t);
             };
 
-            // 自選5曲を消化するターン（イントロ/アウトロ除く）
             const isMySelectTurn = (t) => {
                 if (side === "先攻") return [2,4,6,8,10].includes(t);
                 return [3,5,7,9,11].includes(t);
             };
 
             const getTurnLabel = (t) => {
-                if (t === 1 && side === "先攻") return "イントロ（相手の選曲）";
-                if (t === 1 && side === "後攻") return "イントロ（あなたの選曲）";
-                if (t === 12 && side === "先攻") return "アウトロ（あなたの選曲）";
-                if (t === 12 && side === "後攻") return "アウトロ（相手の選曲）";
-                return isMySongTurn(t) ? `ターン ${t}（あなたの選曲）` : `ターン ${t}（相手の選曲）`;
+                if (t === 1 && side === "先攻") return "イントロ（相手選曲）";
+                if (t === 1 && side === "後攻") return "イントロ（自選）";
+                if (t === 12 && side === "先攻") return "アウトロ（自選）";
+                if (t === 12 && side === "後攻") return "アウトロ（相手選曲）";
+                return isMySongTurn(t) ? `自選曲` : `相手選曲`;
             };
 
             const calcStars = (myG, oppG, res) => {
@@ -3631,7 +3628,7 @@
                 setTurn(1);
                 setMyStars(0);
                 setOpponentStars(0);
-                setUsedMySongIds([]); // 【修正】イントロ/アウトロは使用済み扱いにしない
+                setUsedMySongIds([]);
                 setHistory([]);
                 setCurrentSongId("");
                 setMyGear(0);
@@ -3643,7 +3640,6 @@
                 if (!result) return;
                 const mySelect = isMySelectTurn(turn);
                 const myIntroOutro = isIntroOutroTurn(turn);
-                // 自選ターンで曲未選択はNG
                 if (mySelect && !currentSongId) return;
 
                 const { myAdd, oppAdd } = calcStars(myGear, oppGear, result);
@@ -3652,28 +3648,30 @@
                 setMyStars(newMyStars);
                 setOpponentStars(newOppStars);
 
-                // 【修正】履歴の曲名：イントロ/アウトロは設定済みの曲を使う
-                let songTitle;
+                let songTitle, songForHistory;
                 if (myIntroOutro) {
-                    const s = songMap[introOutroSongId];
-                    songTitle = s ? s.title : "（設定曲）";
+                    songForHistory = songMap[introOutroSongId];
+                    songTitle = songForHistory ? songForHistory.title : "（設定曲）";
                 } else if (mySelect) {
-                    const s = songMap[currentSongId];
-                    songTitle = s ? s.title : "（未選択）";
+                    songForHistory = songMap[currentSongId];
+                    songTitle = songForHistory ? songForHistory.title : "（未選択）";
                 } else {
+                    songForHistory = null;
                     songTitle = "相手の選曲";
                 }
 
                 setHistory(prev => [...prev, {
                     turn,
-                    label: getTurnLabel(turn),
                     isMine: isMySongTurn(turn),
+                    isIntroOutro: myIntroOutro || (turn === 1 && side === "先攻") || (turn === 12 && side === "後攻"),
                     songTitle,
+                    songJacket: songForHistory ? songForHistory.jacket : null,
+                    songLevel: songForHistory ? songForHistory.level : null,
+                    songDifficult: songForHistory ? songForHistory.difficult : null,
                     myGear, oppGear, result, myAdd, oppAdd,
                     myTotal: newMyStars, oppTotal: newOppStars,
                 }]);
 
-                // 【修正】自選5曲のみ使用済みに追加（イントロ/アウトロは含まない）
                 if (mySelect && currentSongId) {
                     setUsedMySongIds(prev => [...prev, currentSongId]);
                 }
@@ -3705,20 +3703,122 @@
                 setResult("");
             };
 
-            // 【修正】イントロ/アウトロに選んだ曲も自選で使用可能（使用済みに含まない）
             const availableSongs = setlistSongs.filter(s => {
                 const id = `${s.title}_${s.difficult}`;
                 return !usedMySongIds.includes(id);
             });
 
+            // 【統一】勝敗ボタン：選択時は単色（紫）で統一
+            const resultBtnClass = (val) => {
+                const active = result === val;
+                const labels = { win: '勝ち', lose: '負け', draw: '同点' };
+                return `flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all ${active ? 'bg-[#6366f1] text-white shadow-[2px_2px_0px_#3730a3]' : 'bg-white text-black'}`;
+            };
+
             const gearBtnClass = (val, cur) =>
                 `flex-1 py-2 rounded-lg font-black text-xs border-2 border-black transition-all ${cur === val ? 'bg-[#6366f1] text-white shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`;
 
-            // 【修正】同点の色を明確に（グレー系→オレンジ系で視認性UP）
-            const resultBtnClass = (val) => {
-                const active = result === val;
-                const activeColors = { win: 'bg-[#52b788] text-white border-[#52b788] shadow-[2px_2px_0px_#1b4332]', lose: 'bg-[#e63946] text-white border-[#e63946] shadow-[2px_2px_0px_#7f1d1d]', draw: 'bg-[#f59e0b] text-white border-[#f59e0b] shadow-[2px_2px_0px_#78350f]' };
-                return `flex-1 py-3 rounded-xl font-black text-sm border-2 transition-all ${active ? activeColors[val] : 'border-black bg-white text-black'}`;
+            // ===== リザルト行コンポーネント（本家UIライク） =====
+            const ResultRow = ({ h }) => {
+                const egLabel = (g) => g > 0 ? `Lv${g}` : null;
+                const resultColor = h.result === 'win' ? '#00d4ff' : h.result === 'lose' ? '#ff6b9d' : '#aaa';
+                const isIntroOutro = h.turn === 1 || h.turn === 12;
+                return (
+                    <div style={{
+                        display: 'flex', alignItems: 'center',
+                        background: '#0a0a1a',
+                        border: '1px solid #333',
+                        borderRadius: '4px',
+                        marginBottom: '3px',
+                        minHeight: '44px',
+                        overflow: 'hidden',
+                        fontSize: '11px',
+                        fontWeight: 900,
+                    }}>
+                        {/* 番号 */}
+                        <div style={{
+                            width: '28px', flexShrink: 0, textAlign: 'center',
+                            color: isIntroOutro ? '#ffd700' : '#888',
+                            fontSize: '12px', fontStyle: 'italic', padding: '0 4px',
+                        }}>{h.turn}</div>
+
+                        {/* ジャケット+曲情報 */}
+                        <div style={{display:'flex', alignItems:'center', flex: 1, minWidth:0, gap:'6px', padding:'4px 4px 4px 0'}}>
+                            {h.songJacket ? (
+                                <img src={h.songJacket} style={{width:'36px',height:'36px',borderRadius:'3px',objectFit:'cover',flexShrink:0,border:`2px solid ${getBorderColor(h.songDifficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
+                            ) : (
+                                <div style={{width:'36px',height:'36px',borderRadius:'3px',background:'#333',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                    <i className="ph-bold ph-user" style={{color:'#666',fontSize:'14px'}}></i>
+                                </div>
+                            )}
+                            <div style={{minWidth:0, flex:1}}>
+                                <div style={{color:'#fff',fontSize:'10px',fontWeight:900,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',lineHeight:1.2}}>
+                                    {h.songTitle}
+                                </div>
+                                {h.songDifficult && (
+                                    <div style={{display:'flex',gap:'4px',alignItems:'center',marginTop:'2px'}}>
+                                        <span style={{fontSize:'8px',fontWeight:900,color:getBorderColor(h.songDifficult),textTransform:'uppercase'}}>{h.songDifficult}</span>
+                                        {h.songLevel && <span style={{fontSize:'8px',color:'#aaa'}}>Lv{formatLevel(h.songLevel)}</span>}
+                                    </div>
+                                )}
+                                {!h.songDifficult && (
+                                    <div style={{fontSize:'8px',color:'#666',marginTop:'1px'}}>相手の選曲</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 自分側（左）スコア欄 */}
+                        <div style={{
+                            width: '90px', flexShrink:0,
+                            background: h.isMine ? 'rgba(0,180,255,0.15)' : 'rgba(255,255,255,0.03)',
+                            borderLeft: '1px solid #333',
+                            padding: '4px 6px',
+                            display:'flex', flexDirection:'column', alignItems:'flex-start', justifyContent:'center',
+                            gap:'2px',
+                        }}>
+                            <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
+                                {h.myGear > 0 && (
+                                    <span style={{background:'#6366f1',color:'#fff',fontSize:'8px',fontWeight:900,padding:'1px 4px',borderRadius:'3px'}}>EG Lv{h.myGear}</span>
+                                )}
+                                <span style={{color:'#ffd700',fontSize:'11px',fontWeight:900}}>★{h.myAdd > 0 ? `+${h.myAdd}` : '0'}</span>
+                            </div>
+                            <div style={{color:'#fff',fontSize:'9px',opacity:0.7}}>計 {h.myTotal}★</div>
+                        </div>
+
+                        {/* 結果バッジ（中央） */}
+                        <div style={{
+                            width:'28px',flexShrink:0,
+                            display:'flex',alignItems:'center',justifyContent:'center',
+                            borderLeft:'1px solid #333',
+                            borderRight:'1px solid #333',
+                        }}>
+                            <span style={{
+                                fontSize:'9px',fontWeight:900,
+                                color: resultColor,
+                                textTransform:'uppercase',
+                            }}>
+                                {h.result === 'win' ? 'W' : h.result === 'lose' ? 'L' : 'D'}
+                            </span>
+                        </div>
+
+                        {/* 相手側（右）スコア欄 */}
+                        <div style={{
+                            width: '90px', flexShrink:0,
+                            background: !h.isMine ? 'rgba(255,100,180,0.15)' : 'rgba(255,255,255,0.03)',
+                            padding: '4px 6px',
+                            display:'flex', flexDirection:'column', alignItems:'flex-end', justifyContent:'center',
+                            gap:'2px',
+                        }}>
+                            <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
+                                <span style={{color:'#ffd700',fontSize:'11px',fontWeight:900}}>★{h.oppAdd > 0 ? `+${h.oppAdd}` : '0'}</span>
+                                {h.oppGear > 0 && (
+                                    <span style={{background:'#e63946',color:'#fff',fontSize:'8px',fontWeight:900,padding:'1px 4px',borderRadius:'3px'}}>EG Lv{h.oppGear}</span>
+                                )}
+                            </div>
+                            <div style={{color:'#fff',fontSize:'9px',opacity:0.7,textAlign:'right'}}>計 {h.oppTotal}★</div>
+                        </div>
+                    </div>
+                );
             };
 
             // ===== TOP =====
@@ -3756,7 +3856,6 @@
 
             // ===== SETUP =====
             if (phase === "setup") {
-                // 【修正】先攻→アウトロ曲、後攻→イントロ曲のニュアンス変更
                 const introOutroLabel = side === "先攻" ? "アウトロ曲の想定" : "イントロ曲の想定";
                 const introOutroDesc = side === "先攻"
                     ? "ターン12：相手があなたのセトリからアウトロに選んだと仮定する曲はどれですか？"
@@ -3771,7 +3870,6 @@
                         </div>
                         <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000] space-y-6">
 
-                            {/* 先攻/後攻 */}
                             <div>
                                 <p className="section-label mb-3">1. 先攻 / 後攻</p>
                                 <div className="toggle-btn-group">
@@ -3784,7 +3882,6 @@
                                 </div>
                             </div>
 
-                            {/* セトリ選択（【修正】曲数表示削除） */}
                             <div>
                                 <p className="section-label mb-3">2. 使用セトリ</p>
                                 <div className="flex flex-col gap-2">
@@ -3803,24 +3900,44 @@
                                 </div>
                             </div>
 
-                            {/* イントロ/アウトロ想定曲 */}
                             {selectedSetlistId && (
                                 <div>
                                     <p className="section-label mb-1">3. {introOutroLabel}</p>
                                     <p className="text-[11px] text-gray-500 font-bold mb-3 leading-relaxed">{introOutroDesc}</p>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="grid grid-cols-5 gap-2">
                                         {setlistSongs.map(song => {
                                             const id = `${song.title}_${song.difficult}`;
+                                            const selected = introOutroSongId === id;
                                             return (
                                                 <button
                                                     key={id}
                                                     onClick={() => setIntroOutroSongId(id)}
-                                                    className={`w-full text-left px-3 py-2 rounded-xl border-2 font-black text-sm transition-all flex items-center gap-3 ${introOutroSongId === id ? 'border-[#6366f1] bg-[#eef2ff] shadow-[2px_2px_0px_#6366f1]' : 'border-black bg-white shadow-[2px_2px_0px_#000]'}`}
+                                                    className="relative"
+                                                    style={{aspectRatio:'1/1'}}
                                                 >
-                                                    {song.jacket && <img src={song.jacket} className="w-9 h-9 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
-                                                    <div className="min-w-0">
-                                                        <div className="truncate text-sm">{song.title}</div>
-                                                        <div className="text-[10px] text-gray-500">Lv {formatLevel(song.level)} / {song.difficult}</div>
+                                                    <div style={{
+                                                        width:'100%',height:'100%',
+                                                        borderRadius:'8px',
+                                                        overflow:'hidden',
+                                                        border: selected ? '3px solid #6366f1' : '2px solid #000',
+                                                        boxShadow: selected ? '2px 2px 0px #6366f1' : '2px 2px 0px #000',
+                                                        position:'relative',
+                                                    }}>
+                                                        {song.jacket ? (
+                                                            <img src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover'}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
+                                                        ) : (
+                                                            <div style={{width:'100%',height:'100%',background:'#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                                                <i className="ph-bold ph-music-note" style={{color:'#9ca3af'}}></i>
+                                                            </div>
+                                                        )}
+                                                        {selected && (
+                                                            <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                                                <i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'20px'}}></i>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{fontSize:'8px',fontWeight:900,textAlign:'center',marginTop:'2px',color:'#222',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                                                        {song.title.length > 8 ? song.title.slice(0,8)+'…' : song.title}
                                                     </div>
                                                 </button>
                                             );
@@ -3829,7 +3946,6 @@
                                 </div>
                             )}
 
-                            {/* スタートボタン */}
                             <div className="flex gap-3 pt-2">
                                 <button onClick={() => setPhase("top")} className="flex-none px-4 py-3 bg-gray-100 border-2 border-black rounded-xl font-black text-sm shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
                                     <i className="ph-bold ph-arrow-left"></i>
@@ -3852,92 +3968,127 @@
                 const myTurn = isMySongTurn(turn);
                 const mySelect = isMySelectTurn(turn);
                 const myIntroOutro = isIntroOutroTurn(turn);
-                const turnLabel = getTurnLabel(turn);
                 const isLastTurn = turn === 12;
-
                 const introOutroSong = songMap[introOutroSongId];
                 const selectedSong = mySelect && currentSongId ? songMap[currentSongId] : null;
-
                 const canSubmit = result && (!mySelect || currentSongId);
 
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                         {/* スコアボード */}
-                        <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <i className="ph-fill ph-sword text-2xl text-[#a78bfa]"></i>
-                                <span className="text-lg font-black italic text-white uppercase tracking-tighter">バトル中</span>
-                                <span className="ml-auto text-sm font-black text-white/60">{turn} / 12 ターン</span>
+                        <div className="mb-3">
+                            <div className="flex items-center gap-2 mb-2">
+                                <i className="ph-fill ph-sword text-xl text-[#a78bfa]"></i>
+                                <span className="text-base font-black italic text-white uppercase">バトル中</span>
+                                <span className="ml-auto text-xs font-black text-white/60">{turn} / 12 ターン</span>
                             </div>
-                            <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] flex items-center gap-4">
+                            <div className="bg-white border-4 border-black rounded-2xl p-3 shadow-[6px_6px_0px_#000] flex items-center gap-3">
                                 <div className="flex-1 text-center">
-                                    <div className="text-[10px] font-black text-gray-400 uppercase mb-1">YOU</div>
-                                    <div className="text-4xl font-black text-black leading-none">{myStars}<span className="text-lg ml-0.5">★</span></div>
+                                    <div className="text-[9px] font-black text-gray-400 uppercase mb-0.5">YOU ({side})</div>
+                                    <div className="text-3xl font-black text-black leading-none">{myStars}<span className="text-base ml-0.5">★</span></div>
                                 </div>
-                                <div className="text-2xl font-black text-gray-300">VS</div>
+                                <div className="text-xl font-black text-gray-300">VS</div>
                                 <div className="flex-1 text-center">
-                                    <div className="text-[10px] font-black text-gray-400 uppercase mb-1">OPP</div>
-                                    <div className="text-4xl font-black text-black leading-none">{opponentStars}<span className="text-lg ml-0.5">★</span></div>
+                                    <div className="text-[9px] font-black text-gray-400 uppercase mb-0.5">OPP</div>
+                                    <div className="text-3xl font-black text-black leading-none">{opponentStars}<span className="text-base ml-0.5">★</span></div>
                                 </div>
                             </div>
-                            <div className="mt-2 h-2 bg-white/20 rounded-full overflow-hidden">
-                                <div className="h-full bg-[#a78bfa] rounded-full transition-all duration-500" style={{width: `${(turn/12)*100}%`}}></div>
+                            <div className="mt-1.5 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                                <div className="h-full bg-[#a78bfa] rounded-full transition-all duration-500" style={{width:`${(turn/12)*100}%`}}></div>
                             </div>
                         </div>
 
                         {/* 入力カード */}
-                        <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000] space-y-5">
+                        <div className="bg-white border-4 border-black rounded-3xl p-4 shadow-[8px_8px_0px_#000] space-y-4">
                             {/* ターンラベル */}
                             <div className="flex items-center gap-2">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-2 border-black ${myTurn ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-black'}`}>
-                                    {turn}
-                                </div>
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-xs border-2 border-black ${myTurn ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-black'}`}>{turn}</div>
                                 <div>
-                                    <div className="font-black text-sm text-black">{turnLabel}</div>
-                                    {(turn === 1 || turn === 12) && (
-                                        <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? "イントロターン" : "アウトロターン"}</div>
-                                    )}
+                                    <div className="font-black text-sm text-black">{getTurnLabel(turn)}</div>
+                                    {(turn === 1 || turn === 12) && <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? 'イントロターン' : 'アウトロターン'}</div>}
                                 </div>
                             </div>
 
-                            {/* 楽曲表示 */}
+                            {/* 【ジャケット選曲UI】自選ターン */}
                             {mySelect && (
                                 <div>
-                                    <p className="section-label mb-2">使用曲</p>
-                                    <select
-                                        value={currentSongId}
-                                        onChange={e => setCurrentSongId(e.target.value)}
-                                        className="w-full border-2 border-black rounded-xl px-3 py-2 font-bold text-sm bg-gray-50 focus:outline-none focus:border-[#6366f1]"
-                                    >
-                                        <option value="">― 曲を選択 ―</option>
-                                        {availableSongs.map(song => {
+                                    <p className="section-label mb-2">使用曲を選択</p>
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {setlistSongs.map(song => {
                                             const id = `${song.title}_${song.difficult}`;
-                                            return <option key={id} value={id}>{song.title} (Lv {formatLevel(song.level)})</option>;
+                                            const used = usedMySongIds.includes(id);
+                                            const picked = currentSongId === id;
+                                            return (
+                                                <button
+                                                    key={id}
+                                                    onClick={() => !used && setCurrentSongId(picked ? "" : id)}
+                                                    disabled={used}
+                                                    style={{aspectRatio:'1/1'}}
+                                                    className="relative"
+                                                >
+                                                    <div style={{
+                                                        width:'100%', height:'100%',
+                                                        borderRadius:'8px',
+                                                        overflow:'hidden',
+                                                        border: picked ? '3px solid #6366f1' : used ? '2px solid #ccc' : '2px solid #000',
+                                                        boxShadow: picked ? '2px 2px 0px #6366f1' : used ? 'none' : '2px 2px 0px #000',
+                                                        opacity: used ? 0.35 : 1,
+                                                        cursor: used ? 'not-allowed' : 'pointer',
+                                                        position:'relative',
+                                                        transition:'all 0.1s',
+                                                    }}>
+                                                        {song.jacket ? (
+                                                            <img src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover',filter: used ? 'grayscale(100%)' : 'none'}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
+                                                        ) : (
+                                                            <div style={{width:'100%',height:'100%',background: used ? '#ddd' : '#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                                                <i className="ph-bold ph-music-note" style={{color: used ? '#aaa' : '#9ca3af'}}></i>
+                                                            </div>
+                                                        )}
+                                                        {picked && (
+                                                            <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.25)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                                                <i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'18px'}}></i>
+                                                            </div>
+                                                        )}
+                                                        {used && (
+                                                            <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                                                <i className="ph-bold ph-lock" style={{color:'#fff',fontSize:'14px'}}></i>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{fontSize:'7px',fontWeight:900,textAlign:'center',marginTop:'2px',color: used ? '#aaa' : '#222',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                                                        {song.title.length > 8 ? song.title.slice(0,8)+'…' : song.title}
+                                                    </div>
+                                                </button>
+                                            );
                                         })}
-                                    </select>
+                                    </div>
                                     {selectedSong && (
-                                        <div className="mt-2 flex items-center gap-3 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
-                                            {selectedSong.jacket && <img src={selectedSong.jacket} className="w-10 h-10 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
+                                        <div className="mt-2 flex items-center gap-2 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
+                                            {selectedSong.jacket && <img src={selectedSong.jacket} style={{width:'32px',height:'32px',borderRadius:'6px',objectFit:'cover',border:`2px solid ${getBorderColor(selectedSong.difficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />}
                                             <div className="min-w-0">
-                                                <div className="font-black text-sm truncate">{selectedSong.title}</div>
+                                                <div className="font-black text-xs truncate">{selectedSong.title}</div>
                                                 <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(selectedSong.level)} · {selectedSong.bpm}BPM</div>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             )}
+
+                            {/* イントロ/アウトロ（自分側）固定表示 */}
                             {myIntroOutro && introOutroSong && (
                                 <div>
-                                    <p className="section-label mb-2">使用曲（{turn === 1 ? "イントロ" : "アウトロ"}）</p>
-                                    <div className="flex items-center gap-3 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
-                                        {introOutroSong.jacket && <img src={introOutroSong.jacket} className="w-10 h-10 rounded-lg border border-black object-cover flex-shrink-0" crossOrigin="anonymous" onError={e => { e.target.style.display='none'; }} />}
+                                    <p className="section-label mb-2">使用曲（{turn === 1 ? 'イントロ' : 'アウトロ'}）</p>
+                                    <div className="flex items-center gap-2 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
+                                        {introOutroSong.jacket && <img src={introOutroSong.jacket} style={{width:'32px',height:'32px',borderRadius:'6px',objectFit:'cover',border:`2px solid ${getBorderColor(introOutroSong.difficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />}
                                         <div className="min-w-0">
-                                            <div className="font-black text-sm truncate">{introOutroSong.title}</div>
+                                            <div className="font-black text-xs truncate">{introOutroSong.title}</div>
                                             <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(introOutroSong.level)} · {introOutroSong.bpm}BPM</div>
                                         </div>
                                     </div>
                                 </div>
                             )}
+
+                            {/* 相手ターン */}
                             {!myTurn && (
                                 <div>
                                     <p className="section-label mb-2">使用曲（相手）</p>
@@ -3950,9 +4101,8 @@
                             {/* EXCEED GEAR */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <p className="text-[11px] font-black text-black uppercase mb-2 flex items-center gap-1">
-                                        <span className="w-4 h-4 rounded-full bg-[#6366f1] text-white text-[8px] font-black flex items-center justify-center">自</span>
-                                        自分のEG
+                                    <p className="text-[11px] font-black text-black uppercase mb-1.5 flex items-center gap-1">
+                                        <span className="w-4 h-4 rounded-full bg-[#6366f1] text-white text-[8px] font-black flex items-center justify-center">自</span>自分のEG
                                     </p>
                                     <div className="flex gap-1">
                                         {[0,1,2,3].map(v => (
@@ -3963,9 +4113,8 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-black text-black uppercase mb-2 flex items-center gap-1">
-                                        <span className="w-4 h-4 rounded-full bg-gray-400 text-white text-[8px] font-black flex items-center justify-center">相</span>
-                                        相手のEG
+                                    <p className="text-[11px] font-black text-black uppercase mb-1.5 flex items-center gap-1">
+                                        <span className="w-4 h-4 rounded-full bg-gray-400 text-white text-[8px] font-black flex items-center justify-center">相</span>相手のEG
                                     </p>
                                     <div className="flex gap-1">
                                         {[0,1,2,3].map(v => (
@@ -3977,70 +4126,53 @@
                                 </div>
                             </div>
 
-                            {/* 勝敗（【修正】同点はオレンジで視認性UP） */}
+                            {/* 勝敗（統一：選択時は紫） */}
                             <div>
                                 <p className="section-label mb-2">勝敗</p>
                                 <div className="flex gap-2">
-                                    <button onClick={() => setResult("win")} className={resultBtnClass("win")}>
-                                        <i className="ph-bold ph-trophy"></i> 勝ち
-                                    </button>
-                                    <button onClick={() => setResult("draw")} className={resultBtnClass("draw")}>
-                                        <i className="ph-bold ph-equals"></i> 同点
-                                    </button>
-                                    <button onClick={() => setResult("lose")} className={resultBtnClass("lose")}>
-                                        <i className="ph-bold ph-x-circle"></i> 負け
-                                    </button>
+                                    {['win','draw','lose'].map(val => (
+                                        <button key={val} onClick={() => setResult(val)} className={resultBtnClass(val)}>
+                                            {val === 'win' ? '勝ち' : val === 'draw' ? '同点' : '負け'}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
                             {/* ★プレビュー */}
                             {result && (
-                                <div className="bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between text-sm font-black" style={{animation:'fadeIn 0.2s ease'}}>
+                                <div className="bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-2.5 flex items-center justify-between text-sm font-black" style={{animation:'fadeIn 0.2s ease'}}>
                                     <span className="text-gray-500 text-xs">このターンの獲得★</span>
                                     <div className="flex gap-4">
                                         {(() => {
                                             const { myAdd, oppAdd } = calcStars(myGear, oppGear, result);
-                                            return (
-                                                <>
-                                                    <span className="text-[#6366f1]">YOU +{myAdd}★</span>
-                                                    <span className="text-gray-400">OPP +{oppAdd}★</span>
-                                                </>
-                                            );
+                                            return (<><span className="text-[#6366f1]">YOU +{myAdd}★</span><span className="text-gray-400">OPP +{oppAdd}★</span></>);
                                         })()}
                                     </div>
                                 </div>
                             )}
 
-                            {/* 【修正】確定ボタン：黒→緑系で雰囲気に合わせる */}
+                            {/* 確定ボタン */}
                             <button
                                 onClick={handleTurnSubmit}
                                 disabled={!canSubmit}
                                 className={`w-full py-4 rounded-2xl font-black text-base border-2 border-black transition-all flex items-center justify-center gap-2 ${canSubmit ? 'bg-[#40916c] text-white shadow-[4px_4px_0px_#1b4332] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                             >
-                                {isLastTurn ? (
-                                    <><i className="ph-bold ph-flag-checkered"></i> 試合終了</>
-                                ) : (
-                                    <><i className="ph-bold ph-arrow-right"></i> 次のターンへ</>
-                                )}
+                                {isLastTurn ? (<><i className="ph-bold ph-flag-checkered"></i> 試合終了</>) : (<><i className="ph-bold ph-arrow-right"></i> 次のターンへ</>)}
                             </button>
                         </div>
 
-                        {/* 【修正】履歴：古い順（上から1,2,3...）で表示 */}
+                        {/* 履歴（本家UIライク：ダーク背景） */}
                         {history.length > 0 && (
-                            <div className="mt-4 bg-white/10 border border-white/20 rounded-2xl p-4">
-                                <p className="text-[11px] font-black text-white/60 uppercase mb-3">ターン履歴</p>
-                                <div className="flex flex-col gap-1.5">
-                                    {history.map((h, i) => (
-                                        <div key={i} className="flex items-center gap-2 text-[11px] font-black">
-                                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] border border-black flex-shrink-0 ${h.isMine ? 'bg-[#6366f1] text-white' : 'bg-white text-black'}`}>{h.turn}</span>
-                                            <span className="text-white/70 truncate flex-1">{h.songTitle}</span>
-                                            <span className={`flex-shrink-0 ${h.result === 'win' ? 'text-[#52b788]' : h.result === 'lose' ? 'text-[#e63946]' : 'text-[#f59e0b]'}`}>
-                                                {h.result === 'win' ? '勝' : h.result === 'lose' ? '負' : '引'}
-                                            </span>
-                                            <span className="text-[#a78bfa] flex-shrink-0">{h.myTotal}★</span>
-                                        </div>
-                                    ))}
+                            <div className="mt-3" style={{background:'#0f0f1f',border:'3px solid #333',borderRadius:'16px',padding:'12px',fontFamily:'inherit'}}>
+                                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
+                                    <span style={{fontSize:'10px',fontWeight:900,color:'#888',textTransform:'uppercase',letterSpacing:'0.1em'}}>TURN HISTORY</span>
+                                    <div style={{display:'flex',gap:'6px',fontSize:'9px',fontWeight:900}}>
+                                        <span style={{color:'#00d4ff'}}>YOU</span>
+                                        <span style={{color:'#888'}}>vs</span>
+                                        <span style={{color:'#ff6b9d'}}>OPP</span>
+                                    </div>
                                 </div>
+                                {history.map((h, i) => <ResultRow key={i} h={h} />)}
                             </div>
                         )}
                     </div>
@@ -4054,44 +4186,47 @@
 
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                        <div className="flex items-center gap-2 mb-4">
-                            <i className="ph-fill ph-flag-checkered text-3xl text-[#a78bfa]"></i>
-                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">試合終了</h2>
-                        </div>
-
-                        <div className="bg-white border-4 border-black rounded-3xl p-6 shadow-[8px_8px_0px_#000] mb-4 text-center">
-                            <div className={`text-5xl font-black mb-2 ${win ? 'text-[#52b788]' : lose ? 'text-[#e63946]' : 'text-gray-400'}`}>
-                                {win ? '🏆 WIN' : lose ? '💔 LOSE' : '🤝 DRAW'}
+                        {/* 本家風リザルトヘッダー */}
+                        <div style={{background:'#0f0f1f',border:'4px solid #333',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
+                            {/* BATTLE FINISH バナー */}
+                            <div style={{background:'linear-gradient(90deg,#1a1a2e,#16213e)',textAlign:'center',padding:'8px 0',borderBottom:'2px solid #333'}}>
+                                <span style={{fontSize:'12px',fontWeight:900,letterSpacing:'0.3em',color:'#ffd700',textTransform:'uppercase'}}>BATTLE FINISH</span>
                             </div>
-                            <div className="flex items-center justify-center gap-6 mt-4">
-                                <div>
-                                    <div className="text-[10px] font-black text-gray-400 uppercase">YOU</div>
-                                    <div className="text-5xl font-black text-black">{myStars}<span className="text-2xl">★</span></div>
-                                </div>
-                                <div className="text-2xl font-black text-gray-300">VS</div>
-                                <div>
-                                    <div className="text-[10px] font-black text-gray-400 uppercase">OPP</div>
-                                    <div className="text-5xl font-black text-black">{opponentStars}<span className="text-2xl">★</span></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white border-4 border-black rounded-3xl p-4 shadow-[6px_6px_0px_#000] mb-4">
-                            <p className="font-black text-sm mb-3 border-b-2 border-gray-100 pb-2">全ターン結果</p>
-                            <div className="flex flex-col gap-1.5">
-                                {history.map((h, i) => (
-                                    <div key={i} className="flex items-center gap-2 text-xs font-black py-1 border-b border-gray-50">
-                                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] border border-black flex-shrink-0 ${h.isMine ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-black'}`}>{h.turn}</span>
-                                        <span className="text-gray-600 flex-1 truncate">{h.songTitle}</span>
-                                        {(h.myGear > 0 || h.oppGear > 0) && (
-                                            <span className="text-[#6366f1] text-[9px]">EG{h.myGear > 0 ? `自Lv${h.myGear}` : ''}{h.oppGear > 0 ? `相Lv${h.oppGear}` : ''}</span>
-                                        )}
-                                        <span className={`flex-shrink-0 ${h.result === 'win' ? 'text-[#52b788]' : h.result === 'lose' ? 'text-[#e63946]' : 'text-[#f59e0b]'}`}>
-                                            {h.result === 'win' ? '勝' : h.result === 'lose' ? '負' : '引'}
-                                        </span>
-                                        <span className="text-black flex-shrink-0">{h.myTotal}★</span>
+                            {/* WIN/LOSE + スコア */}
+                            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 20px'}}>
+                                <div style={{flex:1,textAlign:'left'}}>
+                                    <div style={{fontSize:'28px',fontWeight:900,fontStyle:'italic',color: win ? '#00d4ff' : lose ? '#ff6b9d' : '#aaa',textShadow:'2px 2px 0px rgba(0,0,0,0.5)'}}>
+                                        {win ? 'WIN' : lose ? 'LOSE' : 'DRAW'}
                                     </div>
-                                ))}
+                                    <div style={{fontSize:'9px',fontWeight:900,color:'#888',marginTop:'2px'}}>YOU ({side})</div>
+                                </div>
+                                <div style={{textAlign:'center',flex:0}}>
+                                    <div style={{display:'flex',alignItems:'baseline',gap:'6px'}}>
+                                        <span style={{fontSize:'40px',fontWeight:900,color:'#fff',fontStyle:'italic'}}>{myStars}</span>
+                                        <span style={{fontSize:'24px',fontWeight:900,color:'#ffd700'}}>★</span>
+                                        <span style={{fontSize:'20px',fontWeight:900,color:'#555',margin:'0 4px'}}>vs</span>
+                                        <span style={{fontSize:'24px',fontWeight:900,color:'#ffd700'}}>★</span>
+                                        <span style={{fontSize:'40px',fontWeight:900,color:'#fff',fontStyle:'italic'}}>{opponentStars}</span>
+                                    </div>
+                                </div>
+                                <div style={{flex:1,textAlign:'right'}}>
+                                    <div style={{fontSize:'28px',fontWeight:900,fontStyle:'italic',color: lose ? '#00d4ff' : win ? '#ff6b9d' : '#aaa',textShadow:'2px 2px 0px rgba(0,0,0,0.5)'}}>
+                                        {lose ? 'WIN' : win ? 'LOSE' : 'DRAW'}
+                                    </div>
+                                    <div style={{fontSize:'9px',fontWeight:900,color:'#888',marginTop:'2px',textAlign:'right'}}>OPP</div>
+                                </div>
+                            </div>
+                            {/* 全ターン履歴テーブル */}
+                            <div style={{padding:'0 12px 12px 12px'}}>
+                                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0 8px 0',borderBottom:'1px solid #333',marginBottom:'6px'}}>
+                                    <span style={{fontSize:'9px',fontWeight:900,color:'#888',textTransform:'uppercase',letterSpacing:'0.1em'}}># / SONG</span>
+                                    <div style={{display:'flex',gap:'4px',fontSize:'9px',fontWeight:900}}>
+                                        <span style={{color:'#00d4ff',width:'90px',textAlign:'center'}}>YOU</span>
+                                        <span style={{color:'#555',width:'28px',textAlign:'center'}}>-</span>
+                                        <span style={{color:'#ff6b9d',width:'90px',textAlign:'center'}}>OPP</span>
+                                    </div>
+                                </div>
+                                {history.map((h, i) => <ResultRow key={i} h={h} />)}
                             </div>
                         </div>
 
