@@ -2739,7 +2739,7 @@
                                         </div>
                                         <div className="export-info-meta">
                                             <span style={{ color: '#000' }}>Lv {formatLevel(song.level)}</span>
-                                            <span style={{ color: getBorderColor(song.difficult) === '#000000' ? '#6b766c' : getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                            <span style={{ color: getBorderColor(song.difficult) === '#000000' ? '#1a1a2e' : getBorderColor(song.difficult) }}>{song.difficult}</span>
                                             <span style={{ color: '#000' }}>BPM {song.bpm}</span>
                                         </div>
                                     </div>
@@ -4015,7 +4015,7 @@
 
                         {/* 履歴（本家ライク：ダークグレー） */}
                         {history.length > 0 && (
-                            <div className="mt-3" style={{background:'#12121e',border:'3px solid #2a2a42',borderRadius:'16px',padding:'12px',fontFamily:'inherit'}}>
+                            <div className="mt-3" style={{background:'#d3d3d3',border:'3px solid #2a2a42',borderRadius:'16px',padding:'12px',fontFamily:'inherit'}}>
                                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
                                     <span style={{fontSize:'10px',fontWeight:900,color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.1em'}}>TURN HISTORY</span>
                                     <div style={{display:'flex',gap:'6px',fontSize:'9px',fontWeight:900}}>
@@ -4038,7 +4038,7 @@
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                         {/* リザルトカード（本家ライク：ダークグレー×青×赤） */}
-                        <div style={{background:'#12121e',border:'4px solid #2a2a42',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
+                        <div style={{background:'#d3d3d3',border:'4px solid #2a2a42',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
                             {/* バナー */}
                             <div style={{background:'linear-gradient(90deg,#1a1a35,#252545)',textAlign:'center',padding:'10px 0',borderBottom:'2px solid #2e2e50'}}>
                                 <span style={{fontSize:'13px',fontWeight:900,letterSpacing:'0.35em',color:'#fbbf24',textTransform:'uppercase',textShadow:'0 0 10px rgba(251,191,36,0.4)'}}>BATTLE FINISH</span>
@@ -4068,7 +4068,7 @@
                                 </div>
                             </div>
                             {/* 全ターン履歴 */}
-                            <div style={{padding:'8px 10px 12px 10px',background:'#12121e'}}>
+                            <div style={{padding:'8px 10px 12px 10px',background:'#d3d3d3'}}>
                                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0 8px 0',borderBottom:'1px solid #2e2e45',marginBottom:'6px'}}>
                                     <span style={{fontSize:'9px',fontWeight:900,color:'#64748b',textTransform:'uppercase',letterSpacing:'0.1em'}}># / SONG</span>
                                     <div style={{display:'flex',gap:'4px',fontSize:'9px',fontWeight:900}}>
