@@ -3554,94 +3554,71 @@
         const SimulationPage = ({ setlists, songMap, user }) => {
             const [phase, setPhase] = useState("top");
 
-            // 設定
             const [side, setSide] = useState("先攻");
             const [selectedSetlistId, setSelectedSetlistId] = useState("");
             const [introOutroSongId, setIntroOutroSongId] = useState("");
 
-            // バトル状態
             const [turn, setTurn] = useState(1);
             const [myStars, setMyStars] = useState(0);
             const [opponentStars, setOpponentStars] = useState(0);
             const [usedMySongIds, setUsedMySongIds] = useState([]);
             const [history, setHistory] = useState([]);
 
-            // 現在ターン入力
             const [currentSongId, setCurrentSongId] = useState("");
             const [myGear, setMyGear] = useState(0);
             const [oppGear, setOppGear] = useState(0);
             const [result, setResult] = useState("");
+            const [validationMsg, setValidationMsg] = useState("");
 
             const selectedSetlist = setlists.find(s => s.id === selectedSetlistId);
             const setlistSongs = selectedSetlist
                 ? selectedSetlist.songs.map(id => songMap[id]).filter(Boolean)
                 : [];
 
-            // ターン種別判定
             const isIntroOutroTurn = (t) =>
                 (t === 1 && side === "後攻") || (t === 12 && side === "先攻");
-
-            const isMySongTurn = (t) => {
-                if (side === "先攻") return [2,4,6,8,10,12].includes(t);
-                return [1,3,5,7,9,11].includes(t);
-            };
-
-            const isMySelectTurn = (t) => {
-                if (side === "先攻") return [2,4,6,8,10].includes(t);
-                return [3,5,7,9,11].includes(t);
-            };
+            const isMySongTurn = (t) => side === "先攻" ? [2,4,6,8,10,12].includes(t) : [1,3,5,7,9,11].includes(t);
+            const isMySelectTurn = (t) => side === "先攻" ? [2,4,6,8,10].includes(t) : [3,5,7,9,11].includes(t);
 
             const getTurnLabel = (t) => {
                 if (t === 1 && side === "先攻") return "イントロ（相手選曲）";
                 if (t === 1 && side === "後攻") return "イントロ（自選）";
                 if (t === 12 && side === "先攻") return "アウトロ（自選）";
                 if (t === 12 && side === "後攻") return "アウトロ（相手選曲）";
-                return isMySongTurn(t) ? `自選曲` : `相手選曲`;
+                return isMySongTurn(t) ? "自選曲" : "相手選曲";
             };
 
             const calcStars = (myG, oppG, res) => {
                 let myAdd = 0, oppAdd = 0;
-                const bonusMap = {1: 2, 2: 5, 3: 8};
+                const bm = {1:2, 2:5, 3:8};
                 if (myG === 0 && oppG === 0) {
-                    if (res === "win") myAdd = 1;
-                    else if (res === "lose") oppAdd = 1;
-                    else { myAdd = 1; oppAdd = 1; }
+                    if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = 1; else { myAdd = 1; oppAdd = 1; }
                 } else if (myG > 0 && oppG === 0) {
-                    if (res === "win") myAdd = bonusMap[myG];
-                    else if (res === "lose") oppAdd = 1;
-                    else myAdd = bonusMap[myG];
+                    if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = 1; else myAdd = bm[myG];
                 } else if (myG === 0 && oppG > 0) {
-                    if (res === "win") myAdd = 1;
-                    else if (res === "lose") oppAdd = bonusMap[oppG];
-                    else oppAdd = bonusMap[oppG];
+                    if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = bm[oppG]; else oppAdd = bm[oppG];
                 } else {
-                    if (res === "win") myAdd = bonusMap[myG];
-                    else if (res === "lose") oppAdd = bonusMap[oppG];
-                    else { myAdd = bonusMap[myG]; oppAdd = bonusMap[oppG]; }
+                    if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = bm[oppG]; else { myAdd = bm[myG]; oppAdd = bm[oppG]; }
                 }
                 return { myAdd, oppAdd };
             };
 
             const handleStart = () => {
                 if (!selectedSetlistId || !introOutroSongId) return;
-                setPhase("battle");
-                setTurn(1);
-                setMyStars(0);
-                setOpponentStars(0);
-                setUsedMySongIds([]);
-                setHistory([]);
-                setCurrentSongId("");
-                setMyGear(0);
-                setOppGear(0);
-                setResult("");
+                setPhase("battle"); setTurn(1); setMyStars(0); setOpponentStars(0);
+                setUsedMySongIds([]); setHistory([]); setCurrentSongId("");
+                setMyGear(0); setOppGear(0); setResult(""); setValidationMsg("");
             };
 
             const handleTurnSubmit = () => {
-                if (!result) return;
                 const mySelect = isMySelectTurn(turn);
-                const myIntroOutro = isIntroOutroTurn(turn);
-                if (mySelect && !currentSongId) return;
+                const missing = [];
+                if (mySelect && !currentSongId) missing.push("使用曲");
+                if (!result) missing.push("勝敗");
+                if (missing.length > 0) { setValidationMsg(`未入力項目があります：${missing.join("・")}`); return; }
+                setValidationMsg("");
 
+                const myIntroOutro = isIntroOutroTurn(turn);
                 const { myAdd, oppAdd } = calcStars(myGear, oppGear, result);
                 const newMyStars = myStars + myAdd;
                 const newOppStars = opponentStars + oppAdd;
@@ -3656,203 +3633,150 @@
                     songForHistory = songMap[currentSongId];
                     songTitle = songForHistory ? songForHistory.title : "（未選択）";
                 } else {
-                    songForHistory = null;
-                    songTitle = "相手の選曲";
+                    songForHistory = null; songTitle = "相手の選曲";
                 }
 
-                setHistory(prev => [...prev, {
-                    turn,
-                    isMine: isMySongTurn(turn),
-                    isIntroOutro: myIntroOutro || (turn === 1 && side === "先攻") || (turn === 12 && side === "後攻"),
-                    songTitle,
+                const newEntry = {
+                    turn, isMine: isMySongTurn(turn),
+                    songTitle, songId: mySelect ? currentSongId : null,
                     songJacket: songForHistory ? songForHistory.jacket : null,
                     songLevel: songForHistory ? songForHistory.level : null,
                     songDifficult: songForHistory ? songForHistory.difficult : null,
                     myGear, oppGear, result, myAdd, oppAdd,
                     myTotal: newMyStars, oppTotal: newOppStars,
-                }]);
+                    prevMyStars: myStars, prevOppStars: opponentStars,
+                };
 
-                if (mySelect && currentSongId) {
-                    setUsedMySongIds(prev => [...prev, currentSongId]);
-                }
+                if (mySelect && currentSongId) setUsedMySongIds(prev => [...prev, currentSongId]);
+                setHistory(prev => [...prev, newEntry]);
 
                 if (turn >= 12) {
                     setPhase("result");
                 } else {
                     setTurn(t => t + 1);
-                    setCurrentSongId("");
-                    setMyGear(0);
-                    setOppGear(0);
-                    setResult("");
+                    setCurrentSongId(""); setMyGear(0); setOppGear(0); setResult("");
                 }
             };
 
+            // 1ターン戻る
+            const handleGoBack = () => {
+                if (history.length === 0) { setPhase("setup"); return; }
+                const prev = history[history.length - 1];
+                setMyStars(prev.prevMyStars);
+                setOpponentStars(prev.prevOppStars);
+                if (prev.songId) setUsedMySongIds(ids => { const newIds = [...ids]; const i = newIds.lastIndexOf(prev.songId); if (i !== -1) newIds.splice(i, 1); return newIds; });
+                setHistory(h => h.slice(0, -1));
+                setTurn(prev.turn);
+                setCurrentSongId(prev.songId || "");
+                setMyGear(prev.myGear); setOppGear(prev.oppGear); setResult(prev.result);
+                setValidationMsg("");
+            };
+
+            // リザルトから12ターン目に戻る
+            const handleBackToLastTurn = () => {
+                if (history.length === 0) return;
+                const last = history[history.length - 1];
+                setMyStars(last.prevMyStars);
+                setOpponentStars(last.prevOppStars);
+                if (last.songId) setUsedMySongIds(ids => { const newIds = [...ids]; const i = newIds.lastIndexOf(last.songId); if (i !== -1) newIds.splice(i, 1); return newIds; });
+                setHistory(h => h.slice(0, -1));
+                setTurn(last.turn);
+                setCurrentSongId(last.songId || "");
+                setMyGear(last.myGear); setOppGear(last.oppGear); setResult(last.result);
+                setValidationMsg(""); setPhase("battle");
+            };
+
             const handleReset = () => {
-                setPhase("top");
-                setSelectedSetlistId("");
-                setIntroOutroSongId("");
-                setSide("先攻");
-                setTurn(1);
-                setMyStars(0);
-                setOpponentStars(0);
-                setUsedMySongIds([]);
-                setHistory([]);
-                setCurrentSongId("");
-                setMyGear(0);
-                setOppGear(0);
-                setResult("");
+                setPhase("top"); setSelectedSetlistId(""); setIntroOutroSongId(""); setSide("先攻");
+                setTurn(1); setMyStars(0); setOpponentStars(0); setUsedMySongIds([]); setHistory([]);
+                setCurrentSongId(""); setMyGear(0); setOppGear(0); setResult(""); setValidationMsg("");
             };
 
-            const availableSongs = setlistSongs.filter(s => {
-                const id = `${s.title}_${s.difficult}`;
-                return !usedMySongIds.includes(id);
-            });
+            const availableSongs = setlistSongs.filter(s => !usedMySongIds.includes(`${s.title}_${s.difficult}`));
 
-            // 【統一】勝敗ボタン：選択時は単色（紫）で統一
-            const resultBtnClass = (val) => {
-                const active = result === val;
-                const labels = { win: '勝ち', lose: '負け', draw: '同点' };
-                return `flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all ${active ? 'bg-[#6366f1] text-white shadow-[2px_2px_0px_#3730a3]' : 'bg-white text-black'}`;
-            };
-
+            const resultBtnClass = (val) =>
+                `flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all ${result === val ? 'bg-[#6366f1] text-white shadow-[2px_2px_0px_#3730a3]' : 'bg-white text-black'}`;
             const gearBtnClass = (val, cur) =>
                 `flex-1 py-2 rounded-lg font-black text-xs border-2 border-black transition-all ${cur === val ? 'bg-[#6366f1] text-white shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`;
 
-            // ===== リザルト行コンポーネント（本家UIライク） =====
+            // リザルト行コンポーネント（アプリテーマカラー：緑系ダーク）
             const ResultRow = ({ h }) => {
-                const egLabel = (g) => g > 0 ? `Lv${g}` : null;
-                const resultColor = h.result === 'win' ? '#00d4ff' : h.result === 'lose' ? '#ff6b9d' : '#aaa';
-                const isIntroOutro = h.turn === 1 || h.turn === 12;
+                const resultBg = h.result === 'win' ? 'rgba(82,183,136,0.15)' : h.result === 'lose' ? 'rgba(230,57,70,0.12)' : 'rgba(255,255,255,0.04)';
+                const resultTextColor = h.result === 'win' ? '#52b788' : h.result === 'lose' ? '#e63946' : 'rgba(255,255,255,0.4)';
+                const isIO = h.turn === 1 || h.turn === 12;
                 return (
-                    <div style={{
-                        display: 'flex', alignItems: 'center',
-                        background: '#0a0a1a',
-                        border: '1px solid #333',
-                        borderRadius: '4px',
-                        marginBottom: '3px',
-                        minHeight: '44px',
-                        overflow: 'hidden',
-                        fontSize: '11px',
-                        fontWeight: 900,
-                    }}>
-                        {/* 番号 */}
-                        <div style={{
-                            width: '28px', flexShrink: 0, textAlign: 'center',
-                            color: isIntroOutro ? '#ffd700' : '#888',
-                            fontSize: '12px', fontStyle: 'italic', padding: '0 4px',
-                        }}>{h.turn}</div>
-
-                        {/* ジャケット+曲情報 */}
-                        <div style={{display:'flex', alignItems:'center', flex: 1, minWidth:0, gap:'6px', padding:'4px 4px 4px 0'}}>
+                    <div style={{display:'flex',alignItems:'center',background:resultBg,border:'1px solid rgba(82,183,136,0.15)',borderRadius:'8px',marginBottom:'3px',minHeight:'44px',overflow:'hidden',fontFamily:'inherit'}}>
+                        <div style={{width:'26px',flexShrink:0,textAlign:'center',color: isIO ? '#52b788' : 'rgba(255,255,255,0.35)',fontSize:'11px',fontWeight:900,fontStyle:'italic',padding:'0 3px'}}>{h.turn}</div>
+                        <div style={{display:'flex',alignItems:'center',flex:1,minWidth:0,gap:'5px',padding:'4px 4px 4px 0'}}>
                             {h.songJacket ? (
-                                <img src={h.songJacket} style={{width:'36px',height:'36px',borderRadius:'3px',objectFit:'cover',flexShrink:0,border:`2px solid ${getBorderColor(h.songDifficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
+                                <img src={h.songJacket} style={{width:'34px',height:'34px',borderRadius:'4px',objectFit:'cover',flexShrink:0,border:`2px solid ${getBorderColor(h.songDifficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
                             ) : (
-                                <div style={{width:'36px',height:'36px',borderRadius:'3px',background:'#333',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                    <i className="ph-bold ph-user" style={{color:'#666',fontSize:'14px'}}></i>
+                                <div style={{width:'34px',height:'34px',borderRadius:'4px',background:'rgba(255,255,255,0.06)',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid rgba(255,255,255,0.1)'}}>
+                                    <i className="ph-bold ph-user" style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}></i>
                                 </div>
                             )}
-                            <div style={{minWidth:0, flex:1}}>
-                                <div style={{color:'#fff',fontSize:'10px',fontWeight:900,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',lineHeight:1.2}}>
-                                    {h.songTitle}
-                                </div>
-                                {h.songDifficult && (
-                                    <div style={{display:'flex',gap:'4px',alignItems:'center',marginTop:'2px'}}>
+                            <div style={{minWidth:0,flex:1}}>
+                                <div style={{color:'rgba(255,255,255,0.9)',fontSize:'10px',fontWeight:900,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',lineHeight:1.2}}>{h.songTitle}</div>
+                                {h.songDifficult ? (
+                                    <div style={{display:'flex',gap:'3px',alignItems:'center',marginTop:'1px'}}>
                                         <span style={{fontSize:'8px',fontWeight:900,color:getBorderColor(h.songDifficult),textTransform:'uppercase'}}>{h.songDifficult}</span>
-                                        {h.songLevel && <span style={{fontSize:'8px',color:'#aaa'}}>Lv{formatLevel(h.songLevel)}</span>}
+                                        {h.songLevel && <span style={{fontSize:'8px',color:'rgba(255,255,255,0.3)'}}>Lv{formatLevel(h.songLevel)}</span>}
                                     </div>
-                                )}
-                                {!h.songDifficult && (
-                                    <div style={{fontSize:'8px',color:'#666',marginTop:'1px'}}>相手の選曲</div>
+                                ) : (
+                                    <div style={{fontSize:'8px',color:'rgba(255,255,255,0.25)',marginTop:'1px'}}>相手の選曲</div>
                                 )}
                             </div>
                         </div>
-
-                        {/* 自分側（左）スコア欄 */}
-                        <div style={{
-                            width: '90px', flexShrink:0,
-                            background: h.isMine ? 'rgba(0,180,255,0.15)' : 'rgba(255,255,255,0.03)',
-                            borderLeft: '1px solid #333',
-                            padding: '4px 6px',
-                            display:'flex', flexDirection:'column', alignItems:'flex-start', justifyContent:'center',
-                            gap:'2px',
-                        }}>
-                            <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
-                                {h.myGear > 0 && (
-                                    <span style={{background:'#6366f1',color:'#fff',fontSize:'8px',fontWeight:900,padding:'1px 4px',borderRadius:'3px'}}>EG Lv{h.myGear}</span>
-                                )}
-                                <span style={{color:'#ffd700',fontSize:'11px',fontWeight:900}}>★{h.myAdd > 0 ? `+${h.myAdd}` : '0'}</span>
+                        {/* YOU側 */}
+                        <div style={{width:'84px',flexShrink:0,background: h.isMine ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.02)',borderLeft:'1px solid rgba(82,183,136,0.15)',padding:'4px 5px',display:'flex',flexDirection:'column',alignItems:'flex-start',justifyContent:'center',gap:'2px'}}>
+                            <div style={{display:'flex',alignItems:'center',gap:'3px'}}>
+                                {h.myGear > 0 && <span style={{background:'#6366f1',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.myGear}</span>}
+                                <span style={{color:'#d4af37',fontSize:'11px',fontWeight:900}}>+{h.myAdd}★</span>
                             </div>
-                            <div style={{color:'#fff',fontSize:'9px',opacity:0.7}}>計 {h.myTotal}★</div>
+                            <div style={{color:'rgba(255,255,255,0.35)',fontSize:'8px'}}>計 {h.myTotal}★</div>
                         </div>
-
-                        {/* 結果バッジ（中央） */}
-                        <div style={{
-                            width:'28px',flexShrink:0,
-                            display:'flex',alignItems:'center',justifyContent:'center',
-                            borderLeft:'1px solid #333',
-                            borderRight:'1px solid #333',
-                        }}>
-                            <span style={{
-                                fontSize:'9px',fontWeight:900,
-                                color: resultColor,
-                                textTransform:'uppercase',
-                            }}>
-                                {h.result === 'win' ? 'W' : h.result === 'lose' ? 'L' : 'D'}
-                            </span>
+                        {/* 結果 */}
+                        <div style={{width:'24px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderLeft:'1px solid rgba(82,183,136,0.15)',borderRight:'1px solid rgba(82,183,136,0.15)'}}>
+                            <span style={{fontSize:'9px',fontWeight:900,color:resultTextColor}}>{h.result === 'win' ? 'W' : h.result === 'lose' ? 'L' : 'D'}</span>
                         </div>
-
-                        {/* 相手側（右）スコア欄 */}
-                        <div style={{
-                            width: '90px', flexShrink:0,
-                            background: !h.isMine ? 'rgba(255,100,180,0.15)' : 'rgba(255,255,255,0.03)',
-                            padding: '4px 6px',
-                            display:'flex', flexDirection:'column', alignItems:'flex-end', justifyContent:'center',
-                            gap:'2px',
-                        }}>
-                            <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
-                                <span style={{color:'#ffd700',fontSize:'11px',fontWeight:900}}>★{h.oppAdd > 0 ? `+${h.oppAdd}` : '0'}</span>
-                                {h.oppGear > 0 && (
-                                    <span style={{background:'#e63946',color:'#fff',fontSize:'8px',fontWeight:900,padding:'1px 4px',borderRadius:'3px'}}>EG Lv{h.oppGear}</span>
-                                )}
+                        {/* OPP側 */}
+                        <div style={{width:'84px',flexShrink:0,background: !h.isMine ? 'rgba(230,57,70,0.1)' : 'rgba(255,255,255,0.02)',padding:'4px 5px',display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:'2px'}}>
+                            <div style={{display:'flex',alignItems:'center',gap:'3px'}}>
+                                <span style={{color:'#d4af37',fontSize:'11px',fontWeight:900}}>+{h.oppAdd}★</span>
+                                {h.oppGear > 0 && <span style={{background:'rgba(230,57,70,0.65)',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.oppGear}</span>}
                             </div>
-                            <div style={{color:'#fff',fontSize:'9px',opacity:0.7,textAlign:'right'}}>計 {h.oppTotal}★</div>
+                            <div style={{color:'rgba(255,255,255,0.35)',fontSize:'8px',textAlign:'right'}}>計 {h.oppTotal}★</div>
                         </div>
                     </div>
                 );
             };
 
             // ===== TOP =====
-            if (phase === "top") {
-                return (
-                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                        <div className="flex items-center gap-2 mb-4">
-                            <i className="ph-fill ph-sword text-3xl text-[#a78bfa]"></i>
-                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">シミュレーション</h2>
-                        </div>
-                        <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
-                            <p className="text-sm font-bold text-gray-600 leading-relaxed mb-6">
-                                メガミックスバトルの試合をシミュレートします。<br/>
-                                セトリを使って12ターンの★獲得数をリアルタイムで記録できます。
-                            </p>
-                            {setlists.length === 0 ? (
-                                <div className="text-center py-8 border-4 border-dashed border-gray-200 rounded-2xl">
-                                    <i className="ph-bold ph-list-numbers text-4xl text-gray-300 mb-3 block"></i>
-                                    <p className="font-black text-gray-400 text-sm mb-1">セトリがありません</p>
-                                    <p className="text-xs text-gray-400 font-bold">先にセトリ管理から<br/>セトリを作成してください</p>
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => setPhase("setup")}
-                                    className="w-full bg-[#6366f1] text-white font-black py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-2"
-                                >
-                                    <i className="ph-bold ph-play-circle text-xl"></i>
-                                    開始する
-                                </button>
-                            )}
-                        </div>
+            if (phase === "top") return (
+                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                    <div className="flex items-center gap-2 mb-4">
+                        <i className="ph-fill ph-sword text-3xl text-[#a78bfa]"></i>
+                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">シミュレーション</h2>
                     </div>
-                );
-            }
+                    <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
+                        <p className="text-sm font-bold text-gray-600 leading-relaxed mb-6">
+                            メガミックスバトルの試合をシミュレートします。<br/>
+                            セトリを使って12ターンの★獲得数をリアルタイムで記録できます。
+                        </p>
+                        {setlists.length === 0 ? (
+                            <div className="text-center py-8 border-4 border-dashed border-gray-200 rounded-2xl">
+                                <i className="ph-bold ph-list-numbers text-4xl text-gray-300 mb-3 block"></i>
+                                <p className="font-black text-gray-400 text-sm mb-1">セトリがありません</p>
+                                <p className="text-xs text-gray-400 font-bold">先にセトリ管理から<br/>セトリを作成してください</p>
+                            </div>
+                        ) : (
+                            <button onClick={() => setPhase("setup")} className="w-full bg-[#6366f1] text-white font-black py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-2">
+                                <i className="ph-bold ph-play-circle text-xl"></i>開始する
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
 
             // ===== SETUP =====
             if (phase === "setup") {
@@ -3861,7 +3785,6 @@
                     ? "ターン12：相手があなたのセトリからアウトロに選んだと仮定する曲はどれですか？"
                     : "ターン1：相手があなたのセトリからイントロに選んだと仮定する曲はどれですか？";
                 const canStart = selectedSetlistId && introOutroSongId;
-
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                         <div className="flex items-center gap-2 mb-4">
@@ -3869,37 +3792,26 @@
                             <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">設定</h2>
                         </div>
                         <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000] space-y-6">
-
                             <div>
                                 <p className="section-label mb-3">1. 先攻 / 後攻</p>
                                 <div className="toggle-btn-group">
-                                    <button onClick={() => { setSide("先攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "先攻" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-arrow-right"></i> 先攻
-                                    </button>
-                                    <button onClick={() => { setSide("後攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "後攻" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-arrow-left"></i> 後攻
-                                    </button>
+                                    <button onClick={() => { setSide("先攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "先攻" ? 'active' : ''}`}><i className="ph-bold ph-arrow-right"></i> 先攻</button>
+                                    <button onClick={() => { setSide("後攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "後攻" ? 'active' : ''}`}><i className="ph-bold ph-arrow-left"></i> 後攻</button>
                                 </div>
                             </div>
-
                             <div>
                                 <p className="section-label mb-3">2. 使用セトリ</p>
                                 <div className="flex flex-col gap-2">
                                     {setlists.map(sl => (
-                                        <button
-                                            key={sl.id}
-                                            onClick={() => { setSelectedSetlistId(sl.id); setIntroOutroSongId(""); }}
-                                            className={`w-full text-left px-4 py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedSetlistId === sl.id ? 'border-[#6366f1] bg-[#eef2ff] shadow-[3px_3px_0px_#6366f1]' : 'border-black bg-white shadow-[2px_2px_0px_#000]'}`}
-                                        >
+                                        <button key={sl.id} onClick={() => { setSelectedSetlistId(sl.id); setIntroOutroSongId(""); }}
+                                            className={`w-full text-left px-4 py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedSetlistId === sl.id ? 'border-[#6366f1] bg-[#eef2ff] shadow-[3px_3px_0px_#6366f1]' : 'border-black bg-white shadow-[2px_2px_0px_#000]'}`}>
                                             <div className="flex items-center gap-2">
-                                                <i className={`ph-bold ph-list-numbers ${selectedSetlistId === sl.id ? 'text-[#6366f1]' : 'text-black'}`}></i>
-                                                {sl.name}
+                                                <i className={`ph-bold ph-list-numbers ${selectedSetlistId === sl.id ? 'text-[#6366f1]' : 'text-black'}`}></i>{sl.name}
                                             </div>
                                         </button>
                                     ))}
                                 </div>
                             </div>
-
                             {selectedSetlistId && (
                                 <div>
                                     <p className="section-label mb-1">3. {introOutroLabel}</p>
@@ -3907,54 +3819,24 @@
                                     <div className="grid grid-cols-5 gap-2">
                                         {setlistSongs.map(song => {
                                             const id = `${song.title}_${song.difficult}`;
-                                            const selected = introOutroSongId === id;
+                                            const sel = introOutroSongId === id;
                                             return (
-                                                <button
-                                                    key={id}
-                                                    onClick={() => setIntroOutroSongId(id)}
-                                                    className="relative"
-                                                    style={{aspectRatio:'1/1'}}
-                                                >
-                                                    <div style={{
-                                                        width:'100%',height:'100%',
-                                                        borderRadius:'8px',
-                                                        overflow:'hidden',
-                                                        border: selected ? '3px solid #6366f1' : '2px solid #000',
-                                                        boxShadow: selected ? '2px 2px 0px #6366f1' : '2px 2px 0px #000',
-                                                        position:'relative',
-                                                    }}>
-                                                        {song.jacket ? (
-                                                            <img src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover'}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
-                                                        ) : (
-                                                            <div style={{width:'100%',height:'100%',background:'#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                                                <i className="ph-bold ph-music-note" style={{color:'#9ca3af'}}></i>
-                                                            </div>
-                                                        )}
-                                                        {selected && (
-                                                            <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                                                <i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'20px'}}></i>
-                                                            </div>
-                                                        )}
+                                                <button key={id} onClick={() => setIntroOutroSongId(id)} style={{aspectRatio:'1/1'}} className="relative">
+                                                    <div style={{width:'100%',height:'100%',borderRadius:'8px',overflow:'hidden',border: sel ? '3px solid #6366f1' : '2px solid #000',boxShadow: sel ? '2px 2px 0px #6366f1' : '2px 2px 0px #000',position:'relative'}}>
+                                                        {song.jacket ? <img src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover'}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
+                                                            : <div style={{width:'100%',height:'100%',background:'#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-bold ph-music-note" style={{color:'#9ca3af'}}></i></div>}
+                                                        {sel && <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'20px'}}></i></div>}
                                                     </div>
-                                                    <div style={{fontSize:'8px',fontWeight:900,textAlign:'center',marginTop:'2px',color:'#222',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                                                        {song.title.length > 8 ? song.title.slice(0,8)+'…' : song.title}
-                                                    </div>
+                                                    <div style={{fontSize:'7px',fontWeight:900,textAlign:'center',marginTop:'2px',color:'#222',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{song.title.length > 8 ? song.title.slice(0,8)+'…' : song.title}</div>
                                                 </button>
                                             );
                                         })}
                                     </div>
                                 </div>
                             )}
-
                             <div className="flex gap-3 pt-2">
-                                <button onClick={() => setPhase("top")} className="flex-none px-4 py-3 bg-gray-100 border-2 border-black rounded-xl font-black text-sm shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
-                                    <i className="ph-bold ph-arrow-left"></i>
-                                </button>
-                                <button
-                                    onClick={handleStart}
-                                    disabled={!canStart}
-                                    className={`flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all flex items-center justify-center gap-2 ${canStart ? 'bg-[#6366f1] text-white shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                                >
+                                <button onClick={() => setPhase("top")} className="flex-none px-4 py-3 bg-gray-100 border-2 border-black rounded-xl font-black text-sm shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all"><i className="ph-bold ph-arrow-left"></i></button>
+                                <button onClick={handleStart} disabled={!canStart} className={`flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all flex items-center justify-center gap-2 ${canStart ? 'bg-[#6366f1] text-white shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
                                     <i className="ph-bold ph-play-circle"></i> スタート！
                                 </button>
                             </div>
@@ -3971,7 +3853,6 @@
                 const isLastTurn = turn === 12;
                 const introOutroSong = songMap[introOutroSongId];
                 const selectedSong = mySelect && currentSongId ? songMap[currentSongId] : null;
-                const canSubmit = result && (!mySelect || currentSongId);
 
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
@@ -4000,16 +3881,30 @@
 
                         {/* 入力カード */}
                         <div className="bg-white border-4 border-black rounded-3xl p-4 shadow-[8px_8px_0px_#000] space-y-4">
-                            {/* ターンラベル */}
-                            <div className="flex items-center gap-2">
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-xs border-2 border-black ${myTurn ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-black'}`}>{turn}</div>
-                                <div>
-                                    <div className="font-black text-sm text-black">{getTurnLabel(turn)}</div>
-                                    {(turn === 1 || turn === 12) && <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? 'イントロターン' : 'アウトロターン'}</div>}
+                            {/* ターンラベル + 戻るボタン */}
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-xs border-2 border-black ${myTurn ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-black'}`}>{turn}</div>
+                                    <div>
+                                        <div className="font-black text-sm text-black">{getTurnLabel(turn)}</div>
+                                        {(turn === 1 || turn === 12) && <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? 'イントロターン' : 'アウトロターン'}</div>}
+                                    </div>
                                 </div>
+                                <button onClick={handleGoBack} className="flex items-center gap-1 text-[11px] font-black text-gray-500 bg-gray-100 border-2 border-gray-300 rounded-lg px-2 py-1 active:translate-y-0.5 transition-all flex-shrink-0">
+                                    <i className="ph-bold ph-arrow-counter-clockwise text-xs"></i>
+                                    {history.length === 0 ? '設定に戻る' : '1つ戻る'}
+                                </button>
                             </div>
 
-                            {/* 【ジャケット選曲UI】自選ターン */}
+                            {/* バリデーションメッセージ */}
+                            {validationMsg && (
+                                <div className="flex items-center gap-2 bg-red-50 border-2 border-red-400 rounded-xl px-3 py-2" style={{animation:'fadeIn 0.2s ease'}}>
+                                    <i className="ph-bold ph-warning-circle text-red-500 text-sm flex-shrink-0"></i>
+                                    <span className="text-xs font-black text-red-600">{validationMsg}</span>
+                                </div>
+                            )}
+
+                            {/* 自選ターン：ジャケット選曲 */}
                             {mySelect && (
                                 <div>
                                     <p className="section-label mb-2">使用曲を選択</p>
@@ -4019,45 +3914,14 @@
                                             const used = usedMySongIds.includes(id);
                                             const picked = currentSongId === id;
                                             return (
-                                                <button
-                                                    key={id}
-                                                    onClick={() => !used && setCurrentSongId(picked ? "" : id)}
-                                                    disabled={used}
-                                                    style={{aspectRatio:'1/1'}}
-                                                    className="relative"
-                                                >
-                                                    <div style={{
-                                                        width:'100%', height:'100%',
-                                                        borderRadius:'8px',
-                                                        overflow:'hidden',
-                                                        border: picked ? '3px solid #6366f1' : used ? '2px solid #ccc' : '2px solid #000',
-                                                        boxShadow: picked ? '2px 2px 0px #6366f1' : used ? 'none' : '2px 2px 0px #000',
-                                                        opacity: used ? 0.35 : 1,
-                                                        cursor: used ? 'not-allowed' : 'pointer',
-                                                        position:'relative',
-                                                        transition:'all 0.1s',
-                                                    }}>
-                                                        {song.jacket ? (
-                                                            <img src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover',filter: used ? 'grayscale(100%)' : 'none'}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
-                                                        ) : (
-                                                            <div style={{width:'100%',height:'100%',background: used ? '#ddd' : '#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                                                <i className="ph-bold ph-music-note" style={{color: used ? '#aaa' : '#9ca3af'}}></i>
-                                                            </div>
-                                                        )}
-                                                        {picked && (
-                                                            <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.25)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                                                <i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'18px'}}></i>
-                                                            </div>
-                                                        )}
-                                                        {used && (
-                                                            <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                                                <i className="ph-bold ph-lock" style={{color:'#fff',fontSize:'14px'}}></i>
-                                                            </div>
-                                                        )}
+                                                <button key={id} onClick={() => !used && setCurrentSongId(picked ? "" : id)} disabled={used} style={{aspectRatio:'1/1'}} className="relative">
+                                                    <div style={{width:'100%',height:'100%',borderRadius:'8px',overflow:'hidden',border: picked ? '3px solid #6366f1' : used ? '2px solid #ccc' : '2px solid #000',boxShadow: picked ? '2px 2px 0px #6366f1' : used ? 'none' : '2px 2px 0px #000',opacity: used ? 0.35 : 1,cursor: used ? 'not-allowed' : 'pointer',position:'relative',transition:'all 0.1s'}}>
+                                                        {song.jacket ? <img src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover',filter: used ? 'grayscale(100%)' : 'none'}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
+                                                            : <div style={{width:'100%',height:'100%',background: used ? '#ddd' : '#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-bold ph-music-note" style={{color: used ? '#aaa' : '#9ca3af'}}></i></div>}
+                                                        {picked && <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.25)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'18px'}}></i></div>}
+                                                        {used && <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-bold ph-lock" style={{color:'#fff',fontSize:'14px'}}></i></div>}
                                                     </div>
-                                                    <div style={{fontSize:'7px',fontWeight:900,textAlign:'center',marginTop:'2px',color: used ? '#aaa' : '#222',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                                                        {song.title.length > 8 ? song.title.slice(0,8)+'…' : song.title}
-                                                    </div>
+                                                    <div style={{fontSize:'7px',fontWeight:900,textAlign:'center',marginTop:'2px',color: used ? '#aaa' : '#222',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{song.title.length > 8 ? song.title.slice(0,8)+'…' : song.title}</div>
                                                 </button>
                                             );
                                         })}
@@ -4067,14 +3931,14 @@
                                             {selectedSong.jacket && <img src={selectedSong.jacket} style={{width:'32px',height:'32px',borderRadius:'6px',objectFit:'cover',border:`2px solid ${getBorderColor(selectedSong.difficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />}
                                             <div className="min-w-0">
                                                 <div className="font-black text-xs truncate">{selectedSong.title}</div>
-                                                <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(selectedSong.level)} · {selectedSong.bpm}BPM</div>
+                                                <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(selectedSong.level)} · {selectedSong.difficult}</div>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* イントロ/アウトロ（自分側）固定表示 */}
+                            {/* イントロ/アウトロ固定表示 */}
                             {myIntroOutro && introOutroSong && (
                                 <div>
                                     <p className="section-label mb-2">使用曲（{turn === 1 ? 'イントロ' : 'アウトロ'}）</p>
@@ -4082,7 +3946,7 @@
                                         {introOutroSong.jacket && <img src={introOutroSong.jacket} style={{width:'32px',height:'32px',borderRadius:'6px',objectFit:'cover',border:`2px solid ${getBorderColor(introOutroSong.difficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />}
                                         <div className="min-w-0">
                                             <div className="font-black text-xs truncate">{introOutroSong.title}</div>
-                                            <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(introOutroSong.level)} · {introOutroSong.bpm}BPM</div>
+                                            <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(introOutroSong.level)} · {introOutroSong.difficult}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -4104,29 +3968,17 @@
                                     <p className="text-[11px] font-black text-black uppercase mb-1.5 flex items-center gap-1">
                                         <span className="w-4 h-4 rounded-full bg-[#6366f1] text-white text-[8px] font-black flex items-center justify-center">自</span>自分のEG
                                     </p>
-                                    <div className="flex gap-1">
-                                        {[0,1,2,3].map(v => (
-                                            <button key={v} onClick={() => setMyGear(v)} className={gearBtnClass(v, myGear)}>
-                                                {v === 0 ? 'なし' : `Lv${v}`}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    <div className="flex gap-1">{[0,1,2,3].map(v => <button key={v} onClick={() => setMyGear(v)} className={gearBtnClass(v, myGear)}>{v === 0 ? 'なし' : `Lv${v}`}</button>)}</div>
                                 </div>
                                 <div>
                                     <p className="text-[11px] font-black text-black uppercase mb-1.5 flex items-center gap-1">
                                         <span className="w-4 h-4 rounded-full bg-gray-400 text-white text-[8px] font-black flex items-center justify-center">相</span>相手のEG
                                     </p>
-                                    <div className="flex gap-1">
-                                        {[0,1,2,3].map(v => (
-                                            <button key={v} onClick={() => setOppGear(v)} className={gearBtnClass(v, oppGear)}>
-                                                {v === 0 ? 'なし' : `Lv${v}`}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    <div className="flex gap-1">{[0,1,2,3].map(v => <button key={v} onClick={() => setOppGear(v)} className={gearBtnClass(v, oppGear)}>{v === 0 ? 'なし' : `Lv${v}`}</button>)}</div>
                                 </div>
                             </div>
 
-                            {/* 勝敗（統一：選択時は紫） */}
+                            {/* 勝敗（選択時は紫で統一） */}
                             <div>
                                 <p className="section-label mb-2">勝敗</p>
                                 <div className="flex gap-2">
@@ -4143,33 +3995,26 @@
                                 <div className="bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-2.5 flex items-center justify-between text-sm font-black" style={{animation:'fadeIn 0.2s ease'}}>
                                     <span className="text-gray-500 text-xs">このターンの獲得★</span>
                                     <div className="flex gap-4">
-                                        {(() => {
-                                            const { myAdd, oppAdd } = calcStars(myGear, oppGear, result);
-                                            return (<><span className="text-[#6366f1]">YOU +{myAdd}★</span><span className="text-gray-400">OPP +{oppAdd}★</span></>);
-                                        })()}
+                                        {(() => { const { myAdd, oppAdd } = calcStars(myGear, oppGear, result); return (<><span className="text-[#6366f1]">YOU +{myAdd}★</span><span className="text-gray-400">OPP +{oppAdd}★</span></>); })()}
                                     </div>
                                 </div>
                             )}
 
                             {/* 確定ボタン */}
-                            <button
-                                onClick={handleTurnSubmit}
-                                disabled={!canSubmit}
-                                className={`w-full py-4 rounded-2xl font-black text-base border-2 border-black transition-all flex items-center justify-center gap-2 ${canSubmit ? 'bg-[#40916c] text-white shadow-[4px_4px_0px_#1b4332] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                            >
+                            <button onClick={handleTurnSubmit} className="w-full py-4 rounded-2xl font-black text-base border-2 border-black transition-all flex items-center justify-center gap-2 bg-[#40916c] text-white shadow-[4px_4px_0px_#1b4332] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
                                 {isLastTurn ? (<><i className="ph-bold ph-flag-checkered"></i> 試合終了</>) : (<><i className="ph-bold ph-arrow-right"></i> 次のターンへ</>)}
                             </button>
                         </div>
 
-                        {/* 履歴（本家UIライク：ダーク背景） */}
+                        {/* 履歴（緑系ダーク背景） */}
                         {history.length > 0 && (
-                            <div className="mt-3" style={{background:'#0f0f1f',border:'3px solid #333',borderRadius:'16px',padding:'12px',fontFamily:'inherit'}}>
+                            <div className="mt-3" style={{background:'rgba(19,42,19,0.85)',border:'2px solid rgba(82,183,136,0.25)',borderRadius:'16px',padding:'12px',fontFamily:'inherit'}}>
                                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-                                    <span style={{fontSize:'10px',fontWeight:900,color:'#888',textTransform:'uppercase',letterSpacing:'0.1em'}}>TURN HISTORY</span>
+                                    <span style={{fontSize:'10px',fontWeight:900,color:'rgba(255,255,255,0.4)',textTransform:'uppercase',letterSpacing:'0.1em'}}>TURN HISTORY</span>
                                     <div style={{display:'flex',gap:'6px',fontSize:'9px',fontWeight:900}}>
-                                        <span style={{color:'#00d4ff'}}>YOU</span>
-                                        <span style={{color:'#888'}}>vs</span>
-                                        <span style={{color:'#ff6b9d'}}>OPP</span>
+                                        <span style={{color:'#6366f1'}}>YOU</span>
+                                        <span style={{color:'rgba(255,255,255,0.25)'}}>vs</span>
+                                        <span style={{color:'rgba(230,57,70,0.7)'}}>OPP</span>
                                     </div>
                                 </div>
                                 {history.map((h, i) => <ResultRow key={i} h={h} />)}
@@ -4183,56 +4028,59 @@
             if (phase === "result") {
                 const win = myStars > opponentStars;
                 const lose = myStars < opponentStars;
-
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                        {/* 本家風リザルトヘッダー */}
-                        <div style={{background:'#0f0f1f',border:'4px solid #333',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
-                            {/* BATTLE FINISH バナー */}
-                            <div style={{background:'linear-gradient(90deg,#1a1a2e,#16213e)',textAlign:'center',padding:'8px 0',borderBottom:'2px solid #333'}}>
-                                <span style={{fontSize:'12px',fontWeight:900,letterSpacing:'0.3em',color:'#ffd700',textTransform:'uppercase'}}>BATTLE FINISH</span>
+                        {/* リザルトカード（アプリの緑系テーマ） */}
+                        <div style={{background:'rgba(19,42,19,0.92)',border:'4px solid rgba(82,183,136,0.5)',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
+                            {/* バナー */}
+                            <div style={{background:'linear-gradient(90deg,#1b4332,#2d6a4f)',textAlign:'center',padding:'8px 0',borderBottom:'2px solid rgba(82,183,136,0.3)'}}>
+                                <span style={{fontSize:'12px',fontWeight:900,letterSpacing:'0.3em',color:'#52b788',textTransform:'uppercase'}}>BATTLE FINISH</span>
                             </div>
                             {/* WIN/LOSE + スコア */}
-                            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 20px'}}>
-                                <div style={{flex:1,textAlign:'left'}}>
-                                    <div style={{fontSize:'28px',fontWeight:900,fontStyle:'italic',color: win ? '#00d4ff' : lose ? '#ff6b9d' : '#aaa',textShadow:'2px 2px 0px rgba(0,0,0,0.5)'}}>
+                            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 14px'}}>
+                                <div style={{flex:1}}>
+                                    <div style={{fontSize:'24px',fontWeight:900,fontStyle:'italic',color: win ? '#52b788' : lose ? '#e63946' : 'rgba(255,255,255,0.4)',textShadow:'2px 2px 0px rgba(0,0,0,0.5)'}}>
                                         {win ? 'WIN' : lose ? 'LOSE' : 'DRAW'}
                                     </div>
-                                    <div style={{fontSize:'9px',fontWeight:900,color:'#888',marginTop:'2px'}}>YOU ({side})</div>
+                                    <div style={{fontSize:'9px',fontWeight:900,color:'rgba(255,255,255,0.4)',marginTop:'2px'}}>YOU ({side})</div>
                                 </div>
-                                <div style={{textAlign:'center',flex:0}}>
-                                    <div style={{display:'flex',alignItems:'baseline',gap:'6px'}}>
-                                        <span style={{fontSize:'40px',fontWeight:900,color:'#fff',fontStyle:'italic'}}>{myStars}</span>
-                                        <span style={{fontSize:'24px',fontWeight:900,color:'#ffd700'}}>★</span>
-                                        <span style={{fontSize:'20px',fontWeight:900,color:'#555',margin:'0 4px'}}>vs</span>
-                                        <span style={{fontSize:'24px',fontWeight:900,color:'#ffd700'}}>★</span>
-                                        <span style={{fontSize:'40px',fontWeight:900,color:'#fff',fontStyle:'italic'}}>{opponentStars}</span>
+                                <div style={{textAlign:'center'}}>
+                                    <div style={{display:'flex',alignItems:'baseline',gap:'4px'}}>
+                                        <span style={{fontSize:'36px',fontWeight:900,color:'#fff',fontStyle:'italic'}}>{myStars}</span>
+                                        <span style={{fontSize:'20px',fontWeight:900,color:'#52b788'}}>★</span>
+                                        <span style={{fontSize:'14px',fontWeight:900,color:'rgba(255,255,255,0.25)',margin:'0 3px'}}>vs</span>
+                                        <span style={{fontSize:'20px',fontWeight:900,color:'#52b788'}}>★</span>
+                                        <span style={{fontSize:'36px',fontWeight:900,color:'#fff',fontStyle:'italic'}}>{opponentStars}</span>
                                     </div>
                                 </div>
                                 <div style={{flex:1,textAlign:'right'}}>
-                                    <div style={{fontSize:'28px',fontWeight:900,fontStyle:'italic',color: lose ? '#00d4ff' : win ? '#ff6b9d' : '#aaa',textShadow:'2px 2px 0px rgba(0,0,0,0.5)'}}>
+                                    <div style={{fontSize:'24px',fontWeight:900,fontStyle:'italic',color: lose ? '#52b788' : win ? '#e63946' : 'rgba(255,255,255,0.4)',textShadow:'2px 2px 0px rgba(0,0,0,0.5)'}}>
                                         {lose ? 'WIN' : win ? 'LOSE' : 'DRAW'}
                                     </div>
-                                    <div style={{fontSize:'9px',fontWeight:900,color:'#888',marginTop:'2px',textAlign:'right'}}>OPP</div>
+                                    <div style={{fontSize:'9px',fontWeight:900,color:'rgba(255,255,255,0.4)',marginTop:'2px',textAlign:'right'}}>OPP</div>
                                 </div>
                             </div>
-                            {/* 全ターン履歴テーブル */}
-                            <div style={{padding:'0 12px 12px 12px'}}>
-                                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0 8px 0',borderBottom:'1px solid #333',marginBottom:'6px'}}>
-                                    <span style={{fontSize:'9px',fontWeight:900,color:'#888',textTransform:'uppercase',letterSpacing:'0.1em'}}># / SONG</span>
+                            {/* 全ターン履歴 */}
+                            <div style={{padding:'0 10px 12px 10px'}}>
+                                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0 8px 0',borderBottom:'1px solid rgba(82,183,136,0.2)',marginBottom:'6px'}}>
+                                    <span style={{fontSize:'9px',fontWeight:900,color:'rgba(255,255,255,0.35)',textTransform:'uppercase',letterSpacing:'0.1em'}}># / SONG</span>
                                     <div style={{display:'flex',gap:'4px',fontSize:'9px',fontWeight:900}}>
-                                        <span style={{color:'#00d4ff',width:'90px',textAlign:'center'}}>YOU</span>
-                                        <span style={{color:'#555',width:'28px',textAlign:'center'}}>-</span>
-                                        <span style={{color:'#ff6b9d',width:'90px',textAlign:'center'}}>OPP</span>
+                                        <span style={{color:'#6366f1',width:'84px',textAlign:'center'}}>YOU</span>
+                                        <span style={{color:'rgba(255,255,255,0.15)',width:'24px',textAlign:'center'}}>-</span>
+                                        <span style={{color:'rgba(230,57,70,0.7)',width:'84px',textAlign:'center'}}>OPP</span>
                                     </div>
                                 </div>
                                 {history.map((h, i) => <ResultRow key={i} h={h} />)}
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
-                            <button onClick={() => { setPhase("setup"); setSelectedSetlistId(""); setIntroOutroSongId(""); }} className="flex-1 py-3 bg-[#6366f1] text-white font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-2">
-                                <i className="ph-bold ph-arrow-counter-clockwise"></i> もう一度
+                        {/* ボタン群 */}
+                        <div className="flex gap-2">
+                            <button onClick={handleBackToLastTurn} className="flex-none px-3 py-3 bg-white border-2 border-black rounded-xl font-black text-xs shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1 text-black">
+                                <i className="ph-bold ph-arrow-counter-clockwise"></i> 戻る
+                            </button>
+                            <button onClick={() => { setPhase("setup"); setSelectedSetlistId(""); setIntroOutroSongId(""); }} className="flex-1 py-3 bg-[#6366f1] text-white font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-1">
+                                <i className="ph-bold ph-arrows-counter-clockwise"></i> もう一度
                             </button>
                             <button onClick={handleReset} className="flex-none px-4 py-3 bg-gray-100 border-2 border-black rounded-xl font-black text-sm shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
                                 <i className="ph-bold ph-house"></i>
