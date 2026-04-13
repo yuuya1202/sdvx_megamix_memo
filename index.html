@@ -3782,8 +3782,10 @@
                     </div>
                     <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
                         <p className="text-sm font-bold text-gray-600 leading-relaxed mb-6">
-                            メガミックスバトルの試合をシミュレートします。<br/>
-                            セトリを使って12ターンの★獲得数をリアルタイムで記録できます。
+                           作成したセトリを使用してメガミックスバトルの試合をシミュレートします。<br/>
+                           試合展開の分析や、試合後の復習に利用できます<br/>
+                           <br/>
+                           ※ゲージの溜まり具合は計算できないため、自身で選択する必要があります。
                         </p>
                         {setlists.length === 0 ? (
                             <div className="text-center py-8 border-4 border-dashed border-gray-200 rounded-2xl">
@@ -3804,8 +3806,8 @@
             if (phase === "setup") {
                 const introOutroLabel = side === "先攻" ? "アウトロ曲の想定" : "イントロ曲の想定";
                 const introOutroDesc = side === "先攻"
-                    ? "ターン12：相手があなたのセトリからアウトロに選んだと仮定する曲はどれですか？"
-                    : "ターン1：相手があなたのセトリからイントロに選んだと仮定する曲はどれですか？";
+                    ? "ターン12：対戦相手が選んだと想定して、アウトロ曲を選択してください。"
+                    : "ターン1：対戦相手が選んだと想定して、イントロ曲を選択してください。";
                 const canStart = selectedSetlistId && introOutroSongId;
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
