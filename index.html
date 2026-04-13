@@ -3699,67 +3699,79 @@
             const gearBtnClass = (val, cur) =>
                 `flex-1 py-2 rounded-lg font-black text-xs border-2 border-black transition-all ${cur === val ? 'bg-[#6366f1] text-white shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`;
 
-            // リザルト行コンポーネント（グレー系×青×赤）
+            // リザルト行コンポーネント（グレー系×青×赤、ポイント依存ハイライト）
             const getDiffColor = (diff) => {
                 if (String(diff).toUpperCase() === 'MXM') return '#ffffff';
                 return getBorderColor(diff);
             };
             const ResultRow = ({ h }) => {
                 const isIO = h.turn === 1 || h.turn === 12;
-                const rowBg = '#3a3a3a';
                 const resultColor = h.result === 'win' ? '#38bdf8' : h.result === 'lose' ? '#f87171' : '#aaaaaa';
+                // ポイント獲得したかどうかで塗り分け
+                const youGotPoints = h.myAdd > 0;
+                const oppGotPoints = h.oppAdd > 0;
                 return (
-                    <div style={{display:'flex',alignItems:'center',background:rowBg,border:'1px solid #4a4a4a',borderRadius:'6px',marginBottom:'3px',minHeight:'46px',overflow:'hidden',fontFamily:'inherit'}}>
-                        {/* 番号 */}
-                        <div style={{width:'26px',flexShrink:0,textAlign:'center',color: isIO ? '#fbbf24' : '#cccccc',fontSize:'11px',fontWeight:900,fontStyle:'italic',padding:'0 3px'}}>{h.turn}</div>
-                        {/* ジャケット＋曲情報（本家ライク：タイトル大きめ） */}
-                        <div style={{display:'flex',alignItems:'center',flex:1,minWidth:0,gap:'6px',padding:'4px 4px 4px 0'}}>
+                    <div style={{display:'flex',flexDirection:'column',background:'#585858',border:'1px solid #686868',borderRadius:'6px',marginBottom:'3px',overflow:'hidden',fontFamily:'inherit'}}>
+                        {/* 上段：番号 ＋ 曲名（全幅） */}
+                        <div style={{display:'flex',alignItems:'center',gap:'6px',padding:'4px 6px 2px 4px',borderBottom:'1px solid #686868'}}>
+                            <div style={{width:'22px',flexShrink:0,textAlign:'center',color: isIO ? '#fbbf24' : '#dddddd',fontSize:'11px',fontWeight:900,fontStyle:'italic'}}>{h.turn}</div>
                             {h.songJacket ? (
-                                <img src={h.songJacket} style={{width:'36px',height:'36px',borderRadius:'4px',objectFit:'cover',flexShrink:0,border:`2px solid ${getDiffColor(h.songDifficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
+                                <img src={h.songJacket} style={{width:'20px',height:'20px',borderRadius:'3px',objectFit:'cover',flexShrink:0,border:`1.5px solid ${getDiffColor(h.songDifficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
                             ) : (
-                                <div style={{width:'36px',height:'36px',borderRadius:'4px',background:'#555',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid #666'}}>
-                                    <i className="ph-bold ph-user" style={{color:'#999',fontSize:'14px'}}></i>
+                                <div style={{width:'20px',height:'20px',borderRadius:'3px',background:'#777',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                    <i className="ph-bold ph-user" style={{color:'#aaa',fontSize:'10px'}}></i>
                                 </div>
                             )}
-                            <div style={{minWidth:0,flex:1}}>
-                                {/* 曲名：大きめフォント、1行表示 */}
-                                <div style={{color:'#ffffff',fontSize:'11px',fontWeight:900,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',lineHeight:1.2,marginBottom:'3px'}}>{h.songTitle}</div>
-                                {/* 難易度・レベル：小さめ、横並び */}
-                                <div style={{display:'flex',gap:'4px',alignItems:'center'}}>
-                                    {h.songDifficult ? (
-                                        <>
-                                            <span style={{fontSize:'8px',fontWeight:900,color:getDiffColor(h.songDifficult),textTransform:'uppercase',background: String(h.songDifficult).toUpperCase() === 'MXM' ? '#555' : 'transparent',padding: String(h.songDifficult).toUpperCase() === 'MXM' ? '0 3px' : '0',borderRadius:'2px'}}>{h.songDifficult}</span>
-                                            {h.songLevel && <span style={{fontSize:'8px',color:'#aaaaaa',fontWeight:700}}>{formatLevel(h.songLevel)}</span>}
-                                        </>
-                                    ) : (
-                                        <span style={{fontSize:'8px',color:'#888'}}>-</span>
-                                    )}
+                            <div style={{color:'#ffffff',fontSize:'11px',fontWeight:900,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1,lineHeight:1.2}}>{h.songTitle}</div>
+                        </div>
+                        {/* 下段：楽曲情報 ＋ 自分情報 ＋ 勝敗 ＋ 相手情報 */}
+                        <div style={{display:'flex',alignItems:'stretch',minHeight:'32px'}}>
+                            {/* 楽曲情報（難易度・レベル） */}
+                            <div style={{flex:1,minWidth:0,padding:'3px 6px 3px 30px',display:'flex',alignItems:'center',gap:'4px'}}>
+                                {h.songDifficult ? (
+                                    <>
+                                        <span style={{fontSize:'8px',fontWeight:900,color:getDiffColor(h.songDifficult),textTransform:'uppercase',background: String(h.songDifficult).toUpperCase() === 'MXM' ? '#666' : 'transparent',padding: String(h.songDifficult).toUpperCase() === 'MXM' ? '0 3px' : '0',borderRadius:'2px'}}>{h.songDifficult}</span>
+                                        {h.songLevel && <span style={{fontSize:'8px',color:'#cccccc',fontWeight:700}}>{formatLevel(h.songLevel)}</span>}
+                                    </>
+                                ) : (
+                                    <span style={{fontSize:'8px',color:'#999999'}}>-</span>
+                                )}
+                            </div>
+                            {/* YOU側（ポイント獲得時に青ハイライト） */}
+                            <div style={{width:'86px',flexShrink:0,background: youGotPoints ? '#1e4a7a' : '#505050',borderLeft:'1px solid #686868',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-start',justifyContent:'center',gap:'1px'}}>
+                                <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap'}}>
+                                    {h.myGear > 0 && <span style={{background:'#2563eb',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.myGear}</span>}
+                                    <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.myAdd}★</span>
                                 </div>
+                                <div style={{color:'#cccccc',fontSize:'8px',fontWeight:700}}>計 {h.myTotal}★</div>
                             </div>
-                        </div>
-                        {/* YOU側（青ハイライト） */}
-                        <div style={{width:'86px',flexShrink:0,background: h.isMine ? '#1e4a7a' : '#444444',borderLeft:'1px solid #4a4a4a',padding:'4px 6px',display:'flex',flexDirection:'column',alignItems:'flex-start',justifyContent:'center',gap:'2px'}}>
-                            <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap'}}>
-                                {h.myGear > 0 && <span style={{background:'#2563eb',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 4px',borderRadius:'3px'}}>EG{h.myGear}</span>}
-                                <span style={{color:'#fbbf24',fontSize:'12px',fontWeight:900,lineHeight:1}}>+{h.myAdd}★</span>
+                            {/* 結果バッジ */}
+                            <div style={{width:'26px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderLeft:'1px solid #686868',borderRight:'1px solid #686868',background:'#484848'}}>
+                                <span style={{fontSize:'10px',fontWeight:900,color:resultColor}}>{h.result === 'win' ? 'W' : h.result === 'lose' ? 'L' : 'D'}</span>
                             </div>
-                            <div style={{color:'#cccccc',fontSize:'8px',fontWeight:700}}>計 {h.myTotal}★</div>
-                        </div>
-                        {/* 結果バッジ */}
-                        <div style={{width:'26px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderLeft:'1px solid #4a4a4a',borderRight:'1px solid #4a4a4a',background:'#2e2e2e'}}>
-                            <span style={{fontSize:'10px',fontWeight:900,color:resultColor}}>{h.result === 'win' ? 'W' : h.result === 'lose' ? 'L' : 'D'}</span>
-                        </div>
-                        {/* OPP側（赤ハイライト） */}
-                        <div style={{width:'86px',flexShrink:0,background: !h.isMine ? '#6e2020' : '#444444',padding:'4px 6px',display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:'2px'}}>
-                            <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap',justifyContent:'flex-end'}}>
-                                <span style={{color:'#fbbf24',fontSize:'12px',fontWeight:900,lineHeight:1}}>+{h.oppAdd}★</span>
-                                {h.oppGear > 0 && <span style={{background:'#dc2626',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 4px',borderRadius:'3px'}}>EG{h.oppGear}</span>}
+                            {/* OPP側（ポイント獲得時に赤ハイライト） */}
+                            <div style={{width:'86px',flexShrink:0,background: oppGotPoints ? '#6e2020' : '#505050',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:'1px'}}>
+                                <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap',justifyContent:'flex-end'}}>
+                                    <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.oppAdd}★</span>
+                                    {h.oppGear > 0 && <span style={{background:'#dc2626',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.oppGear}</span>}
+                                </div>
+                                <div style={{color:'#cccccc',fontSize:'8px',fontWeight:700,textAlign:'right'}}>計 {h.oppTotal}★</div>
                             </div>
-                            <div style={{color:'#cccccc',fontSize:'8px',fontWeight:700,textAlign:'right'}}>計 {h.oppTotal}★</div>
                         </div>
                     </div>
                 );
             };
+
+            // デフォルト曲の自動選択（自選ターンに遷移した際、未選択なら先頭の使用可能な曲をセット）
+            useEffect(() => {
+                if (phase !== "battle") return;
+                if (!isMySelectTurn(turn)) return;
+                if (currentSongId) return; // 既に選択済みならスキップ
+                const firstAvailable = setlistSongs.find(s => !usedMySongIds.includes(`${s.title}_${s.difficult}`));
+                if (firstAvailable) {
+                    setCurrentSongId(`${firstAvailable.title}_${firstAvailable.difficult}`);
+                }
+            }, [turn, phase]);
 
             // ===== TOP =====
             if (phase === "top") return (
@@ -4016,14 +4028,14 @@
                             </button>
                         </div>
 
-                        {/* 入力履歴（グレー系） */}
+                        {/* 入力履歴（薄めグレー） */}
                         {history.length > 0 && (
-                            <div className="mt-3" style={{background:'#2e2e2e',border:'3px solid #4a4a4a',borderRadius:'16px',padding:'12px',fontFamily:'inherit'}}>
+                            <div className="mt-3" style={{background:'#484848',border:'3px solid #606060',borderRadius:'16px',padding:'12px',fontFamily:'inherit'}}>
                                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-                                    <span style={{fontSize:'10px',fontWeight:900,color:'#cccccc',textTransform:'uppercase',letterSpacing:'0.1em'}}>入力履歴</span>
+                                    <span style={{fontSize:'10px',fontWeight:900,color:'#dddddd',textTransform:'uppercase',letterSpacing:'0.1em'}}>入力履歴</span>
                                     <div style={{display:'flex',gap:'6px',fontSize:'9px',fontWeight:900}}>
                                         <span style={{color:'#38bdf8'}}>YOU</span>
-                                        <span style={{color:'#777777'}}>vs</span>
+                                        <span style={{color:'#888888'}}>vs</span>
                                         <span style={{color:'#f87171'}}>OPP</span>
                                     </div>
                                 </div>
@@ -4040,25 +4052,25 @@
                 const lose = myStars < opponentStars;
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                        {/* リザルトカード（グレー系×青×赤） */}
-                        <div style={{background:'#2e2e2e',border:'4px solid #4a4a4a',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
+                        {/* リザルトカード（薄めグレー×青×赤） */}
+                        <div style={{background:'#484848',border:'4px solid #606060',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
                             {/* バナー */}
-                            <div style={{background:'linear-gradient(90deg,#3a3a3a,#505050)',textAlign:'center',padding:'10px 0',borderBottom:'2px solid #555555'}}>
+                            <div style={{background:'linear-gradient(90deg,#585858,#707070)',textAlign:'center',padding:'10px 0',borderBottom:'2px solid #686868'}}>
                                 <span style={{fontSize:'13px',fontWeight:900,letterSpacing:'0.35em',color:'#fbbf24',textTransform:'uppercase',textShadow:'0 0 10px rgba(251,191,36,0.4)'}}>BATTLE FINISH</span>
                             </div>
                             {/* WIN/LOSE + スコア */}
-                            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 14px',background:'#383838'}}>
+                            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 14px',background:'#525252'}}>
                                 <div style={{flex:1}}>
                                     <div style={{fontSize:'26px',fontWeight:900,fontStyle:'italic',color: win ? '#38bdf8' : lose ? '#f87171' : '#aaaaaa',textShadow: win ? '0 0 14px rgba(56,189,248,0.7)' : lose ? '0 0 14px rgba(248,113,113,0.7)' : 'none'}}>
                                         {win ? 'WIN' : lose ? 'LOSE' : 'DRAW'}
                                     </div>
-                                    <div style={{fontSize:'9px',fontWeight:900,color:'#999999',marginTop:'3px'}}>YOU ({side})</div>
+                                    <div style={{fontSize:'9px',fontWeight:900,color:'#bbbbbb',marginTop:'3px'}}>YOU ({side})</div>
                                 </div>
                                 <div style={{textAlign:'center'}}>
                                     <div style={{display:'flex',alignItems:'baseline',gap:'3px'}}>
                                         <span style={{fontSize:'38px',fontWeight:900,color:'#ffffff',fontStyle:'italic'}}>{myStars}</span>
                                         <span style={{fontSize:'22px',fontWeight:900,color:'#fbbf24'}}>★</span>
-                                        <span style={{fontSize:'14px',fontWeight:900,color:'#777777',margin:'0 4px'}}>vs</span>
+                                        <span style={{fontSize:'14px',fontWeight:900,color:'#999999',margin:'0 4px'}}>vs</span>
                                         <span style={{fontSize:'22px',fontWeight:900,color:'#fbbf24'}}>★</span>
                                         <span style={{fontSize:'38px',fontWeight:900,color:'#ffffff',fontStyle:'italic'}}>{opponentStars}</span>
                                     </div>
@@ -4067,16 +4079,16 @@
                                     <div style={{fontSize:'26px',fontWeight:900,fontStyle:'italic',color: lose ? '#38bdf8' : win ? '#f87171' : '#aaaaaa',textShadow: lose ? '0 0 14px rgba(56,189,248,0.7)' : win ? '0 0 14px rgba(248,113,113,0.7)' : 'none'}}>
                                         {lose ? 'WIN' : win ? 'LOSE' : 'DRAW'}
                                     </div>
-                                    <div style={{fontSize:'9px',fontWeight:900,color:'#999999',marginTop:'3px',textAlign:'right'}}>OPP</div>
+                                    <div style={{fontSize:'9px',fontWeight:900,color:'#bbbbbb',marginTop:'3px',textAlign:'right'}}>OPP</div>
                                 </div>
                             </div>
                             {/* 全ターン履歴 */}
-                            <div style={{padding:'8px 10px 12px 10px',background:'#2e2e2e'}}>
-                                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0 8px 0',borderBottom:'1px solid #4a4a4a',marginBottom:'6px'}}>
-                                    <span style={{fontSize:'9px',fontWeight:900,color:'#999999',textTransform:'uppercase',letterSpacing:'0.1em'}}># / SONG</span>
+                            <div style={{padding:'8px 10px 12px 10px',background:'#484848'}}>
+                                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0 8px 0',borderBottom:'1px solid #606060',marginBottom:'6px'}}>
+                                    <span style={{fontSize:'9px',fontWeight:900,color:'#bbbbbb',textTransform:'uppercase',letterSpacing:'0.1em'}}># / SONG</span>
                                     <div style={{display:'flex',gap:'4px',fontSize:'9px',fontWeight:900}}>
                                         <span style={{color:'#38bdf8',width:'86px',textAlign:'center'}}>YOU</span>
-                                        <span style={{color:'#777777',width:'26px',textAlign:'center'}}>-</span>
+                                        <span style={{color:'#888888',width:'26px',textAlign:'center'}}>-</span>
                                         <span style={{color:'#f87171',width:'86px',textAlign:'center'}}>OPP</span>
                                     </div>
                                 </div>
