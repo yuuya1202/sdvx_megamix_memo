@@ -1061,7 +1061,7 @@
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-[10px] font-black">Lv</span>
                                             <span className="text-lg font-black italic">{formatLevel(song.level)}</span>
-                                            <span className="text-xs font-black ml-1" style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                            <DiffBadge diff={song.difficult} />
                                         </div>
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-[10px] font-black">BPM</span>
@@ -1856,7 +1856,7 @@
                                                                 <div className="flex-grow min-w-0">
                                                                     <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                                     <div className="text-[10px] font-black uppercase flex items-center gap-2">
-                                                                        <span className="text-black">Lv {formatLevel(song.level)}</span>
+                                                                        <DiffBadge diff={song.difficult} /><span className="text-black">Lv {formatLevel(song.level)}</span>
                                                                         <span className="text-black">{song.combo}CHAIN</span>
                                                                     </div>
                                                                 </div>
@@ -1968,7 +1968,7 @@
                                             <div className="flex-grow min-w-0">
                                                 <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                 <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
-                                                    <span className="text-black">Lv {formatLevel(song.level)}</span>
+                                                    <DiffBadge diff={song.difficult} /><span className="text-black">Lv {formatLevel(song.level)}</span>
                                                     <span className="text-black">{song.combo}CHAIN</span>
                                                 </div>
                                             </div>
@@ -3980,7 +3980,7 @@
                                             {selectedSong.jacket && <img src={selectedSong.jacket} style={{width:'32px',height:'32px',borderRadius:'6px',objectFit:'cover',border:`2px solid ${getBorderColor(selectedSong.difficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />}
                                             <div className="min-w-0">
                                                 <div className="font-black text-xs truncate">{selectedSong.title}</div>
-                                                <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(selectedSong.level)} · {selectedSong.difficult}</div>
+                                                <div className="flex items-center gap-1 mt-0.5"><DiffBadge diff={selectedSong.difficult} /><span className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(selectedSong.level)}</span></div>
                                             </div>
                                         </div>
                                     )}
@@ -3995,7 +3995,7 @@
                                         {introOutroSong.jacket && <img src={introOutroSong.jacket} style={{width:'32px',height:'32px',borderRadius:'6px',objectFit:'cover',border:`2px solid ${getBorderColor(introOutroSong.difficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />}
                                         <div className="min-w-0">
                                             <div className="font-black text-xs truncate">{introOutroSong.title}</div>
-                                            <div className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(introOutroSong.level)} · {introOutroSong.difficult}</div>
+                                            <div className="flex items-center gap-1 mt-0.5"><DiffBadge diff={introOutroSong.difficult} /><span className="text-[10px] text-[#6366f1] font-black">Lv {formatLevel(introOutroSong.level)}</span></div>
                                         </div>
                                     </div>
                                 </div>
