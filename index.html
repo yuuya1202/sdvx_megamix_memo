@@ -3707,66 +3707,67 @@
             const ResultRow = ({ h }) => {
                 const isIO = h.turn === 1 || h.turn === 12;
                 const resultColor = h.result === 'win' ? '#38bdf8' : h.result === 'lose' ? '#f87171' : '#aaaaaa';
-                // ポイント獲得したかどうかで塗り分け
                 const youGotPoints = h.myAdd > 0;
                 const oppGotPoints = h.oppAdd > 0;
+                // ④レイアウト：元に戻す（1段横並び）
                 return (
-                    <div style={{display:'flex',flexDirection:'column',background:'#585858',border:'1px solid #686868',borderRadius:'6px',marginBottom:'3px',overflow:'hidden',fontFamily:'inherit'}}>
-                        {/* 上段：番号 ＋ 曲名（全幅） */}
-                        <div style={{display:'flex',alignItems:'center',gap:'6px',padding:'4px 6px 2px 4px',borderBottom:'1px solid #686868'}}>
-                            <div style={{width:'22px',flexShrink:0,textAlign:'center',color: isIO ? '#fbbf24' : '#dddddd',fontSize:'11px',fontWeight:900,fontStyle:'italic'}}>{h.turn}</div>
+                    <div style={{display:'flex',alignItems:'center',background:'#585858',border:'1px solid #686868',borderRadius:'6px',marginBottom:'3px',minHeight:'46px',overflow:'hidden',fontFamily:'inherit'}}>
+                        {/* 番号 */}
+                        <div style={{width:'26px',flexShrink:0,textAlign:'center',color: isIO ? '#fbbf24' : '#dddddd',fontSize:'11px',fontWeight:900,fontStyle:'italic',padding:'0 3px'}}>{h.turn}</div>
+                        {/* ジャケット＋曲情報 */}
+                        <div style={{display:'flex',alignItems:'center',flex:1,minWidth:0,gap:'6px',padding:'4px 4px 4px 0'}}>
                             {h.songJacket ? (
-                                <img src={h.songJacket} style={{width:'20px',height:'20px',borderRadius:'3px',objectFit:'cover',flexShrink:0,border:`1.5px solid ${getDiffColor(h.songDifficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
+                                <img src={h.songJacket} style={{width:'36px',height:'36px',borderRadius:'4px',objectFit:'cover',flexShrink:0,border:`2px solid ${getDiffColor(h.songDifficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
                             ) : (
-                                <div style={{width:'20px',height:'20px',borderRadius:'3px',background:'#777',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                                    <i className="ph-bold ph-user" style={{color:'#aaa',fontSize:'10px'}}></i>
+                                <div style={{width:'36px',height:'36px',borderRadius:'4px',background:'#777',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid #888'}}>
+                                    <i className="ph-bold ph-user" style={{color:'#aaa',fontSize:'14px'}}></i>
                                 </div>
                             )}
-                            <div style={{color:'#ffffff',fontSize:'11px',fontWeight:900,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1,lineHeight:1.2}}>{h.songTitle}</div>
+                            <div style={{minWidth:0,flex:1}}>
+                                <div style={{color:'#ffffff',fontSize:'11px',fontWeight:900,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',lineHeight:1.2,marginBottom:'3px'}}>{h.songTitle}</div>
+                                <div style={{display:'flex',gap:'4px',alignItems:'center'}}>
+                                    {h.songDifficult ? (
+                                        <>
+                                            <span style={{fontSize:'8px',fontWeight:900,color:getDiffColor(h.songDifficult),textTransform:'uppercase',background: String(h.songDifficult).toUpperCase() === 'MXM' ? '#666' : 'transparent',padding: String(h.songDifficult).toUpperCase() === 'MXM' ? '0 3px' : '0',borderRadius:'2px'}}>{h.songDifficult}</span>
+                                            {h.songLevel && <span style={{fontSize:'8px',color:'#cccccc',fontWeight:700}}>{formatLevel(h.songLevel)}</span>}
+                                        </>
+                                    ) : (
+                                        <span style={{fontSize:'8px',color:'#999'}}>-</span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                        {/* 下段：楽曲情報 ＋ 自分情報 ＋ 勝敗 ＋ 相手情報 */}
-                        <div style={{display:'flex',alignItems:'stretch',minHeight:'32px'}}>
-                            {/* 楽曲情報（難易度・レベル） */}
-                            <div style={{flex:1,minWidth:0,padding:'3px 6px 3px 30px',display:'flex',alignItems:'center',gap:'4px'}}>
-                                {h.songDifficult ? (
-                                    <>
-                                        <span style={{fontSize:'8px',fontWeight:900,color:getDiffColor(h.songDifficult),textTransform:'uppercase',background: String(h.songDifficult).toUpperCase() === 'MXM' ? '#666' : 'transparent',padding: String(h.songDifficult).toUpperCase() === 'MXM' ? '0 3px' : '0',borderRadius:'2px'}}>{h.songDifficult}</span>
-                                        {h.songLevel && <span style={{fontSize:'8px',color:'#cccccc',fontWeight:700}}>{formatLevel(h.songLevel)}</span>}
-                                    </>
-                                ) : (
-                                    <span style={{fontSize:'8px',color:'#999999'}}>-</span>
-                                )}
+                        {/* YOU側（ポイント獲得時に明るい青ハイライト） */}
+                        <div style={{width:'86px',flexShrink:0,background: youGotPoints ? '#1e5fa0' : '#505050',borderLeft:'1px solid #686868',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-start',justifyContent:'center',gap:'1px'}}>
+                            <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap'}}>
+                                {h.myGear > 0 && <span style={{background:'#2563eb',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.myGear}</span>}
+                                {/* +0★は非表示 */}
+                                {h.myAdd > 0 && <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.myAdd}★</span>}
                             </div>
-                            {/* YOU側（ポイント獲得時に青ハイライト） */}
-                            <div style={{width:'86px',flexShrink:0,background: youGotPoints ? '#1e4a7a' : '#505050',borderLeft:'1px solid #686868',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-start',justifyContent:'center',gap:'1px'}}>
-                                <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap'}}>
-                                    {h.myGear > 0 && <span style={{background:'#2563eb',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.myGear}</span>}
-                                    <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.myAdd}★</span>
-                                </div>
-                                <div style={{color:'#cccccc',fontSize:'8px',fontWeight:700}}>計 {h.myTotal}★</div>
+                            <div style={{color:'#dddddd',fontSize:'8px',fontWeight:700}}>計 {h.myTotal}★</div>
+                        </div>
+                        {/* 結果バッジ */}
+                        <div style={{width:'26px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderLeft:'1px solid #686868',borderRight:'1px solid #686868',background:'#484848'}}>
+                            <span style={{fontSize:'10px',fontWeight:900,color:resultColor}}>{h.result === 'win' ? 'W' : h.result === 'lose' ? 'L' : 'D'}</span>
+                        </div>
+                        {/* OPP側（ポイント獲得時に明るい赤ハイライト） */}
+                        <div style={{width:'86px',flexShrink:0,background: oppGotPoints ? '#8b2020' : '#505050',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:'1px'}}>
+                            <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap',justifyContent:'flex-end'}}>
+                                {/* +0★は非表示 */}
+                                {h.oppAdd > 0 && <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.oppAdd}★</span>}
+                                {h.oppGear > 0 && <span style={{background:'#dc2626',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.oppGear}</span>}
                             </div>
-                            {/* 結果バッジ */}
-                            <div style={{width:'26px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderLeft:'1px solid #686868',borderRight:'1px solid #686868',background:'#484848'}}>
-                                <span style={{fontSize:'10px',fontWeight:900,color:resultColor}}>{h.result === 'win' ? 'W' : h.result === 'lose' ? 'L' : 'D'}</span>
-                            </div>
-                            {/* OPP側（ポイント獲得時に赤ハイライト） */}
-                            <div style={{width:'86px',flexShrink:0,background: oppGotPoints ? '#6e2020' : '#505050',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:'1px'}}>
-                                <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap',justifyContent:'flex-end'}}>
-                                    <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.oppAdd}★</span>
-                                    {h.oppGear > 0 && <span style={{background:'#dc2626',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.oppGear}</span>}
-                                </div>
-                                <div style={{color:'#cccccc',fontSize:'8px',fontWeight:700,textAlign:'right'}}>計 {h.oppTotal}★</div>
-                            </div>
+                            <div style={{color:'#dddddd',fontSize:'8px',fontWeight:700,textAlign:'right'}}>計 {h.oppTotal}★</div>
                         </div>
                     </div>
                 );
             };
 
-            // デフォルト曲の自動選択（自選ターンに遷移した際、未選択なら先頭の使用可能な曲をセット）
+            // デフォルト曲の自動選択
             useEffect(() => {
                 if (phase !== "battle") return;
                 if (!isMySelectTurn(turn)) return;
-                if (currentSongId) return; // 既に選択済みならスキップ
+                if (currentSongId) return;
                 const firstAvailable = setlistSongs.find(s => !usedMySongIds.includes(`${s.title}_${s.difficult}`));
                 if (firstAvailable) {
                     setCurrentSongId(`${firstAvailable.title}_${firstAvailable.difficult}`);
@@ -3780,25 +3781,24 @@
                         <i className="ph-fill ph-sword text-3xl text-[#a78bfa]"></i>
                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">シミュレーション</h2>
                     </div>
-                    <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
-                        <p className="text-sm font-bold text-gray-600 leading-relaxed mb-6">
-                           作成したセトリを使用してメガミックスバトルの試合をシミュレートします。<br/>
-                           試合展開の分析や、試合後の復習に利用できます<br/>
-                           <br/>
-                           ※ゲージの溜まり具合は計算できないため、自分で入力する必要があります。
-                        </p>
-                        {setlists.length === 0 ? (
-                            <div className="text-center py-8 border-4 border-dashed border-gray-200 rounded-2xl">
-                                <i className="ph-bold ph-list-numbers text-4xl text-gray-300 mb-3 block"></i>
-                                <p className="font-black text-gray-400 text-sm mb-1">セトリがありません</p>
-                                <p className="text-xs text-gray-400 font-bold">先にセトリ管理から<br/>セトリを作成してください</p>
-                            </div>
-                        ) : (
-                            <button onClick={() => setPhase("setup")} className="w-full bg-[#6366f1] text-white font-black py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-2">
-                                <i className="ph-bold ph-play-circle text-xl"></i>開始する
-                            </button>
-                        )}
+                    {/* 補足テキスト（要注意リスト・ランダム選曲と同スタイル） */}
+                    <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-3 text-white">
+                        <div className="text-[12px] font-black leading-relaxed space-y-1">
+                            <p>セトリを使ってメガミックスバトルをシミュレートできます。</p>
+                            <p>12ターンの勝敗と★獲得数をリアルタイムで記録し、試合結果を確認できます。</p>
+                        </div>
                     </div>
+                    {setlists.length === 0 ? (
+                        <div className="text-center py-8 bg-white border-4 border-dashed border-gray-200 rounded-2xl">
+                            <i className="ph-bold ph-list-numbers text-4xl text-gray-300 mb-3 block"></i>
+                            <p className="font-black text-gray-400 text-sm mb-1">セトリがありません</p>
+                            <p className="text-xs text-gray-400 font-bold">先にセトリ管理から<br/>セトリを作成してください</p>
+                        </div>
+                    ) : (
+                        <button onClick={() => setPhase("setup")} className="w-full bg-[#6366f1] text-white font-black py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-2">
+                            <i className="ph-bold ph-play-circle text-xl"></i>開始する
+                        </button>
+                    )}
                 </div>
             );
 
@@ -3806,8 +3806,8 @@
             if (phase === "setup") {
                 const introOutroLabel = side === "先攻" ? "アウトロ曲の想定" : "イントロ曲の想定";
                 const introOutroDesc = side === "先攻"
-                    ? "ターン12：対戦相手が選んだと想定して、アウトロ曲を選択してください。"
-                    : "ターン1：対戦相手が選んだと想定して、イントロ曲を選択してください。";
+                    ? "ターン12：相手があなたのセトリからアウトロに選んだと仮定する曲はどれですか？"
+                    : "ターン1：相手があなたのセトリからイントロに選んだと仮定する曲はどれですか？";
                 const canStart = selectedSetlistId && introOutroSongId;
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
@@ -4058,7 +4058,7 @@
                         <div style={{background:'#484848',border:'4px solid #606060',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
                             {/* バナー */}
                             <div style={{background:'linear-gradient(90deg,#585858,#707070)',textAlign:'center',padding:'10px 0',borderBottom:'2px solid #686868'}}>
-                                <span style={{fontSize:'13px',fontWeight:900,letterSpacing:'0.35em',color:'#fbbf24',textTransform:'uppercase',textShadow:'0 0 10px rgba(251,191,36,0.4)'}}>BATTLE FINISH</span>
+                                <span style={{fontSize:'13px',fontWeight:900,letterSpacing:'0.35em',color:'#fbbf24',textTransform:'uppercase',textShadow:'0 0 10px rgba(251,191,36,0.4)'}}>試合終了</span>
                             </div>
                             {/* WIN/LOSE + スコア */}
                             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 14px',background:'#525252'}}>
