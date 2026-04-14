@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -3738,7 +3739,7 @@
                             </div>
                         </div>
                         {/* YOU側（ポイント獲得時に明るい青ハイライト） */}
-                        <div style={{width:'86px',flexShrink:0,background: youGotPoints ? '#1e5fa0' : '#505050',borderLeft:'1px solid #686868',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-start',justifyContent:'center',gap:'1px'}}>
+                        <div style={{width:'86px',flexShrink:0,background: youGotPoints ? '#6ea2eb' : '#505050',borderLeft:'1px solid #686868',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-start',justifyContent:'center',gap:'1px'}}>
                             <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap'}}>
                                 {h.myGear > 0 && <span style={{background:'#2563eb',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.myGear}</span>}
                                 {/* +0★は非表示 */}
@@ -3751,7 +3752,7 @@
                             <span style={{fontSize:'10px',fontWeight:900,color:resultColor}}>{h.result === 'win' ? 'W' : h.result === 'lose' ? 'L' : 'D'}</span>
                         </div>
                         {/* OPP側（ポイント獲得時に明るい赤ハイライト） */}
-                        <div style={{width:'86px',flexShrink:0,background: oppGotPoints ? '#8b2020' : '#505050',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:'1px'}}>
+                        <div style={{width:'86px',flexShrink:0,background: oppGotPoints ? '#db6767' : '#505050',padding:'3px 6px',display:'flex',flexDirection:'column',alignItems:'flex-end',justifyContent:'center',gap:'1px'}}>
                             <div style={{display:'flex',alignItems:'center',gap:'3px',flexWrap:'wrap',justifyContent:'flex-end'}}>
                                 {/* +0★は非表示 */}
                                 {h.oppAdd > 0 && <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.oppAdd}★</span>}
@@ -3784,8 +3785,10 @@
                     {/* 補足テキスト（要注意リスト・ランダム選曲と同スタイル） */}
                     <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-3 text-white">
                         <div className="text-[12px] font-black leading-relaxed space-y-1">
-                            <p>セトリを使ってメガミックスバトルをシミュレートできます。</p>
-                            <p>12ターンの勝敗と★獲得数をリアルタイムで記録し、試合結果を確認できます。</p>
+                            <p>作成したセトリを使用してメガミックスバトルの試合をシミュレートします。</p>
+                            <p>試合展開の分析や、試合後の復習に利用できます。</p>
+                            <p></p>
+                            <p>※ゲージの溜まり具合は計算できないため、自分で選択する必要があります。</p>
                         </div>
                     </div>
                     {setlists.length === 0 ? (
@@ -3806,8 +3809,8 @@
             if (phase === "setup") {
                 const introOutroLabel = side === "先攻" ? "アウトロ曲の想定" : "イントロ曲の想定";
                 const introOutroDesc = side === "先攻"
-                    ? "ターン12：相手があなたのセトリからアウトロに選んだと仮定する曲はどれですか？"
-                    : "ターン1：相手があなたのセトリからイントロに選んだと仮定する曲はどれですか？";
+                    ? "ターン12：対戦相手が選んだと想定して、アウトロ曲を選択してください。"
+                    : "ターン1：対戦相手が選んだと想定して、イントロ曲を選択してください。";
                 const canStart = selectedSetlistId && introOutroSongId;
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
