@@ -887,7 +887,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-04-06";
+        const MASTER_DATA_UPDATED_AT = "2026-04-13";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -923,6 +923,28 @@
                 case "ULT": return "#ffff00"; 
                 default: return "#000000";
             }
+        };
+
+        // 難易度バッジ（背景色付き）：文字色は常に白（ULTのみ黒）
+        const DiffBadge = ({ diff, className = "" }) => {
+            if (!diff) return null;
+            const d = String(diff).toUpperCase();
+            const bgMap = {
+                MXM: "#555555", EXH: "#ef4444", GRV: "#d97706",
+                HVN: "#0891b2", INF: "#f472b6", VVD: "#cc00cc",
+                XCD: "#2563eb", ULT: "#d4a000",
+            };
+            const bg = bgMap[d] || "#555555";
+            const textColor = d === "ULT" ? "#000" : "#fff";
+            return (
+                <span className={className} style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    background: bg, color: textColor,
+                    fontSize: "8px", fontWeight: 900, padding: "1px 5px",
+                    borderRadius: "4px", textTransform: "uppercase", letterSpacing: "0.03em",
+                    lineHeight: 1.4, whiteSpace: "nowrap",
+                }}>{diff}</span>
+            );
         };
 
         // 外部サイト確認用モーダル（主に動画用）
@@ -2792,7 +2814,7 @@
                                         <i className="ph-bold ph-trophy text-base"></i> チェイン数ランキング
                                     </button>
                                     <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-warning-octagon text-base"></i> 要注意曲リスト
+                                        <i className="ph-bold ph-warning-octagon text-base"></i> 要注意楽曲リスト
                                     </button>
                                     {user && !user.isAnonymous && (
                                         <button onClick={() => setCurrentPage("simulation")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "simulation" ? 'active' : ''}`}>
@@ -3359,8 +3381,8 @@
                                                     <div className={`rank-number ${isTopThree ? `rank-${currentRank}` : ''}`}>#{currentRank}</div>
                                                     <div className="flex-grow min-w-0 px-2">
                                                         <p className="text-sm font-black leading-tight break-words">{song.title}</p>
-                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5">
-                                                            Lv {formatLevel(song.level)} <span style={{ color: getBorderColor(song.difficult) }}>{song.difficult}</span>
+                                                        <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5 flex items-center gap-1">
+                                                            Lv {formatLevel(song.level)} <DiffBadge diff={song.difficult} />
                                                         </p>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
@@ -3729,11 +3751,11 @@
                                 <div style={{display:'flex',gap:'4px',alignItems:'center'}}>
                                     {h.songDifficult ? (
                                         <>
-                                            <span style={{fontSize:'8px',fontWeight:900,color:getDiffColor(h.songDifficult),textTransform:'uppercase',background: String(h.songDifficult).toUpperCase() === 'MXM' ? '#666' : 'transparent',padding: String(h.songDifficult).toUpperCase() === 'MXM' ? '0 3px' : '0',borderRadius:'2px'}}>{h.songDifficult}</span>
-                                            {h.songLevel && <span style={{fontSize:'8px',color:'#cccccc',fontWeight:700}}>{formatLevel(h.songLevel)}</span>}
+                                            <DiffBadge diff={h.songDifficult} />
+                                            {h.songLevel && <span style={{fontSize:"8px",color:"#cccccc",fontWeight:700}}>{formatLevel(h.songLevel)}</span>}
                                         </>
                                     ) : (
-                                        <span style={{fontSize:'8px',color:'#999'}}>-</span>
+                                        <span style={{fontSize:"8px",color:"#999"}}>-</span>
                                     )}
                                 </div>
                             </div>
