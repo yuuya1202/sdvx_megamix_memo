@@ -1449,7 +1449,8 @@
                             </div>
                             <div className="flex-grow min-w-0">
                                 <h3 className={`${minimalMode ? 'text-sm' : 'text-base'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
-                                <div className={`flex flex-nowrap items-center ${minimalMode ? 'gap-x-3' : 'gap-x-3'} gap-y-0.5 whitespace-nowrap`}>
+                                <div className={`flex flex-nowrap items-center ${minimalMode ? 'gap-x-2' : 'gap-x-2'} gap-y-0.5 whitespace-nowrap`}>
+                                    <DiffBadge diff={song.difficult} />
                                     <div className="flex items-baseline gap-1 font-black text-black leading-none">
                                         <span className={`${minimalMode ? 'text-[8px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
                                         <span className={`${minimalMode ? 'text-base' : 'text-lg'} tracking-tight leading-none`}>{displayLevel}</span>
@@ -1857,7 +1858,6 @@
                                                                     <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                                     <div className="text-[10px] font-black uppercase flex items-center gap-2">
                                                                         <DiffBadge diff={song.difficult} /><span className="text-black">Lv {formatLevel(song.level)}</span>
-                                                                        <span className="text-black">{song.combo}CHAIN</span>
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex flex-col gap-1 flex-shrink-0">
@@ -1969,7 +1969,6 @@
                                                 <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
                                                 <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
                                                     <DiffBadge diff={song.difficult} /><span className="text-black">Lv {formatLevel(song.level)}</span>
-                                                    <span className="text-black">{song.combo}CHAIN</span>
                                                 </div>
                                             </div>
                                             <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
@@ -2069,8 +2068,7 @@
                                                     <div className="flex-grow min-w-0 text-left">
                                                         <div className="text-sm font-black text-black break-words leading-tight">{s.title}</div>
                                                         <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
-                                                            <span className="text-black">Lv {formatLevel(s.level)}</span>
-                                                            <span className="text-black">{s.combo}CHAIN</span>
+                                                            <DiffBadge diff={s.difficult} /><span className="text-black">Lv {formatLevel(s.level)}</span>
                                                         </div>
                                                     </div>
                                                     {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
