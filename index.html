@@ -3590,6 +3590,7 @@
             const [oppGear, setOppGear] = useState(0);
             const [result, setResult] = useState("");
             const [validationMsg, setValidationMsg] = useState("");
+            const [resultTab, setResultTab] = useState("match");
 
             const selectedSetlist = setlists.find(s => s.id === selectedSetlistId);
             const setlistSongs = selectedSetlist
@@ -4071,13 +4072,8 @@
                 );
             }
 
-            // ===== RESULT =====
-            if (phase === "result") {
-                const win = myStars > opponentStars;
-                const lose = myStars < opponentStars;
-
-                // ポイント推移グラフ（SVGで描画）
-                const PointGraph = () => {
+            // ポイント推移グラフ（SVGで描画）※if文の外に定義
+            const PointGraph = () => {
                     const W = 320, H = 200;
                     const PAD = { top: 16, right: 16, bottom: 56, left: 32 };
                     const innerW = W - PAD.left - PAD.right;
@@ -4180,7 +4176,10 @@
                     );
                 };
 
-                const [resultTab, setResultTab] = React.useState("match");
+            // ===== RESULT =====
+            if (phase === "result") {
+                const win = myStars > opponentStars;
+                const lose = myStars < opponentStars;
 
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
