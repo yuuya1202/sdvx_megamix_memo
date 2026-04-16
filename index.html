@@ -3380,7 +3380,7 @@
                                                     <div className="flex-grow min-w-0 px-2">
                                                         <p className="text-sm font-black leading-tight break-words">{song.title}</p>
                                                         <p className="text-[10px] font-bold text-black uppercase tracking-tighter mt-0.5 flex items-center gap-1">
-                                                            Lv {formatLevel(song.level)} <DiffBadge diff={song.difficult} />
+                                                            <DiffBadge diff={song.difficult} /> Lv {formatLevel(song.level)}
                                                         </p>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
@@ -4075,15 +4075,120 @@
             if (phase === "result") {
                 const win = myStars > opponentStars;
                 const lose = myStars < opponentStars;
+
+                // ポイント推移グラフ（SVGで描画）
+                const PointGraph = () => {
+                    const W = 320, H = 200;
+                    const PAD = { top: 16, right: 16, bottom: 56, left: 32 };
+                    const innerW = W - PAD.left - PAD.right;
+                    const innerH = H - PAD.top - PAD.bottom;
+
+                    // ターン0（開始）を先頭に追加したデータ列
+                    const points = [{ turn: 0, myTotal: 0, oppTotal: 0, songJacket: null, songTitle: 'START' }, ...history];
+                    const n = points.length;
+                    const maxVal = Math.max(...points.map(p => Math.max(p.myTotal, p.oppTotal)), 1);
+                    const minVal = 0;
+
+                    const xScale = i => PAD.left + (i / (n - 1)) * innerW;
+                    const yScale = v => PAD.top + innerH - ((v - minVal) / (maxVal - minVal)) * innerH;
+
+                    const toPath = (getter) =>
+                        points.map((p, i) => `${i === 0 ? 'M' : 'L'}${xScale(i).toFixed(1)},${yScale(getter(p)).toFixed(1)}`).join(' ');
+
+                    const myPath = toPath(p => p.myTotal);
+                    const oppPath = toPath(p => p.oppTotal);
+
+                    // Y軸目盛（0〜maxを4分割）
+                    const yTicks = [0, 1, 2, 3, 4].map(i => Math.round((maxVal / 4) * i));
+
+                    return (
+                        <div style={{background:'#383838',borderRadius:'14px',padding:'12px 8px 8px 8px',marginBottom:'10px',border:'2px solid #555'}}>
+                            <div style={{fontSize:'10px',fontWeight:900,color:'#fbbf24',letterSpacing:'0.2em',textTransform:'uppercase',marginBottom:'8px',textAlign:'center'}}>POINT GRAPH</div>
+                            <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{display:'block',overflow:'visible'}}>
+                                {/* グリッド横線 */}
+                                {yTicks.map(v => (
+                                    <line key={v}
+                                        x1={PAD.left} y1={yScale(v)}
+                                        x2={W - PAD.right} y2={yScale(v)}
+                                        stroke="#555" strokeWidth="1" strokeDasharray="3,3"
+                                    />
+                                ))}
+                                {/* Y軸ラベル */}
+                                {yTicks.map(v => (
+                                    <text key={v} x={PAD.left - 4} y={yScale(v) + 4}
+                                        textAnchor="end" fontSize="8" fontWeight="900" fill="#888">
+                                        {v}
+                                    </text>
+                                ))}
+
+                                {/* OPP折れ線 */}
+                                <path d={oppPath} fill="none" stroke="#f87171" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                                {/* YOU折れ線 */}
+                                <path d={myPath} fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+
+                                {/* OPP点 */}
+                                {points.map((p, i) => (
+                                    <circle key={`opp-${i}`} cx={xScale(i)} cy={yScale(p.oppTotal)} r="3.5" fill="#f87171" stroke="#222" strokeWidth="1" />
+                                ))}
+                                {/* YOU点 */}
+                                {points.map((p, i) => (
+                                    <circle key={`my-${i}`} cx={xScale(i)} cy={yScale(p.myTotal)} r="3.5" fill="#38bdf8" stroke="#222" strokeWidth="1" />
+                                ))}
+
+                                {/* X軸：ジャケットまたはSTART/番号 */}
+                                {points.map((p, i) => {
+                                    const cx = xScale(i);
+                                    const cy = H - PAD.bottom + 8;
+                                    if (i === 0) {
+                                        return (
+                                            <text key={`xl-${i}`} x={cx} y={cy + 10} textAnchor="middle" fontSize="7" fontWeight="900" fill="#888">START</text>
+                                        );
+                                    }
+                                    return (
+                                        <g key={`xl-${i}`}>
+                                            {p.songJacket ? (
+                                                <image href={p.songJacket} x={cx - 10} y={cy} width="20" height="20"
+                                                    clipPath={`url(#clip-${i})`}
+                                                    crossOrigin="anonymous"
+                                                    preserveAspectRatio="xMidYMid slice"
+                                                />
+                                            ) : (
+                                                <rect x={cx - 10} y={cy} width="20" height="20" rx="3" fill="#555" />
+                                            )}
+                                            <defs>
+                                                <clipPath id={`clip-${i}`}>
+                                                    <rect x={cx - 10} y={cy} width="20" height="20" rx="3" />
+                                                </clipPath>
+                                            </defs>
+                                            <text x={cx} y={cy + 28} textAnchor="middle" fontSize="7" fontWeight="900" fill="#888">T{p.turn}</text>
+                                        </g>
+                                    );
+                                })}
+                            </svg>
+                            {/* 凡例 */}
+                            <div style={{display:'flex',justifyContent:'center',gap:'16px',marginTop:'4px'}}>
+                                <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
+                                    <div style={{width:'16px',height:'3px',background:'#38bdf8',borderRadius:'2px'}}></div>
+                                    <span style={{fontSize:'9px',fontWeight:900,color:'#38bdf8'}}>YOU ({side})</span>
+                                </div>
+                                <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
+                                    <div style={{width:'16px',height:'3px',background:'#f87171',borderRadius:'2px'}}></div>
+                                    <span style={{fontSize:'9px',fontWeight:900,color:'#f87171'}}>OPP</span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                };
+
+                const [resultTab, setResultTab] = React.useState("match");
+
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                        {/* リザルトカード（薄めグレー×青×赤） */}
-                        <div style={{background:'#484848',border:'4px solid #606060',borderRadius:'20px',overflow:'hidden',marginBottom:'12px',boxShadow:'8px 8px 0px #000'}}>
-                            {/* バナー */}
+                        {/* WIN/LOSE ヘッダー（常時表示） */}
+                        <div style={{background:'#484848',border:'4px solid #606060',borderRadius:'20px',overflow:'hidden',marginBottom:'10px',boxShadow:'8px 8px 0px #000'}}>
                             <div style={{background:'linear-gradient(90deg,#585858,#707070)',textAlign:'center',padding:'10px 0',borderBottom:'2px solid #686868'}}>
                                 <span style={{fontSize:'13px',fontWeight:900,letterSpacing:'0.35em',color:'#fbbf24',textTransform:'uppercase',textShadow:'0 0 10px rgba(251,191,36,0.4)'}}>試合終了</span>
                             </div>
-                            {/* WIN/LOSE + スコア */}
                             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 14px',background:'#525252'}}>
                                 <div style={{flex:1}}>
                                     <div style={{fontSize:'26px',fontWeight:900,fontStyle:'italic',color: win ? '#38bdf8' : lose ? '#f87171' : '#aaaaaa',textShadow: win ? '0 0 14px rgba(56,189,248,0.7)' : lose ? '0 0 14px rgba(248,113,113,0.7)' : 'none'}}>
@@ -4107,19 +4212,43 @@
                                     <div style={{fontSize:'9px',fontWeight:900,color:'#bbbbbb',marginTop:'3px',textAlign:'right'}}>OPP</div>
                                 </div>
                             </div>
-                            {/* 全ターン履歴 */}
-                            <div style={{padding:'8px 10px 12px 10px',background:'#484848'}}>
-                                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0 8px 0',borderBottom:'1px solid #606060',marginBottom:'6px'}}>
-                                    <span style={{fontSize:'9px',fontWeight:900,color:'#bbbbbb',textTransform:'uppercase',letterSpacing:'0.1em'}}># / SONG</span>
-                                    <div style={{display:'flex',gap:'4px',fontSize:'9px',fontWeight:900}}>
-                                        <span style={{color:'#38bdf8',width:'86px',textAlign:'center'}}>YOU</span>
-                                        <span style={{color:'#888888',width:'26px',textAlign:'center'}}>-</span>
-                                        <span style={{color:'#f87171',width:'86px',textAlign:'center'}}>OPP</span>
-                                    </div>
-                                </div>
-                                {history.map((h, i) => <ResultRow key={i} h={h} />)}
-                            </div>
                         </div>
+
+                        {/* タブトグル */}
+                        <div style={{display:'flex',background:'#2d2d2d',padding:'4px',borderRadius:'14px',border:'2px solid #000',gap:'4px',marginBottom:'10px'}}>
+                            <button
+                                onClick={() => setResultTab("match")}
+                                style={{flex:1,padding:'8px 4px',borderRadius:'10px',fontSize:'11px',fontWeight:900,transition:'all 0.2s',background: resultTab === 'match' ? 'white' : 'transparent',color: resultTab === 'match' ? '#1b4332' : 'white',boxShadow: resultTab === 'match' ? '2px 2px 0px #000' : 'none',display:'flex',alignItems:'center',justifyContent:'center',gap:'4px'}}
+                            >
+                                <i className="ph-bold ph-list-numbers"></i> 試合結果
+                            </button>
+                            <button
+                                onClick={() => setResultTab("graph")}
+                                style={{flex:1,padding:'8px 4px',borderRadius:'10px',fontSize:'11px',fontWeight:900,transition:'all 0.2s',background: resultTab === 'graph' ? 'white' : 'transparent',color: resultTab === 'graph' ? '#1b4332' : 'white',boxShadow: resultTab === 'graph' ? '2px 2px 0px #000' : 'none',display:'flex',alignItems:'center',justifyContent:'center',gap:'4px'}}
+                            >
+                                <i className="ph-bold ph-trend-up"></i> ポイント推移
+                            </button>
+                        </div>
+
+                        {/* 試合結果タブ */}
+                        {resultTab === "match" && (
+                            <div style={{background:'#484848',border:'2px solid #606060',borderRadius:'16px',overflow:'hidden',marginBottom:'10px'}}>
+                                <div style={{padding:'8px 10px 12px 10px',background:'#484848'}}>
+                                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 0 8px 0',borderBottom:'1px solid #606060',marginBottom:'6px'}}>
+                                        <span style={{fontSize:'9px',fontWeight:900,color:'#bbbbbb',textTransform:'uppercase',letterSpacing:'0.1em'}}># / SONG</span>
+                                        <div style={{display:'flex',gap:'4px',fontSize:'9px',fontWeight:900}}>
+                                            <span style={{color:'#38bdf8',width:'86px',textAlign:'center'}}>YOU</span>
+                                            <span style={{color:'#888888',width:'26px',textAlign:'center'}}>-</span>
+                                            <span style={{color:'#f87171',width:'86px',textAlign:'center'}}>OPP</span>
+                                        </div>
+                                    </div>
+                                    {history.map((h, i) => <ResultRow key={i} h={h} />)}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ポイント推移タブ */}
+                        {resultTab === "graph" && <PointGraph />}
 
                         {/* ボタン群 */}
                         <div className="flex gap-2">
@@ -4127,7 +4256,6 @@
                                 <i className="ph-bold ph-arrow-counter-clockwise"></i> 戻る
                             </button>
                             <button onClick={() => {
-                                // 【修正】もう一度：セトリ・先攻後攻はそのまま、1ターン目からやり直す
                                 setTurn(1); setMyStars(0); setOpponentStars(0);
                                 setUsedMySongIds([]); setHistory([]);
                                 setCurrentSongId(""); setMyGear(0); setOppGear(0); setResult(""); setValidationMsg("");
