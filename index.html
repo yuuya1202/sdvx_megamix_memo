@@ -1079,6 +1079,28 @@
                                 </div>
 
                                 <div className="space-y-6">
+                                    {song.category && (
+                                        (() => {
+                                            const CATEGORY_LABELS = {
+                                                "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
+                                                "4": "片手トリルFX", "5": "縦トリル", "6": "片手3鍵",
+                                                "7": "ハントリ", "8": "つまみ", "9": "壁",
+                                                "10": "二重鍵盤", "11": "回転", "12": "６鍵階段",
+                                                "13": "ロング", "14": "リズム難", "15": "女神特有"
+                                            };
+                                            const tags = String(song.category).split(",").map(s => s.trim()).filter(s => CATEGORY_LABELS[s]);
+                                            if (tags.length === 0) return null;
+                                            return (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {tags.map(code => (
+                                                        <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
+                                                            {CATEGORY_LABELS[code]}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()
+                                    )}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="section-label">第1区間</span>
@@ -1128,29 +1150,6 @@
                                             <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
                                         )}
                                     </div>
-                                    
-                                    {song.category && (
-                                        (() => {
-                                            const CATEGORY_LABELS = {
-                                                "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
-                                                "4": "片手トリルFX", "5": "縦トリル", "6": "片手3鍵",
-                                                "7": "ハントリ", "8": "つまみ", "9": "壁",
-                                                "10": "二重鍵盤", "11": "回転", "12": "６鍵階段",
-                                                "13": "ロング", "14": "リズム難", "15": "女神特有"
-                                            };
-                                            const tags = String(song.category).split(",").map(s => s.trim()).filter(s => CATEGORY_LABELS[s]);
-                                            if (tags.length === 0) return null;
-                                            return (
-                                                <div className="flex flex-wrap gap-1">
-                                                    {tags.map(code => (
-                                                        <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
-                                                            {CATEGORY_LABELS[code]}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            );
-                                        })()
-                                    )}
 
                                     {showMemo && song.memo && (
                                         <div className="bg-green-50 p-4 rounded-xl border-2 border-black">
