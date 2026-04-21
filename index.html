@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -887,7 +888,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-04-13";
+        const MASTER_DATA_UPDATED_AT = "2026-04-20";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -1370,7 +1371,7 @@
 
             const renderDangerBadges = () => {
                 if (!showDangerBadge) return null;
-                const d = String(song.danger1);
+                const d = String(song.danger);
                 const badges = [];
                 if (d === "1" || d === "3") {
                     badges.push(<div key="d1" className="danger-badge danger-badge-1">要予習</div>);
@@ -1494,22 +1495,22 @@
                         </div>
                         {!minimalMode && (
                             <div className={`memo-area ${isOpen ? 'open' : ''}`}>
-                                {showTips && song.danger2 && (
+                                {showTips && song.category && (
                                     (() => {
-                                        const DANGER2_LABELS = {
+                                        const CATEGORY_LABELS = {
                                             "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
                                             "4": "片手トリルFX", "5": "縦トリル", "6": "片手3鍵",
                                             "7": "ハントリ", "8": "つまみ", "9": "壁",
                                             "10": "二重鍵盤", "11": "回転", "12": "６鍵階段",
                                             "13": "ロング", "14": "リズム難", "15": "女神特有"
                                         };
-                                        const tags = String(song.danger2).split(",").map(s => s.trim()).filter(s => DANGER2_LABELS[s]);
+                                        const tags = String(song.category).split(",").map(s => s.trim()).filter(s => CATEGORY_LABELS[s]);
                                         if (tags.length === 0) return null;
                                         return (
                                             <div className="flex flex-wrap gap-1 mb-3">
                                                 {tags.map(code => (
                                                     <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
-                                                        {DANGER2_LABELS[code]}
+                                                        {CATEGORY_LABELS[code]}
                                                     </span>
                                                 ))}
                                             </div>
@@ -2644,7 +2645,7 @@
 
                 if (currentPage === "danger") {
                     baseList = processedSongs.filter(s => {
-                        const d = String(s.danger1);
+                        const d = String(s.danger);
                         if (dangerFilter === "yosyu") return d === "1" || d === "3";
                         if (dangerFilter === "high")  return d === "2" || d === "3";
                         return ["1", "2", "3"].includes(d);
@@ -3464,7 +3465,7 @@
                                                     song={song} 
                                                     viewMode={currentPage === 'main' ? viewMode : 'list'}
                                                     showDangerBadge={currentPage === "danger"} 
-                                                    showTips={currentPage === "danger"} 
+                                                    showTips={currentPage === "danger" || currentPage === "main"} 
                                                     isLoggedIn={currentPage !== "danger" && (user && !user.isAnonymous)}
                                                     isFavorite={favorites.includes(songId)}
                                                     onToggleFavorite={() => toggleFavorite(songId)}
