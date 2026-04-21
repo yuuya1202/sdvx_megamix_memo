@@ -888,7 +888,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-04-20";
+        const MASTER_DATA_UPDATED_AT = "2026-04-13";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -1020,7 +1020,7 @@
         };
 
         // 楽曲詳細モーダル（グリッドモード用）
-        const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel }) => {
+        const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel, showMemo }) => {
             const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
 
@@ -1129,7 +1129,30 @@
                                         )}
                                     </div>
                                     
-                                    {song.memo && (
+                                    {song.category && (
+                                        (() => {
+                                            const CATEGORY_LABELS = {
+                                                "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
+                                                "4": "片手トリルFX", "5": "縦トリル", "6": "片手3鍵",
+                                                "7": "ハントリ", "8": "つまみ", "9": "壁",
+                                                "10": "二重鍵盤", "11": "回転", "12": "６鍵階段",
+                                                "13": "ロング", "14": "リズム難", "15": "女神特有"
+                                            };
+                                            const tags = String(song.category).split(",").map(s => s.trim()).filter(s => CATEGORY_LABELS[s]);
+                                            if (tags.length === 0) return null;
+                                            return (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {tags.map(code => (
+                                                        <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
+                                                            {CATEGORY_LABELS[code]}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()
+                                    )}
+
+                                    {showMemo && song.memo && (
                                         <div className="bg-green-50 p-4 rounded-xl border-2 border-black">
                                             <p className="text-[10px] font-black uppercase mb-1">運営コメント</p>
                                             <p className="text-sm font-bold whitespace-pre-wrap">{song.memo}</p>
@@ -1337,7 +1360,7 @@
             );
         };
 
-        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
+        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, showMemo, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
@@ -1598,7 +1621,7 @@
                                     )}
                                 </div>
 
-                                {showTips && song.memo && (
+                                {showMemo && song.memo && (
                                     <>
                                         <div className="flex items-center gap-1.5 mb-2 font-black text-[13px] uppercase tracking-wider text-black">
                                             <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i>
@@ -3466,6 +3489,7 @@
                                                     viewMode={currentPage === 'main' ? viewMode : 'list'}
                                                     showDangerBadge={currentPage === "danger"} 
                                                     showTips={currentPage === "danger" || currentPage === "main"} 
+                                                    showMemo={currentPage === "danger"}
                                                     isLoggedIn={currentPage !== "danger" && (user && !user.isAnonymous)}
                                                     isFavorite={favorites.includes(songId)}
                                                     onToggleFavorite={() => toggleFavorite(songId)}
@@ -3535,6 +3559,7 @@
                             personalMemo={personalMemos[getSongId(selectedGridSong)]}
                             onSavePersonalMemo={(memo) => savePersonalMemo(getSongId(selectedGridSong), memo)}
                             onCancel={() => setSelectedGridSong(null)}
+                            showMemo={false}
                         />
                     )}
 
