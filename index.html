@@ -1023,8 +1023,15 @@
         const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel, showMemo }) => {
             const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
+            const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
 
             if (!isOpen || !song) return null;
+
+            const getYoutubeEmbedUrl = (url) => {
+                if (!url) return '';
+                const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?/]+)/);
+                return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=1` : url;
+            };
 
             const handleChartClick = (e, url) => {
                 e.stopPropagation();
@@ -1033,12 +1040,7 @@
 
             const handleVideoClick = (e, url) => {
                 e.stopPropagation();
-                setConfirmModal({ isOpen: true, url, type: 'video' });
-            };
-
-            const confirmVideoNavigation = () => {
-                window.open(confirmModal.url, '_blank', 'noopener,noreferrer');
-                setConfirmModal({ ...confirmModal, isOpen: false });
+                setVideoModal({ isOpen: true, url });
             };
 
             return (
@@ -1177,10 +1179,31 @@
 
                     <LinkConfirmModal 
                         isOpen={confirmModal.isOpen}
-                        onConfirm={confirmVideoNavigation}
+                        onConfirm={() => { window.open(confirmModal.url, '_blank'); setConfirmModal({ ...confirmModal, isOpen: false }); }}
                         onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
                         type={confirmModal.type}
                     />
+
+                    {videoModal.isOpen && (
+                        <div className="modal-overlay" onClick={() => setVideoModal({ isOpen: false, url: '' })}>
+                            <div className="modal-content !p-3 !max-w-[400px]" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-black">動画で確認</span>
+                                    <button onClick={() => setVideoModal({ isOpen: false, url: '' })} className="text-gray-400 hover:text-black">
+                                        <i className="ph-bold ph-x text-xl"></i>
+                                    </button>
+                                </div>
+                                <div className="relative w-full" style={{paddingTop: '56.25%'}}>
+                                    <iframe
+                                        src={getYoutubeEmbedUrl(videoModal.url)}
+                                        className="absolute inset-0 w-full h-full rounded-xl border-4 border-black"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <ChartPreviewModal 
                         isOpen={chartModal.isOpen}
@@ -1363,6 +1386,7 @@
             const [isOpen, setIsOpen] = useState(false);
             const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
+            const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
             
             useEffect(() => {
@@ -1372,6 +1396,12 @@
             const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
             const borderColor = useMemo(() => getBorderColor(song.difficult) || "#000000", [song.difficult]);
 
+            const getYoutubeEmbedUrl = (url) => {
+                if (!url) return '';
+                const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?/]+)/);
+                return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=1` : url;
+            };
+
             // 画像で確認（譜面）クリック時：サイト内プレビューを開く
             const handleChartClick = (e, url) => {
                 e.stopPropagation();
@@ -1379,16 +1409,11 @@
                 setChartModal({ isOpen: true, url });
             };
 
-            // 動画で確認クリック時：外部移動の確認モーダルを出す
+            // 動画で確認クリック時：アプリ内iframeで再生
             const handleVideoClick = (e, url) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setConfirmModal({ isOpen: true, url, type: 'video' });
-            };
-
-            const confirmVideoNavigation = () => {
-                window.open(confirmModal.url, '_blank', 'noopener,noreferrer');
-                setConfirmModal({ ...confirmModal, isOpen: false });
+                setVideoModal({ isOpen: true, url });
             };
 
             const renderDangerBadges = () => {
@@ -1658,10 +1683,31 @@
 
                     <LinkConfirmModal 
                         isOpen={confirmModal.isOpen}
-                        onConfirm={confirmVideoNavigation}
+                        onConfirm={() => { window.open(confirmModal.url, '_blank'); setConfirmModal({ ...confirmModal, isOpen: false }); }}
                         onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
                         type={confirmModal.type}
                     />
+
+                    {videoModal.isOpen && (
+                        <div className="modal-overlay" onClick={() => setVideoModal({ isOpen: false, url: '' })}>
+                            <div className="modal-content !p-3 !max-w-[400px]" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-black">動画で確認</span>
+                                    <button onClick={() => setVideoModal({ isOpen: false, url: '' })} className="text-gray-400 hover:text-black">
+                                        <i className="ph-bold ph-x text-xl"></i>
+                                    </button>
+                                </div>
+                                <div className="relative w-full" style={{paddingTop: '56.25%'}}>
+                                    <iframe
+                                        src={getYoutubeEmbedUrl(videoModal.url)}
+                                        className="absolute inset-0 w-full h-full rounded-xl border-4 border-black"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <ChartPreviewModal 
                         isOpen={chartModal.isOpen}
