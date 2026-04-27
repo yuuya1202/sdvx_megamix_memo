@@ -888,7 +888,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-04-25";
+        const MASTER_DATA_UPDATED_AT = "2026-04-13";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -924,6 +924,20 @@
                 case "ULT": return "#ffff00"; 
                 default: return "#000000";
             }
+        };
+
+        const CATEGORY_LABELS = {
+            "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
+            "4": "片手トリルFX", "5": "縦トリル", "6": "片手3鍵",
+            "7": "ハントリ", "8": "つまみ", "9": "壁",
+            "10": "二重鍵盤", "11": "回転", "12": "６鍵階段",
+            "13": "ロング", "14": "リズム難", "15": "女神特有"
+        };
+
+        const getYoutubeEmbedUrl = (url) => {
+            if (!url) return '';
+            const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?/]+)/);
+            return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=1` : url;
         };
 
         // 難易度バッジ（背景色付き）：文字色は常に白（ULTのみ黒）
@@ -1021,17 +1035,10 @@
 
         // 楽曲詳細モーダル（グリッドモード用）
         const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel, showMemo }) => {
-            const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
             const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
 
             if (!isOpen || !song) return null;
-
-            const getYoutubeEmbedUrl = (url) => {
-                if (!url) return '';
-                const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?/]+)/);
-                return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=1` : url;
-            };
 
             const handleChartClick = (e, url) => {
                 e.stopPropagation();
@@ -1081,28 +1088,19 @@
                                 </div>
 
                                 <div className="space-y-6">
-                                    {song.category && (
-                                        (() => {
-                                            const CATEGORY_LABELS = {
-                                                "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
-                                                "4": "片手トリルFX", "5": "縦トリル", "6": "片手3鍵",
-                                                "7": "ハントリ", "8": "つまみ", "9": "壁",
-                                                "10": "二重鍵盤", "11": "回転", "12": "６鍵階段",
-                                                "13": "ロング", "14": "リズム難", "15": "女神特有"
-                                            };
-                                            const tags = String(song.category).split(",").map(s => s.trim()).filter(s => CATEGORY_LABELS[s]);
-                                            if (tags.length === 0) return null;
-                                            return (
-                                                <div className="flex flex-wrap gap-1">
-                                                    {tags.map(code => (
-                                                        <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
-                                                            {CATEGORY_LABELS[code]}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            );
-                                        })()
-                                    )}
+                                    {song.category && (() => {
+                                        const tags = String(song.category).split(",").map(s => s.trim()).filter(s => CATEGORY_LABELS[s]);
+                                        if (tags.length === 0) return null;
+                                        return (
+                                            <div className="flex flex-wrap gap-1">
+                                                {tags.map(code => (
+                                                    <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
+                                                        {CATEGORY_LABELS[code]}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        );
+                                    })()}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="section-label">第1区間</span>
@@ -1177,13 +1175,6 @@
                         </div>
                     </div>
 
-                    <LinkConfirmModal 
-                        isOpen={confirmModal.isOpen}
-                        onConfirm={() => { window.open(confirmModal.url, '_blank'); setConfirmModal({ ...confirmModal, isOpen: false }); }}
-                        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-                        type={confirmModal.type}
-                    />
-
                     {videoModal.isOpen && (
                         <div className="modal-overlay" onClick={() => setVideoModal({ isOpen: false, url: '' })}>
                             <div className="modal-content !p-3 !max-w-[400px]" onClick={e => e.stopPropagation()}>
@@ -1193,7 +1184,7 @@
                                         <i className="ph-bold ph-x text-xl"></i>
                                     </button>
                                 </div>
-                                <div className="relative w-full" style={{paddingTop: '56.25%'}}>
+                                <div className="relative w-full" style={{paddingTop: videoModal.url.includes('youtube.com/shorts/') ? '177.78%' : '56.25%'}}>
                                     <iframe
                                         src={getYoutubeEmbedUrl(videoModal.url)}
                                         className="absolute inset-0 w-full h-full rounded-xl border-4 border-black"
@@ -1384,7 +1375,6 @@
 
         const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, showMemo, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
             const [isOpen, setIsOpen] = useState(false);
-            const [confirmModal, setConfirmModal] = useState({ isOpen: false, url: '', type: '' });
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
             const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
@@ -1395,12 +1385,6 @@
 
             const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
             const borderColor = useMemo(() => getBorderColor(song.difficult) || "#000000", [song.difficult]);
-
-            const getYoutubeEmbedUrl = (url) => {
-                if (!url) return '';
-                const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&?/]+)/);
-                return m ? `https://www.youtube.com/embed/${m[1]}?autoplay=1` : url;
-            };
 
             // 画像で確認（譜面）クリック時：サイト内プレビューを開く
             const handleChartClick = (e, url) => {
@@ -1544,13 +1528,6 @@
                             <div className={`memo-area ${isOpen ? 'open' : ''}`}>
                                 {showTips && song.category && (
                                     (() => {
-                                        const CATEGORY_LABELS = {
-                                            "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
-                                            "4": "片手トリルFX", "5": "縦トリル", "6": "片手3鍵",
-                                            "7": "ハントリ", "8": "つまみ", "9": "壁",
-                                            "10": "二重鍵盤", "11": "回転", "12": "６鍵階段",
-                                            "13": "ロング", "14": "リズム難", "15": "女神特有"
-                                        };
                                         const tags = String(song.category).split(",").map(s => s.trim()).filter(s => CATEGORY_LABELS[s]);
                                         if (tags.length === 0) return null;
                                         return (
@@ -1681,13 +1658,6 @@
                         )}
                     </div>
 
-                    <LinkConfirmModal 
-                        isOpen={confirmModal.isOpen}
-                        onConfirm={() => { window.open(confirmModal.url, '_blank'); setConfirmModal({ ...confirmModal, isOpen: false }); }}
-                        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-                        type={confirmModal.type}
-                    />
-
                     {videoModal.isOpen && (
                         <div className="modal-overlay" onClick={() => setVideoModal({ isOpen: false, url: '' })}>
                             <div className="modal-content !p-3 !max-w-[400px]" onClick={e => e.stopPropagation()}>
@@ -1697,7 +1667,7 @@
                                         <i className="ph-bold ph-x text-xl"></i>
                                     </button>
                                 </div>
-                                <div className="relative w-full" style={{paddingTop: '56.25%'}}>
+                                <div className="relative w-full" style={{paddingTop: videoModal.url.includes('youtube.com/shorts/') ? '177.78%' : '56.25%'}}>
                                     <iframe
                                         src={getYoutubeEmbedUrl(videoModal.url)}
                                         className="absolute inset-0 w-full h-full rounded-xl border-4 border-black"
