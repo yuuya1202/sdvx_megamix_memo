@@ -1403,34 +1403,23 @@
                                 <div className="space-y-2">
                                     <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">マイデータ</div>
                                     {(currentPage === "main" || currentPage === "random") && (
-                                        <div className="toggle-btn-group">
-                                            <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`}>すべて</button>
-                                            <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`}>
+                                        <div className="toggle-btn-group" style={{background:'#e5e7eb'}}>
+                                            <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`} style={{color: !showOnlyFavorites ? '#1b4332' : '#374151'}}>すべて</button>
+                                            <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`} style={{color: showOnlyFavorites ? '#1b4332' : '#374151'}}>
                                                 <i className="ph-fill ph-star"></i> お気に入りのみ
                                             </button>
                                         </div>
                                     )}
                                     {currentPage === "main" && (
-                                        <div className="toggle-btn-group">
-                                            <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`}>すべて</button>
-                                            <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`}>
+                                        <div className="toggle-btn-group" style={{background:'#e5e7eb'}}>
+                                            <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`} style={{color: !showOnlyMirrors ? '#1b4332' : '#374151'}}>すべて</button>
+                                            <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`} style={{color: showOnlyMirrors ? '#1b4332' : '#374151'}}>
                                                 <i className="ph-bold ph-arrows-left-right"></i> ミラーのみ
                                             </button>
                                         </div>
                                     )}
                                 </div>
                             )}
-                            {/* BPL課題曲 */}
-                            <div className="space-y-2">
-                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">BPL課題曲</div>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {[1,2,3,4,5,6,7].map(n => (
-                                        <button key={n} onClick={() => toggleBplSection(n)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedBplSections.includes(n) ? 'active' : ''}`}>
-                                            区分{n}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
                             {/* バージョン */}
                             <div className="space-y-2">
                                 <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">バージョン</div>
@@ -1453,7 +1442,18 @@
                             <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                            <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                            <div className="space-y-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                            {/* BPL課題曲 */}
+                            <div className="space-y-2 pb-2">
+                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">BPL課題曲</div>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[1,2,3,4,5,6,7].map(n => (
+                                        <button key={n} onClick={() => toggleBplSection(n)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedBplSections.includes(n) ? 'active' : ''}`}>
+                                            区分{n}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3065,7 +3065,7 @@
                                         <div
                                             className="view-mode-badge"
                                             onClick={() => setIsFilterModalOpen(true)}
-                                            style={isFilterActive ? { borderColor: '#52b788', boxShadow: '3px 3px 0px #52b788' } : {}}
+                                            style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
                                         >
                                             <i className="ph-bold ph-funnel text-sm"></i>
                                             絞り込み{isFilterActive ? '●' : ''}
@@ -3157,7 +3157,7 @@
                                             <div
                                                 className="view-mode-badge"
                                                 onClick={() => setIsFilterModalOpen(true)}
-                                                style={isFilterActive ? { borderColor: '#52b788', boxShadow: '3px 3px 0px #52b788' } : {}}
+                                                style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
                                             >
                                                 <i className="ph-bold ph-funnel text-sm"></i>
                                                 絞り込み{isFilterActive ? '●' : ''}
@@ -3195,7 +3195,7 @@
                                                 <div
                                                     className="view-mode-badge"
                                                     onClick={() => setIsFilterModalOpen(true)}
-                                                    style={isFilterActive ? { borderColor: '#52b788', boxShadow: '3px 3px 0px #52b788' } : {}}
+                                                    style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
                                                 >
                                                     <i className="ph-bold ph-funnel text-sm"></i>
                                                     絞り込み{isFilterActive ? '●' : ''}
@@ -3563,26 +3563,28 @@
                                                 ))}
                                             </div>
 
-                                            {/* レベルトグル＋表示形式 */}
-                                            <div className="flex items-center gap-2 mb-4">
-                                                <div className="toggle-btn-group flex-1">
-                                                    {[["all","すべて"],["17","17"],["18","18"]].map(([val, label]) => (
-                                                        <button
-                                                            key={val}
-                                                            onClick={() => setBplLevelFilter(val)}
-                                                            className={`toggle-btn-small ${bplLevelFilter === val ? 'active' : ''}`}
-                                                        >
-                                                            {label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                <button
+                                            {/* 表示形式ボタン */}
+                                            <div className="flex justify-end mb-2">
+                                                <div
+                                                    className="view-mode-badge"
                                                     onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
-                                                    className="nav-btn"
-                                                    title="表示形式切替"
                                                 >
-                                                    <i className={`ph-bold ${bplViewMode === "list" ? "ph-grid-four" : "ph-list"} text-base`}></i>
-                                                </button>
+                                                    <i className={`ph-bold ${bplViewMode === "list" ? "ph-squares-four" : "ph-list"} text-sm`}></i>
+                                                    表示形式
+                                                </div>
+                                            </div>
+
+                                            {/* レベルトグル */}
+                                            <div className="toggle-btn-group mb-4">
+                                                {[["all","すべて"],["17","17"],["18","18"]].map(([val, label]) => (
+                                                    <button
+                                                        key={val}
+                                                        onClick={() => setBplLevelFilter(val)}
+                                                        className={`toggle-btn-small ${bplLevelFilter === val ? 'active' : ''}`}
+                                                    >
+                                                        {label}
+                                                    </button>
+                                                ))}
                                             </div>
 
                                             {/* 楽曲一覧 */}
