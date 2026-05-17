@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -542,7 +549,7 @@
             border-color: #fbbf24;
             background: #fffbeb;
             color: #fbbf24;
-            box-shadow: 2px 2px 0px #fbbf24;
+
         }
 
         .mirror-btn {
@@ -561,7 +568,7 @@
             border-color: #6366f1;
             background: #eef2ff;
             color: #6366f1;
-            box-shadow: 2px 2px 0px #6366f1;
+
         }
         
         .memo-textarea {
@@ -1396,7 +1403,7 @@
                                 <div className="space-y-2">
                                     <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">マイデータ</div>
                                     {(currentPage === "main" || currentPage === "random") && (
-                                        <div className="toggle-btn-group" style={{background:'#e5e7eb'}}>
+                                        <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
                                             <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`} style={{color: !showOnlyFavorites ? '#1b4332' : '#374151'}}>すべて</button>
                                             <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`} style={{color: showOnlyFavorites ? '#1b4332' : '#374151'}}>
                                                 <i className="ph-fill ph-star"></i> お気に入りのみ
@@ -1404,7 +1411,7 @@
                                         </div>
                                     )}
                                     {currentPage === "main" && (
-                                        <div className="toggle-btn-group" style={{background:'#e5e7eb'}}>
+                                        <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
                                             <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`} style={{color: !showOnlyMirrors ? '#1b4332' : '#374151'}}>すべて</button>
                                             <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`} style={{color: showOnlyMirrors ? '#1b4332' : '#374151'}}>
                                                 <i className="ph-bold ph-arrows-left-right"></i> ミラーのみ
@@ -1436,9 +1443,9 @@
                             <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             <div className="space-y-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                            {/* BPL課題曲 */}
+                            {/* BPL（S6）課題曲 */}
                             <div className="space-y-2 pb-2">
-                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">BPL課題曲</div>
+                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">BPL（S6）課題曲</div>
                                 <div className="grid grid-cols-4 gap-2">
                                     {[1,2,3,4,5,6,7].map(n => (
                                         <button key={n} onClick={() => toggleBplSection(n)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedBplSections.includes(n) ? 'active' : ''}`}>
@@ -2985,7 +2992,7 @@
                                         </button>
                                     )}
                                     <button onClick={() => setCurrentPage("bpl")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "bpl" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-star text-base"></i> BPL課題曲
+                                        <i className="ph-bold ph-star text-base"></i> BPL（S6）課題曲
                                     </button>
                                     <div className="border-t-2 border-gray-100 my-1"></div>
                                     <button onClick={() => setCurrentPage("terms")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "terms" ? 'active' : ''}`}>
@@ -3031,7 +3038,7 @@
                         )}
                     </div>
 
-                    <header className={`text-center pt-8 ${currentPage === 'random' ? 'mb-4' : 'mb-10'}`}>
+                    <header className={`text-center pt-8 ${currentPage === 'random' || currentPage === 'main' ? 'mb-4' : 'mb-10'}`}>
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
                         </div>
@@ -3050,11 +3057,11 @@
                         <div className="space-y-6">
                             {currentPage === "ranking" && (
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
-                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
-                                    </div>
-                                    <div className="flex justify-end mb-3">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
+                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
+                                        </div>
                                         <div
                                             className="view-mode-badge"
                                             onClick={() => setIsFilterModalOpen(true)}
@@ -3070,7 +3077,7 @@
                                             <button onClick={() => setRankSection("section2")} className={`toggle-btn-small ${rankSection === "section2" ? 'active' : ''}`}>第2区間</button>
                                         </div>
                                     </div>
-                                    <div className="mb-3">
+                                    <div className="mb-1">
                                         <div className="toggle-btn-group">
                                             <button onClick={() => setSortOrder("desc")} className={`toggle-btn-small ${sortOrder === "desc" ? 'active' : ''}`}>
                                                 <i className="ph-bold ph-sort-descending"></i> 多い順
@@ -3540,7 +3547,7 @@
                                             {/* ヘッダー */}
                                             <div className="flex items-center gap-2 mb-4">
                                                 <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
-                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">BPL課題曲</h2>
+                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">BPL（S6）課題曲</h2>
                                             </div>
 
                                             {/* 区分タブ */}
