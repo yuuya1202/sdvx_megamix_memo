@@ -1362,6 +1362,104 @@
             );
         };
 
+        const FilterModal = ({ isOpen, onClose, currentPage, user,
+            selectedLevels, toggleLevel, selectedDifficulties, toggleDifficulty,
+            selectedVersions, toggleVersion, selectedBplSections, toggleBplSection,
+            showOnlyFavorites, setShowOnlyFavorites, showOnlyMirrors, setShowOnlyMirrors,
+            isFilterActive, LV17_LIST, LV18_LIST, LV19_LIST, LV20_LIST,
+            FilterButton, LevelSectionHeader
+        }) => {
+            if (!isOpen) return null;
+            const isLoggedIn = user && !user.isAnonymous;
+            const resetAll = () => {
+                selectedLevels.forEach && toggleLevel && selectedLevels.slice().forEach(lv => toggleLevel(lv));
+                selectedDifficulties.forEach && toggleDifficulty && selectedDifficulties.slice().forEach(d => toggleDifficulty(d));
+                selectedVersions.forEach && toggleVersion && selectedVersions.slice().forEach(v => toggleVersion(v));
+                selectedBplSections.forEach && toggleBplSection && selectedBplSections.slice().forEach(n => toggleBplSection(n));
+                setShowOnlyFavorites(false);
+                setShowOnlyMirrors(false);
+            };
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal-content !max-w-[380px] !text-left !p-0 overflow-hidden" style={{maxHeight:'85vh',display:'flex',flexDirection:'column'}} onClick={e => e.stopPropagation()}>
+                        {/* ヘッダー */}
+                        <div className="flex items-center justify-between px-5 py-4 border-b-2 border-black">
+                            <span className="text-base font-black">絞り込み</span>
+                            <div className="flex items-center gap-2">
+                                {isFilterActive && (
+                                    <button onClick={resetAll} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 border border-gray-300 px-3 py-1 rounded-full">
+                                        <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
+                                    </button>
+                                )}
+                                <button onClick={onClose} className="text-gray-400 hover:text-black">
+                                    <i className="ph-bold ph-x text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {/* コンテンツ */}
+                        <div className="overflow-y-auto px-5 py-4 space-y-6 text-black">
+                            {/* お気に入り・ミラー（ログイン時のみ） */}
+                            {isLoggedIn && (currentPage === "main" || currentPage === "random") && (
+                                <div className="space-y-2">
+                                    <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">マイデータ</div>
+                                    {(currentPage === "main" || currentPage === "random") && (
+                                        <div className="toggle-btn-group">
+                                            <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`}>すべて</button>
+                                            <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`}>
+                                                <i className="ph-fill ph-star"></i> お気に入りのみ
+                                            </button>
+                                        </div>
+                                    )}
+                                    {currentPage === "main" && (
+                                        <div className="toggle-btn-group">
+                                            <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`}>すべて</button>
+                                            <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`}>
+                                                <i className="ph-bold ph-arrows-left-right"></i> ミラーのみ
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            {/* BPL課題曲 */}
+                            <div className="space-y-2">
+                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">BPL課題曲</div>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[1,2,3,4,5,6,7].map(n => (
+                                        <button key={n} onClick={() => toggleBplSection(n)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedBplSections.includes(n) ? 'active' : ''}`}>
+                                            区分{n}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            {/* バージョン */}
+                            <div className="space-y-2">
+                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">バージョン</div>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                    {VERSION_LIST.map(v => (
+                                        <button key={v.value} onClick={() => toggleVersion(v.value)} className={`filter-btn px-2 py-1.5 rounded-lg text-[10px] font-black w-full text-left ${selectedVersions.includes(v.value) ? 'active' : ''}`}>{v.label}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            {/* 難易度 */}
+                            <div className="space-y-2">
+                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">難易度</div>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(diff => (
+                                        <button key={diff} onClick={() => toggleDifficulty(diff)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedDifficulties.includes(diff) ? 'active' : ''}`}>{diff}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            {/* レベル */}
+                            <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                            <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                            <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                            <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const ViewModeSelectModal = ({ isOpen, viewMode, onSelect, onCancel }) => {
             if (!isOpen) return null;
             return (
@@ -2278,6 +2376,8 @@
             const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
             const [showOnlyMirrors, setShowOnlyMirrors] = useState(false);
             const [dangerFilter, setDangerFilter] = useState("all");
+            const [selectedBplSections, setSelectedBplSections] = useState([]);
+            const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
             const [bplSection, setBplSection] = useState(1);
             const [bplLevelFilter, setBplLevelFilter] = useState("all");
             const [bplViewMode, setBplViewMode] = useState("list");
@@ -2424,7 +2524,9 @@
                 setSelectedLevels([]);
                 setSelectedDifficulties([]);
                 setSelectedVersions([]);
+                setSelectedBplSections([]);
                 setIsFilterOpen(false);
+                setIsFilterModalOpen(false);
                 setPageIndex(1);
                 setShowOnlyFavorites(false);
                 setShowOnlyMirrors(false);
@@ -2574,13 +2676,22 @@
                 );
             };
 
+            const toggleBplSection = (n) => {
+                setSelectedBplSections(prev =>
+                    prev.includes(n) ? prev.filter(v => v !== n) : [...prev, n]
+                );
+            };
+
             const isLevelFilterActive = useMemo(() => {
                 return selectedLevels.length > 0;
             }, [selectedLevels]);
 
             const isFilterActive = useMemo(() => {
-                return selectedLevels.length > 0 || selectedDifficulties.length > 0 || selectedVersions.length > 0;
-            }, [selectedLevels, selectedDifficulties, selectedVersions]);
+                const baseActive = selectedLevels.length > 0 || selectedDifficulties.length > 0 || selectedVersions.length > 0 || selectedBplSections.length > 0;
+                if (currentPage === "main") return baseActive || showOnlyFavorites || showOnlyMirrors;
+                if (currentPage === "random") return baseActive || showOnlyFavorites;
+                return baseActive;
+            }, [selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, showOnlyFavorites, showOnlyMirrors, currentPage]);
 
             const generateRandomSongs = () => {
                 setIsGenerating(true);
@@ -2590,7 +2701,7 @@
                 setIsRandomComplete(false);
                 const filtered = songs.filter(s => {
                     const songId = getSongId(s);
-                    const matchesFav = randomPoolFilter === "all" || (user && !user.isAnonymous && favorites.includes(songId));
+                    const matchesFav = !showOnlyFavorites || (user && !user.isAnonymous && favorites.includes(songId));
                     if (!matchesFav) return false;
 
                     const lvStr = String(s.level || "");
@@ -2721,6 +2832,8 @@
                     const matchesDiff = selectedDifficulties.length === 0 || selectedDifficulties.includes(String(s.difficult || "").toUpperCase());
 
                     const matchesVer = selectedVersions.length === 0 || selectedVersions.includes(String(s.version || ""));
+
+                    const matchesBpl = selectedBplSections.length === 0 || selectedBplSections.includes(Number(s.bpl));
                     
                     const songId = getSongId(s);
                     const isFavFilterApplied = currentPage === "main" && showOnlyFavorites;
@@ -2734,10 +2847,10 @@
                         const matchesSearch = 
                             String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                             String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
-                        return matchesLv && matchesDiff && matchesVer && matchesSearch && matchesFav && matchesMirror;
+                        return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesSearch && matchesFav && matchesMirror;
                     }
                     
-                    return matchesLv && matchesDiff && matchesVer && matchesFav && matchesMirror;
+                    return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesFav && matchesMirror;
                 });
 
                 if (currentPage === "ranking") {
@@ -2750,7 +2863,7 @@
                 }
 
                 return result;
-            }, [searchTerm, selectedLevels, selectedDifficulties, selectedVersions, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
+            }, [searchTerm, selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * itemsPerPage;
@@ -2898,7 +3011,18 @@
                         </div>
                     </div>
 
-                    <div className="fixed top-4 right-4 z-50">
+                    <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+                        {/* 絞り込みボタン（メイン・ランダム・ランキングのみ） */}
+                        {(currentPage === "main" || currentPage === "random" || currentPage === "ranking") && (
+                            <button
+                                onClick={() => setIsFilterModalOpen(true)}
+                                className="view-mode-badge"
+                                style={isFilterActive ? { borderColor: '#52b788', boxShadow: '3px 3px 0px #52b788' } : {}}
+                            >
+                                <i className="ph-bold ph-funnel text-sm"></i>
+                                絞り込み{isFilterActive ? '●' : ''}
+                            </button>
+                        )}
                         {user && !user.isAnonymous ? (
                             <div className="bg-white border-2 border-black px-3 py-2 rounded-xl shadow-[3px_3px_0px_#000] flex items-center gap-2">
                                 {user.photoURL ? (
@@ -3029,58 +3153,6 @@
                                             </div>
                                         </div>
 
-                                        {/* お気に入りフィルター */}
-                                        {user && !user.isAnonymous && (
-                                            <div className="toggle-btn-group">
-                                                <button onClick={() => setRandomPoolFilter("all")} className={`toggle-btn-small ${randomPoolFilter === "all" ? 'active' : ''}`}>すべて</button>
-                                                <button onClick={() => setRandomPoolFilter("fav")} className={`toggle-btn-small ${randomPoolFilter === "fav" ? 'active' : ''}`}>お気に入りのみ</button>
-                                            </div>
-                                        )}
-
-                                        {/* 絞り込み */}
-                                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
-                                            <div className="flex items-center gap-3">
-                                                <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
-                                                <span>絞り込み{isFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
-                                            </div>
-                                            <i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i>
-                                        </button>
-                                        <div className={`filter-area ${isFilterOpen ? 'show' : ''}`}>
-                                            <div className="space-y-6 text-black">
-                                                <div className="flex justify-end border-b-2 border-gray-100 pb-2">
-                                                    {isFilterActive && (
-                                                        <button onClick={() => { setSelectedLevels([]); setSelectedDifficulties([]); setSelectedVersions([]); }} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
-                                                            <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
-                                                        </button>
-                                                    )}
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                                                        <div className="text-[10px] font-black text-black uppercase leading-none">バージョン</div>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-1.5">
-                                                        {VERSION_LIST.map(v => (
-                                                            <button key={v.value} onClick={() => toggleVersion(v.value)} className={`filter-btn px-2 py-1.5 rounded-lg text-[10px] font-black w-full text-left ${selectedVersions.includes(v.value) ? 'active' : ''}`}>{v.label}</button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                                                        <div className="text-[10px] font-black text-black uppercase leading-none">難易度</div>
-                                                    </div>
-                                                    <div className="grid grid-cols-4 gap-2">
-                                                        {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(diff => (
-                                                            <button key={diff} onClick={() => toggleDifficulty(diff)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedDifficulties.includes(diff) ? 'active' : ''}`}>{diff}</button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                                <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                                <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                                <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                            </div>
-                                        </div>
-
                                         {/* 生成ボタン */}
                                         <button 
                                             onClick={generateRandomSongs} 
@@ -3104,7 +3176,6 @@
                                 <div className="px-1 flex flex-col gap-3">
                                     {currentPage === "main" && (
                                         <div className="flex flex-col gap-3">
-                                            {/* 改修：干渉しないようにボタンスペースと入力スペースを分ける */}
                                             <div className="flex justify-end mb-1">
                                                 <div className="view-mode-badge" onClick={() => setIsViewModeModalOpen(true)}>
                                                     <i className={`ph-bold ${viewMode === 'list' ? 'ph-list' : 'ph-squares-four'}`}></i>
@@ -3139,80 +3210,7 @@
                                                     </div>
                                                 </div>
                                             )}
-                                            {user && !user.isAnonymous && (
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="toggle-btn-group">
-                                                        <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`}>すべて</button>
-                                                        <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`}>
-                                                            <i className="ph-fill ph-star"></i> お気に入りのみ
-                                                        </button>
-                                                    </div>
-                                                    <div className="toggle-btn-group">
-                                                        <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`}>すべて</button>
-                                                        <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`}>
-                                                            <i className="ph-bold ph-arrows-left-right"></i> ミラーのみ
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
                                         </div>
-                                    )}
-                                    {currentPage !== "random" && currentPage !== "simulation" && (
-                                    <><button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`filter-trigger flex items-center justify-between w-full py-3 px-6 rounded-2xl text-xs font-black uppercase tracking-widest ${isFilterOpen ? 'open' : ''} ${isFilterActive && !isFilterOpen ? 'is-active' : ''}`}>
-                                        <div className="flex items-center gap-3">
-                                            <i className={`ph-bold ${isFilterOpen ? 'ph-x-circle' : 'ph-funnel'}`}></i>
-                                            <span>絞り込み{isFilterActive && <span className="ml-1 text-white">（フィルター中）</span>}</span>
-                                        </div>
-                                        <i className={`ph-bold ${isFilterOpen ? 'ph-caret-up' : 'ph-caret-down'}`}></i>
-                                    </button>
-                                    <div className={`filter-area ${isFilterOpen ? 'show' : ''}`}>
-                                        <div className="space-y-6 text-black">
-                                            <div className="flex justify-end border-b-2 border-gray-100 pb-2">
-                                                {isFilterActive && (
-                                                    <button onClick={() => { setSelectedLevels([]); setSelectedDifficulties([]); setSelectedVersions([]); }} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 px-3 py-1 rounded-full">
-                                                        <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                                                    <div className="text-[10px] font-black text-black uppercase leading-none">バージョン</div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-1.5">
-                                                    {VERSION_LIST.map(v => (
-                                                        <button
-                                                            key={v.value}
-                                                            onClick={() => toggleVersion(v.value)}
-                                                            className={`filter-btn px-2 py-1.5 rounded-lg text-[10px] font-black w-full text-left ${selectedVersions.includes(v.value) ? 'active' : ''}`}
-                                                        >
-                                                            {v.label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                                                    <div className="text-[10px] font-black text-black uppercase leading-none">難易度</div>
-                                                </div>
-                                                <div className="grid grid-cols-4 gap-2">
-                                                    {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(diff => (
-                                                        <button
-                                                            key={diff}
-                                                            onClick={() => toggleDifficulty(diff)}
-                                                            className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedDifficulties.includes(diff) ? 'active' : ''}`}
-                                                        >
-                                                            {diff}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                            <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                            <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                            <div className="space-y-2 pb-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0, 5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5, 10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                                        </div>
-                                    </div>
-                                    </>
                                     )}
                                 </div>
                             )}
@@ -3710,6 +3708,32 @@
                         onConfirm={() => { window.open(contactLinkModal.url, '_blank', 'noopener,noreferrer'); setContactLinkModal({ ...contactLinkModal, isOpen: false }); }}
                         onCancel={() => setContactLinkModal({ ...contactLinkModal, isOpen: false })}
                         type={contactLinkModal.type}
+                    />
+
+                    <FilterModal
+                        isOpen={isFilterModalOpen}
+                        onClose={() => setIsFilterModalOpen(false)}
+                        currentPage={currentPage}
+                        user={user}
+                        selectedLevels={selectedLevels}
+                        toggleLevel={toggleLevel}
+                        selectedDifficulties={selectedDifficulties}
+                        toggleDifficulty={toggleDifficulty}
+                        selectedVersions={selectedVersions}
+                        toggleVersion={toggleVersion}
+                        selectedBplSections={selectedBplSections}
+                        toggleBplSection={toggleBplSection}
+                        showOnlyFavorites={showOnlyFavorites}
+                        setShowOnlyFavorites={setShowOnlyFavorites}
+                        showOnlyMirrors={showOnlyMirrors}
+                        setShowOnlyMirrors={setShowOnlyMirrors}
+                        isFilterActive={isFilterActive}
+                        LV17_LIST={LV17_LIST}
+                        LV18_LIST={LV18_LIST}
+                        LV19_LIST={LV19_LIST}
+                        LV20_LIST={LV20_LIST}
+                        FilterButton={FilterButton}
+                        LevelSectionHeader={LevelSectionHeader}
                     />
 
                     <ViewModeSelectModal 
