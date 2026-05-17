@@ -1005,42 +1005,53 @@
             );
         };
 
-        // 譜面プレビュー用モーダル
+        // 譜面プレビュー用（全画面オーバーレイ）
         const ChartPreviewModal = ({ isOpen, url, title, onCancel }) => {
             if (!isOpen) return null;
-            return (
-                <div className="modal-overlay" onClick={onCancel}>
-                    <div className="preview-modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="preview-header">
-                            <div className="flex items-center gap-2">
-                                <i className="ph-bold ph-file-text text-xl"></i>
-                                <span className="text-sm font-black truncate max-w-[200px]">{title}</span>
-                            </div>
-                            <button onClick={onCancel} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center border-2 border-black active:translate-y-0.5">
-                                <i className="ph-bold ph-x"></i>
-                            </button>
+            return ReactDOM.createPortal(
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999,
+                    display: 'flex', flexDirection: 'column',
+                    background: '#000', touchAction: 'auto'
+                }}>
+                    {/* 上部バー */}
+                    <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '8px 12px', background: '#1a1a1a',
+                        borderBottom: '2px solid #333', flexShrink: 0
+                    }}>
+                        <div style={{display:'flex', alignItems:'center', gap:'8px', overflow:'hidden'}}>
+                            <i className="ph-bold ph-file-text" style={{color:'white', fontSize:'16px', flexShrink:0}}></i>
+                            <span style={{color:'white', fontSize:'12px', fontWeight:900, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'220px'}}>{title}</span>
                         </div>
-                        <div className="preview-iframe-container">
-                            <iframe 
-                                src={url} 
-                                className="preview-iframe" 
-                                title="Chart Preview"
-                                allowFullScreen
-                                scrolling="yes"
-                                style={{touchAction: 'pan-x pan-y pinch-zoom'}}
-                            ></iframe>
-                        </div>
-                        <div className="p-3 border-t-2 border-black bg-white flex justify-between items-center">
-                            <p className="text-[10px] font-black text-gray-400">※譜面保管所(sdvx.in)様を表示しています</p>
-                            <button 
+                        <div style={{display:'flex', alignItems:'center', gap:'8px', flexShrink:0}}>
+                            <button
                                 onClick={() => window.open(url, '_blank')}
-                                className="bg-gray-100 border-2 border-black rounded-lg px-3 py-1 text-[10px] font-black flex items-center gap-1 active:translate-y-0.5"
+                                style={{background:'#333', border:'none', borderRadius:'8px', padding:'6px 10px', color:'white', fontSize:'11px', fontWeight:900, display:'flex', alignItems:'center', gap:'4px'}}
                             >
-                                <i className="ph-bold ph-arrow-square-out"></i> 別タブで開く
+                                <i className="ph-bold ph-arrow-square-out"></i> 別タブ
+                            </button>
+                            <button
+                                onClick={onCancel}
+                                style={{background:'#e11d48', border:'none', borderRadius:'8px', padding:'6px 12px', color:'white', fontSize:'11px', fontWeight:900, display:'flex', alignItems:'center', gap:'4px'}}
+                            >
+                                <i className="ph-bold ph-x"></i> 閉じる
                             </button>
                         </div>
                     </div>
-                </div>
+                    {/* iframe全画面 */}
+                    <iframe
+                        src={url}
+                        title="Chart Preview"
+                        allowFullScreen
+                        scrolling="yes"
+                        style={{
+                            flex: 1, width: '100%', border: 'none',
+                            touchAction: 'auto', display: 'block'
+                        }}
+                    ></iframe>
+                </div>,
+                document.body
             );
         };
 
