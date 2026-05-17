@@ -440,6 +440,7 @@
             z-index: 100;
             padding: 20px;
             backdrop-filter: blur(4px);
+            touch-action: none;
         }
         .modal-content {
             background: white;
@@ -468,7 +469,8 @@
             max-width: 800px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: visible;
+            touch-action: pan-x pan-y pinch-zoom;
             animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .preview-header {
@@ -1024,6 +1026,8 @@
                                 className="preview-iframe" 
                                 title="Chart Preview"
                                 allowFullScreen
+                                scrolling="yes"
+                                style={{touchAction: 'pan-x pan-y pinch-zoom'}}
                             ></iframe>
                         </div>
                         <div className="p-3 border-t-2 border-black bg-white flex justify-between items-center">
