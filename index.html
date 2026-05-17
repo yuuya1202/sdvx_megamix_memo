@@ -3038,7 +3038,7 @@
                         )}
                     </div>
 
-                    <header className={`text-center pt-8 ${currentPage === 'random' || currentPage === 'main' ? 'mb-4' : 'mb-10'}`}>
+                    <header className={`text-center pt-8 ${currentPage === 'random' || currentPage === 'main' || currentPage === 'ranking' ? 'mb-4' : 'mb-10'}`}>
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
                         </div>
@@ -3127,20 +3127,30 @@
                                             <i className="ph-fill ph-shuffle text-3xl text-[#e9edc9]"></i>
                                             <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ランダム選曲</h2>
                                         </div>
-                                        {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
-                                            <button 
-                                                onClick={performImageExport} 
-                                                disabled={isSavingImage}
-                                                className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-2"
+                                        <div className="flex items-center gap-2">
+                                            <div
+                                                className="view-mode-badge"
+                                                onClick={() => setIsFilterModalOpen(true)}
+                                                style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
                                             >
-                                                {isSavingImage ? (
-                                                    <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                                                ) : (
-                                                    <i className="ph-bold ph-image"></i>
-                                                )}
-                                                画像出力
-                                            </button>
-                                        )}
+                                                <i className="ph-bold ph-funnel text-sm"></i>
+                                                絞り込み{isFilterActive ? '●' : ''}
+                                            </div>
+                                            {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
+                                                <button 
+                                                    onClick={performImageExport} 
+                                                    disabled={isSavingImage}
+                                                    className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-2"
+                                                >
+                                                    {isSavingImage ? (
+                                                        <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <i className="ph-bold ph-image"></i>
+                                                    )}
+                                                    画像出力
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="flex flex-col gap-3">
@@ -3149,18 +3159,6 @@
                                             <div className="text-[12px] font-black leading-relaxed">
                                                 <p>「生成する」ボタンを押すと、条件に合う楽曲からランダムに5曲が選ばれます。</p>
                                                 <p>絞り込みやお気に入りフィルターを活用することで、抽選範囲を自分好みにカスタマイズできます。</p>
-                                            </div>
-                                        </div>
-
-                                        {/* 生成ボタン上の絞り込みボタン */}
-                                        <div className="flex justify-end">
-                                            <div
-                                                className="view-mode-badge"
-                                                onClick={() => setIsFilterModalOpen(true)}
-                                                style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
-                                            >
-                                                <i className="ph-bold ph-funnel text-sm"></i>
-                                                絞り込み{isFilterActive ? '●' : ''}
                                             </div>
                                         </div>
 
@@ -3545,9 +3543,18 @@
                                     return (
                                         <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                             {/* ヘッダー */}
-                                            <div className="flex items-center gap-2 mb-4">
-                                                <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
-                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">BPL（S6）課題曲</h2>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
+                                                    <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">BPL（S6）課題曲</h2>
+                                                </div>
+                                                <div
+                                                    className="view-mode-badge"
+                                                    onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
+                                                >
+                                                    <i className={`ph-bold ${bplViewMode === "list" ? "ph-squares-four" : "ph-list"} text-sm`}></i>
+                                                    表示形式
+                                                </div>
                                             </div>
 
                                             {/* 区分タブ */}
@@ -3561,17 +3568,6 @@
                                                         区分{n}
                                                     </button>
                                                 ))}
-                                            </div>
-
-                                            {/* 表示形式ボタン */}
-                                            <div className="flex justify-end mb-2">
-                                                <div
-                                                    className="view-mode-badge"
-                                                    onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
-                                                >
-                                                    <i className={`ph-bold ${bplViewMode === "list" ? "ph-squares-four" : "ph-list"} text-sm`}></i>
-                                                    表示形式
-                                                </div>
                                             </div>
 
                                             {/* レベルトグル */}
