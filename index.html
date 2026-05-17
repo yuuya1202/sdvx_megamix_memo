@@ -1040,16 +1040,22 @@
                         </div>
                     </div>
                     {/* iframe全画面 */}
-                    <iframe
-                        src={url}
-                        title="Chart Preview"
-                        allowFullScreen
-                        scrolling="yes"
-                        style={{
-                            flex: 1, width: '100%', border: 'none',
-                            touchAction: 'auto', display: 'block'
-                        }}
-                    ></iframe>
+                    <div style={{flex:1, overflow:'auto', WebkitOverflowScrolling:'touch', touchAction:'pan-x pan-y pinch-zoom'}}>
+                        <iframe
+                            src={url}
+                            title="Chart Preview"
+                            allowFullScreen
+                            scrolling="yes"
+                            style={{
+                                width: '1024px',
+                                minWidth: '1024px',
+                                height: '100%',
+                                minHeight: '100vh',
+                                border: 'none',
+                                display: 'block'
+                            }}
+                        ></iframe>
+                    </div>
                 </div>,
                 document.body
             );
