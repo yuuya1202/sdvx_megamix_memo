@@ -3012,17 +3012,6 @@
                     </div>
 
                     <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-                        {/* 絞り込みボタン（メイン・ランダム・ランキングのみ） */}
-                        {(currentPage === "main" || currentPage === "random" || currentPage === "ranking") && (
-                            <button
-                                onClick={() => setIsFilterModalOpen(true)}
-                                className="view-mode-badge"
-                                style={isFilterActive ? { borderColor: '#52b788', boxShadow: '3px 3px 0px #52b788' } : {}}
-                            >
-                                <i className="ph-bold ph-funnel text-sm"></i>
-                                絞り込み{isFilterActive ? '●' : ''}
-                            </button>
-                        )}
                         {user && !user.isAnonymous ? (
                             <div className="bg-white border-2 border-black px-3 py-2 rounded-xl shadow-[3px_3px_0px_#000] flex items-center gap-2">
                                 {user.photoURL ? (
@@ -3071,6 +3060,16 @@
                                     <div className="flex items-center gap-2 mb-4">
                                         <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
                                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
+                                    </div>
+                                    <div className="flex justify-end mb-3">
+                                        <div
+                                            className="view-mode-badge"
+                                            onClick={() => setIsFilterModalOpen(true)}
+                                            style={isFilterActive ? { borderColor: '#52b788', boxShadow: '3px 3px 0px #52b788' } : {}}
+                                        >
+                                            <i className="ph-bold ph-funnel text-sm"></i>
+                                            絞り込み{isFilterActive ? '●' : ''}
+                                        </div>
                                     </div>
                                     <div className="mb-2">
                                         <div className="toggle-btn-group">
@@ -3153,6 +3152,18 @@
                                             </div>
                                         </div>
 
+                                        {/* 生成ボタン上の絞り込みボタン */}
+                                        <div className="flex justify-end">
+                                            <div
+                                                className="view-mode-badge"
+                                                onClick={() => setIsFilterModalOpen(true)}
+                                                style={isFilterActive ? { borderColor: '#52b788', boxShadow: '3px 3px 0px #52b788' } : {}}
+                                            >
+                                                <i className="ph-bold ph-funnel text-sm"></i>
+                                                絞り込み{isFilterActive ? '●' : ''}
+                                            </div>
+                                        </div>
+
                                         {/* 生成ボタン */}
                                         <button 
                                             onClick={generateRandomSongs} 
@@ -3176,10 +3187,18 @@
                                 <div className="px-1 flex flex-col gap-3">
                                     {currentPage === "main" && (
                                         <div className="flex flex-col gap-3">
-                                            <div className="flex justify-end mb-1">
+                                            <div className="flex justify-end mb-1 gap-2">
                                                 <div className="view-mode-badge" onClick={() => setIsViewModeModalOpen(true)}>
                                                     <i className={`ph-bold ${viewMode === 'list' ? 'ph-list' : 'ph-squares-four'}`}></i>
                                                     表示形式
+                                                </div>
+                                                <div
+                                                    className="view-mode-badge"
+                                                    onClick={() => setIsFilterModalOpen(true)}
+                                                    style={isFilterActive ? { borderColor: '#52b788', boxShadow: '3px 3px 0px #52b788' } : {}}
+                                                >
+                                                    <i className="ph-bold ph-funnel text-sm"></i>
+                                                    絞り込み{isFilterActive ? '●' : ''}
                                                 </div>
                                             </div>
                                             <div className="relative">
