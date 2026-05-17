@@ -2278,6 +2278,9 @@
             const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
             const [showOnlyMirrors, setShowOnlyMirrors] = useState(false);
             const [dangerFilter, setDangerFilter] = useState("all");
+            const [bplSection, setBplSection] = useState(1);
+            const [bplLevelFilter, setBplLevelFilter] = useState("all");
+            const [bplViewMode, setBplViewMode] = useState("list");
             
             const [firebase, setFirebase] = useState(null);
 
@@ -2875,6 +2878,9 @@
                                             <i className="ph-bold ph-sword text-base"></i> シミュレーション
                                         </button>
                                     )}
+                                    <button onClick={() => setCurrentPage("bpl")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "bpl" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-star text-base"></i> BPL課題曲
+                                    </button>
                                     <div className="border-t-2 border-gray-100 my-1"></div>
                                     <button onClick={() => setCurrentPage("terms")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "terms" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-file-text text-base"></i> ガイドライン
@@ -3510,7 +3516,94 @@
                                     />
                                 )}
 
-                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && (
+                                {currentPage === "bpl" && (() => {
+                                    const bplSongs = songs.filter(s => String(s.bpl) === String(bplSection));
+                                    const bplFiltered = bplSongs.filter(s => {
+                                        if (bplLevelFilter === "all") return true;
+                                        const lvStr = String(s.level || "");
+                                        if (bplLevelFilter === "17") return lvStr.startsWith("17");
+                                        if (bplLevelFilter === "18") return lvStr.startsWith("18");
+                                        return true;
+                                    });
+                                    return (
+                                        <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                            {/* ヘッダー */}
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
+                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">BPL課題曲</h2>
+                                            </div>
+
+                                            {/* 区分タブ */}
+                                            <div className="toggle-btn-group mb-3">
+                                                {[1,2,3,4,5,6,7].map(n => (
+                                                    <button
+                                                        key={n}
+                                                        onClick={() => setBplSection(n)}
+                                                        className={`toggle-btn-small ${bplSection === n ? 'active' : ''}`}
+                                                    >
+                                                        区分{n}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {/* レベルトグル＋表示形式 */}
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <div className="toggle-btn-group flex-1">
+                                                    {[["all","すべて"],["17","17"],["18","18"]].map(([val, label]) => (
+                                                        <button
+                                                            key={val}
+                                                            onClick={() => setBplLevelFilter(val)}
+                                                            className={`toggle-btn-small ${bplLevelFilter === val ? 'active' : ''}`}
+                                                        >
+                                                            {label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <button
+                                                    onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
+                                                    className="nav-btn"
+                                                    title="表示形式切替"
+                                                >
+                                                    <i className={`ph-bold ${bplViewMode === "list" ? "ph-grid-four" : "ph-list"} text-base`}></i>
+                                                </button>
+                                            </div>
+
+                                            {/* 楽曲一覧 */}
+                                            {bplFiltered.length === 0 ? (
+                                                <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
+                                                    <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
+                                                    <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
+                                                </div>
+                                            ) : (
+                                                <div className={bplViewMode === 'grid' ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
+                                                    {bplFiltered.map(song => {
+                                                        const songId = getSongId(song);
+                                                        return (
+                                                            <SongCard
+                                                                key={songId}
+                                                                song={song}
+                                                                viewMode={bplViewMode}
+                                                                showDangerBadge={false}
+                                                                showTips={true}
+                                                                showMemo={false}
+                                                                isLoggedIn={user && !user.isAnonymous}
+                                                                isFavorite={favorites.includes(songId)}
+                                                                onToggleFavorite={() => toggleFavorite(songId)}
+                                                                mirrorData={mirrors[songId]}
+                                                                onToggleMirror={(section) => toggleMirror(songId, section)}
+                                                                personalMemo={personalMemos[songId]}
+                                                                onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
+                                                                onOpenGridDetail={() => setSelectedGridSong(song)}
+                                                            />
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+
+                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && (
                                     <div className={viewMode === 'grid' && currentPage === 'main' ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
                                         {paginatedSongs.map((song, idx) => {
                                             const songId = getSongId(song);
@@ -3536,14 +3629,14 @@
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && paginatedSongs.length === 0 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
                                         <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && totalPages > 1 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
                                             <i className="ph-bold ph-caret-left"></i> 前へ
