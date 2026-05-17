@@ -1081,7 +1081,7 @@
 
             const handleChartClick = (e, url) => {
                 e.stopPropagation();
-                setChartModal({ isOpen: true, url });
+                window.open(url, '_blank');
             };
 
             const handleVideoClick = (e, url) => {
@@ -1528,7 +1528,7 @@
             const handleChartClick = (e, url) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setChartModal({ isOpen: true, url });
+                window.open(url, '_blank');
             };
 
             // 動画で確認クリック時：アプリ内iframeで再生
@@ -1822,12 +1822,6 @@
                         </div>
                     )}
 
-                    <ChartPreviewModal 
-                        isOpen={chartModal.isOpen}
-                        url={chartModal.url}
-                        title={song.title}
-                        onCancel={() => setChartModal({ ...chartModal, isOpen: false })}
-                    />
                 </>
             );
         };
