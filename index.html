@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1951,12 +1952,12 @@
                                 {setlists.length > 0 && (
                                     <button 
                                         onClick={() => setIsSelectExportOpen(true)} 
-                                        className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1"
+                                        className="bg-[#fef9c3] text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1"
                                     >
                                         <i className="ph-bold ph-image"></i> 画像出力
                                     </button>
                                 )}
-                                <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
+                                <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
                                     <i className="ph-bold ph-plus"></i> 新規
                                 </button>
                             </div>
@@ -3067,7 +3068,6 @@
                         {currentPage === "main" && (
                             <div className="flex justify-center mb-2">
                                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#52b788] animate-pulse flex-shrink-0"></span>
                                     <span className="text-[11px] font-black text-white/80 tracking-wide">
                                         📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。
                                     </span>
@@ -3078,11 +3078,11 @@
                         <div className="space-y-6">
                             {currentPage === "ranking" && (
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center gap-2">
-                                            <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
-                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
-                                        </div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
+                                    </div>
+                                    <div className="flex items-center mb-4">
                                         <div
                                             className="view-mode-badge"
                                             onClick={() => setIsFilterModalOpen(true)}
@@ -3143,35 +3143,33 @@
 
                             {currentPage === "random" && (
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-2">
-                                            <i className="ph-fill ph-shuffle text-3xl text-[#e9edc9]"></i>
-                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ランダム選曲</h2>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <i className="ph-fill ph-shuffle text-3xl text-[#e9edc9]"></i>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ランダム選曲</h2>
+                                    </div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div
+                                            className="view-mode-badge"
+                                            onClick={() => setIsFilterModalOpen(true)}
+                                            style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
+                                        >
+                                            <i className="ph-bold ph-funnel text-sm"></i>
+                                            絞り込み{isFilterActive ? '●' : ''}
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <div
-                                                className="view-mode-badge"
-                                                onClick={() => setIsFilterModalOpen(true)}
-                                                style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
+                                        {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
+                                            <button 
+                                                onClick={performImageExport} 
+                                                disabled={isSavingImage}
+                                                className="bg-[#fef9c3] text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-2"
                                             >
-                                                <i className="ph-bold ph-funnel text-sm"></i>
-                                                絞り込み{isFilterActive ? '●' : ''}
-                                            </div>
-                                            {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
-                                                <button 
-                                                    onClick={performImageExport} 
-                                                    disabled={isSavingImage}
-                                                    className="bg-[#d8f3dc] text-black font-black py-1.5 px-3 rounded-lg border-4 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-2"
-                                                >
-                                                    {isSavingImage ? (
-                                                        <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                                                    ) : (
-                                                        <i className="ph-bold ph-image"></i>
-                                                    )}
-                                                    画像出力
-                                                </button>
-                                            )}
-                                        </div>
+                                                {isSavingImage ? (
+                                                    <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                                ) : (
+                                                    <i className="ph-bold ph-image"></i>
+                                                )}
+                                                画像出力
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="flex flex-col gap-3">
@@ -3418,19 +3416,24 @@
                                                             <li>代表：悠（@YuSDVX）</li>
                                                             <li>開発・企画立案：おさとう（@0sattto）</li>
                                                             <li>開発・運営：Yuya_M（@Yuuya1202）</li>
+                                                            <li>運営補佐：こよみ（@nt_kym2）</li>
                                                             <li>動画編集：加藤（@katosv_）</li>
                                                             <li>データ協力：かめ（@kame_ver2）</li>
                                                             <li>データ協力：えーこぱふ（@eikopaf）</li>
                                                             <li>データ協力：あめじすと（@4methyst____）</li>
-                                                            <li>データ協力：たび（@traveler8）</li>
+                                                            <li>データ協力：たび（@_traveler8）</li>
                                                             <li>データ協力：ぜむ（@them_suzaku）</li>
                                                             <li>データ協力：imura（@freaky_s_ran）</li>
                                                             <li>データ協力：ひらつ（@963sv）</li>
                                                             <li>データ協力：ばる（@Baltin129_）</li>
                                                             <li>データ協力：あせろら（@aserora_yoo）</li>
-                                                            <li>データ協力：こよみ（@nt_kym2）</li>
-                                                            <li>データ協力：PAN.GOD（@-）</li>
+                                                            <li>データ協力：PAN（@-）</li>
                                                             <li>データ協力：核（@-）</li>
+                                                            <li>データ協力：じんたつ（@JinTatsuuu059）</li>
+                                                            <li>データ協力：南瓜の天婦羅（@GmrKaboten）</li>
+                                                            <li>データ協力：しなもん（@mac_alone_）</li>
+                                                            <li>データ協力：みはや（@Chanlala_devil）</li>
+                                                            <li>データ協力：ぽんず（@Halloween_ponzu）</li>
                                                         </ul>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 mt-6 text-sm uppercase">使用ライブラリ</h4>
@@ -3564,25 +3567,24 @@
                                     return (
                                         <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                             {/* ヘッダー */}
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
-                                                    <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">BPL（S6）課題曲</h2>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
+                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">BPL（S6）課題曲</h2>
+                                            </div>
+                                            <div className="flex justify-center mb-4">
+                                                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
+                                                    <span className="text-[11px] font-black text-white/80 tracking-wide">
+                                                        📋 課題曲が発表され次第対応を行います。
+                                                    </span>
                                                 </div>
+                                            </div>
+                                            <div className="flex items-center mb-3">
                                                 <div
                                                     className="view-mode-badge"
                                                     onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
                                                 >
                                                     <i className={`ph-bold ${bplViewMode === "list" ? "ph-squares-four" : "ph-list"} text-sm`}></i>
                                                     表示形式
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-center mb-4">
-                                                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-[#52b788] animate-pulse flex-shrink-0"></span>
-                                                    <span className="text-[11px] font-black text-white/80 tracking-wide">
-                                                        📋 課題曲が発表され次第対応を行います。
-                                                    </span>
                                                 </div>
                                             </div>
 
