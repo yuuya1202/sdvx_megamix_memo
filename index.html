@@ -1605,14 +1605,16 @@
             // リスト表示の場合
             const cardClassName = minimalMode 
                 ? `static-card rounded-xl p-1.5 mb-1`
-                : `pop-card rounded-2xl p-2 ${tightMode ? 'mb-1' : 'mb-4'} cursor-pointer ${isOpen ? 'active' : ''}`;
+                : tightMode
+                    ? `pop-card rounded-xl p-1.5 mb-2 mx-1 cursor-pointer ${isOpen ? 'active' : ''}`
+                    : `pop-card rounded-2xl p-2 mb-4 cursor-pointer ${isOpen ? 'active' : ''}`;
 
             return (
                 <>
-                    <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName}>
+                    <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName} style={tightMode ? {border:'2px solid #000', boxShadow:'4px 4px 0px #000'} : {}}>
                         {renderDangerBadges()}
                         <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-3'}`}>
-                            <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : tightMode ? 'w-[40px] h-[40px]' : 'w-[58px] h-[58px]'} relative overflow-hidden rounded-lg`}>
+                            <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : tightMode ? 'w-[46px] h-[46px]' : 'w-[58px] h-[58px]'} relative overflow-hidden rounded-lg`}>
                                 {song.jacket ? (
                                     <img 
                                         src={song.jacket} 
@@ -1632,16 +1634,16 @@
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className={`${minimalMode ? 'text-sm' : tightMode ? 'text-[11px]' : 'text-base'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
+                                <h3 className={`${minimalMode ? 'text-sm' : tightMode ? 'text-[13px]' : 'text-base'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
                                 <div className={`flex flex-nowrap items-center gap-x-1.5 gap-y-0.5 whitespace-nowrap`}>
                                     <DiffBadge diff={song.difficult} />
                                     <div className="flex items-baseline gap-0.5 font-black text-black leading-none">
-                                        <span className={`${minimalMode || tightMode ? 'text-[7px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
-                                        <span className={`${minimalMode || tightMode ? 'text-xs' : 'text-lg'} tracking-tight leading-none`}>{displayLevel}</span>
+                                        <span className={`${minimalMode || tightMode ? 'text-[8px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
+                                        <span className={`${minimalMode || tightMode ? 'text-sm' : 'text-lg'} tracking-tight leading-none`}>{displayLevel}</span>
                                     </div>
                                     <div className="flex items-baseline gap-0.5 font-black text-black leading-none">
-                                        <span className={`${minimalMode || tightMode ? 'text-[7px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
-                                        <span className={`${minimalMode || tightMode ? 'text-xs' : 'text-lg'} tracking-tight leading-none whitespace-nowrap`}>{song.bpm || "???"}</span>
+                                        <span className={`${minimalMode || tightMode ? 'text-[8px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
+                                        <span className={`${minimalMode || tightMode ? 'text-sm' : 'text-lg'} tracking-tight leading-none whitespace-nowrap`}>{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                                 {!minimalMode && personalMemo && (
