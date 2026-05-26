@@ -2749,7 +2749,6 @@
             const [pageIndex, setPageIndex] = useState(1);
             const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
             const [viewMode, setViewMode] = useState("list"); 
-            const [isViewModeModalOpen, setIsViewModeModalOpen] = useState(false);
             const [selectedGridSong, setSelectedGridSong] = useState(null);
             
             // 出力用データ管理
@@ -3627,9 +3626,9 @@
                                     {currentPage === "main" && (
                                         <div className="flex flex-col gap-3">
                                             <div className="flex justify-end mb-1 gap-2">
-                                                <div className="view-mode-badge" onClick={() => setIsViewModeModalOpen(true)}>
-                                                    <i className={`ph-bold ${viewMode === 'list' ? 'ph-list' : 'ph-squares-four'}`}></i>
-                                                    表示形式
+                                                <div className="view-mode-badge" onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}>
+                                                    <i className={`ph-bold ${viewMode === 'list' ? 'ph-squares-four' : 'ph-list'}`}></i>
+                                                    表示切替
                                                 </div>
                                                 <div
                                                     className={`view-mode-badge ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
@@ -4018,7 +4017,7 @@
                                                     onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
                                                 >
                                                     <i className={`ph-bold ${bplViewMode === "list" ? "ph-squares-four" : "ph-list"} text-sm`}></i>
-                                                    表示形式
+                                                    表示切替
                                                 </div>
                                             </div>
 
@@ -4218,12 +4217,6 @@
                         setBpmMax={setBpmMax}
                     />
 
-                    <ViewModeSelectModal 
-                        isOpen={isViewModeModalOpen}
-                        viewMode={viewMode}
-                        onSelect={setViewMode}
-                        onCancel={() => setIsViewModeModalOpen(false)}
-                    />
                 </div>
             );
         };
