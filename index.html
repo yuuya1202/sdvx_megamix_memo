@@ -2030,14 +2030,14 @@
                                             className="flex items-center justify-between cursor-pointer" 
                                             onClick={() => !sl.isDraft && setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}
                                         >
-                                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                <h3 className="text-base font-black truncate text-black">#{idx + 1}　{sl.name}</h3>
+                                            <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+                                                <h3 className="text-base font-black truncate text-black min-w-0">#{idx + 1}　{sl.name}</h3>
                                                 {sl.isDraft && (
                                                     <span className="flex-shrink-0 text-[9px] font-black bg-gray-300 text-gray-600 border border-gray-400 px-1.5 py-0.5 rounded-full uppercase tracking-wider">下書き</span>
                                                 )}
                                             </div>
                                             {sl.isDraft ? (
-                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-shrink-0 text-xs font-black bg-yellow-400 border-2 border-black px-3 py-1.5 rounded-lg shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1">
+                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-shrink-0 ml-2 text-xs font-black bg-yellow-400 border-2 border-black px-3 py-1.5 rounded-lg shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1">
                                                     <i className="ph-bold ph-pencil-simple"></i> 続きを編集
                                                 </button>
                                             ) : (
@@ -2176,8 +2176,9 @@
                         <input 
                             type="text" 
                             value={editingSetlist.name} 
-                            onChange={e => setEditingSetlist({...editingSetlist, name: e.target.value})}
+                            onChange={e => setEditingSetlist({...editingSetlist, name: e.target.value.slice(0, 15)})}
                             className="w-full bg-gray-50 border-4 border-black rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:border-[#52b788] focus:bg-white transition-all text-black"
+                            maxLength={15}
                         />
                     </div>
 
