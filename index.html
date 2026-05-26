@@ -1862,10 +1862,11 @@
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, getSongId, formatLevel, getBorderColor, favorites }) => {
+        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, getSongId, formatLevel, getBorderColor, favorites, isLoggedIn, toggleFavorite, toggleMirror, personalMemos, onSavePersonalMemo }) => {
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null);
+            const [selectedDetailSong, setSelectedDetailSong] = useState(null);
             
             const [isSongModalOpen, setIsSongModalOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
@@ -1873,7 +1874,8 @@
             const [songModalFavOnly, setSongModalFavOnly] = useState(false);
             const [songModalDiffs, setSongModalDiffs] = useState([]);
             const [songModalVersions, setSongModalVersions] = useState([]);
-            const songModalFilterActive = songModalFavOnly || songModalDiffs.length > 0 || songModalVersions.length > 0;
+            const [songModalLevels, setSongModalLevels] = useState([]);
+            const songModalFilterActive = songModalFavOnly || songModalDiffs.length > 0 || songModalVersions.length > 0 || songModalLevels.length > 0;
             const [openSetlists, setOpenSetlists] = useState({});
             
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -1917,6 +1919,7 @@
                 setSongModalFavOnly(false);
                 setSongModalDiffs([]);
                 setSongModalVersions([]);
+                setSongModalLevels([]);
                 setIsSongModalOpen(true);
             };
 
@@ -2067,7 +2070,10 @@
                                                             <div className="absolute -left-1 -top-1 w-5 h-5 bg-black text-white rounded-full flex items-center justify-center font-black text-[9px] z-10 border-2 border-white shadow-sm">
                                                                 {sIdx + 1}
                                                             </div>
-                                                            <div className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
+                                                            <div
+                                                                className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2 cursor-pointer active:translate-y-0.5 transition-transform hover:bg-gray-100"
+                                                                onClick={(e) => { e.stopPropagation(); setSelectedDetailSong(song); }}
+                                                            >
                                                                 <img
                                                                     src={song.jacket}
                                                                     alt={song.title}
@@ -2099,6 +2105,7 @@
                                                                         </div>
                                                                     )}
                                                                 </div>
+                                                                <i className="ph-bold ph-caret-right text-gray-300 text-sm flex-shrink-0"></i>
                                                             </div>
                                                         </div>
                                                     );
@@ -2153,6 +2160,22 @@
                                 onExport(sl);
                             }}
                         />
+
+                        {selectedDetailSong && (
+                            <SongDetailModal
+                                isOpen={!!selectedDetailSong}
+                                song={selectedDetailSong}
+                                isLoggedIn={isLoggedIn}
+                                isFavorite={isLoggedIn && favorites.includes(getSongId(selectedDetailSong))}
+                                onToggleFavorite={() => toggleFavorite && toggleFavorite(getSongId(selectedDetailSong))}
+                                mirrorData={mirrors[getSongId(selectedDetailSong)]}
+                                onToggleMirror={(section) => toggleMirror && toggleMirror(getSongId(selectedDetailSong), section)}
+                                personalMemo={personalMemos && personalMemos[getSongId(selectedDetailSong)]}
+                                onSavePersonalMemo={(memo) => onSavePersonalMemo && onSavePersonalMemo(getSongId(selectedDetailSong), memo)}
+                                onCancel={() => setSelectedDetailSong(null)}
+                                showMemo={true}
+                            />
+                        )}
                     </div>
                 );
             }
@@ -2285,77 +2308,17 @@
                                     <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
 
-                                {/* 絞り込みトグル */}
+                                {/* 絞り込みボタン */}
                                 <div className="flex-shrink-0 mb-2">
                                     <button
-                                        onClick={() => setSongModalFilter(songModalFilter === "open" ? "closed" : "open")}
-                                        className={`flex items-center gap-1.5 text-[11px] font-black px-3 py-1.5 rounded-lg border-2 border-black transition-all ${songModalFilter === "open" ? 'bg-[#40916c] text-white shadow-[2px_2px_0px_#1b4332]' : 'bg-white text-black shadow-[2px_2px_0px_#000]'} ${songModalFilterActive ? '!bg-[#d8f3dc] !border-[#52b788] !text-[#1b4332] !shadow-[2px_2px_0px_#52b788]' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setSongModalFilter(songModalFilter === "open" ? "closed" : "open"); }}
+                                        className={`flex items-center gap-1.5 text-[11px] font-black px-3 py-1.5 rounded-lg border-2 border-black transition-all ${songModalFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332] shadow-[2px_2px_0px_#52b788]' : songModalFilter === "open" ? 'bg-[#40916c] text-white shadow-[2px_2px_0px_#1b4332]' : 'bg-white text-black shadow-[2px_2px_0px_#000]'}`}
                                     >
                                         <i className="ph-bold ph-funnel text-sm"></i>
                                         絞り込み{songModalFilterActive ? '●' : ''}
                                         <i className={`ph-bold ph-caret-down text-[10px] transition-transform ${songModalFilter === "open" ? 'rotate-180' : ''}`}></i>
                                     </button>
                                 </div>
-
-                                {/* 絞り込みパネル（折りたたみ） */}
-                                {songModalFilter === "open" && (
-                                    <div className="flex-shrink-0 mb-2 border-2 border-black rounded-xl bg-white overflow-hidden">
-                                        <div className="p-3 space-y-3 max-h-[38vh] overflow-y-auto custom-scrollbar">
-                                            {/* お気に入り */}
-                                            {(favorites && favorites.length > 0) && (
-                                                <div>
-                                                    <div className="text-[9px] font-black text-black uppercase border-b border-gray-200 pb-1 mb-1.5">マイデータ</div>
-                                                    <div className="flex gap-1.5">
-                                                        <button onClick={() => setSongModalFavOnly(false)} className={`flex-1 py-1 rounded-lg border-2 border-black text-[10px] font-black transition-all ${!songModalFavOnly ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}>すべて</button>
-                                                        <button onClick={() => setSongModalFavOnly(true)} className={`flex-1 py-1 rounded-lg border-2 border-black text-[10px] font-black transition-all flex items-center justify-center gap-1 ${songModalFavOnly ? 'bg-yellow-400 text-black' : 'bg-white text-black'}`}>
-                                                            <i className="ph-fill ph-star text-yellow-500"></i>お気に入り
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {/* 難易度 */}
-                                            <div>
-                                                <div className="flex items-center justify-between border-b border-gray-200 pb-1 mb-1.5">
-                                                    <div className="text-[9px] font-black text-black uppercase">難易度</div>
-                                                    <button onClick={() => {
-                                                        const DIFFS = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"];
-                                                        const allSel = DIFFS.every(d => songModalDiffs.includes(d));
-                                                        setSongModalDiffs(allSel ? [] : DIFFS);
-                                                    }} className="batch-btn">全選択/解除</button>
-                                                </div>
-                                                <div className="grid grid-cols-4 gap-1">
-                                                    {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(d => (
-                                                        <button key={d} onClick={() => setSongModalDiffs(prev => prev.includes(d) ? prev.filter(x=>x!==d) : [...prev,d])}
-                                                            className={`py-1 rounded border-2 border-black text-[9px] font-black uppercase transition-all ${songModalDiffs.includes(d) ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}>{d}</button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            {/* バージョン */}
-                                            <div>
-                                                <div className="flex items-center justify-between border-b border-gray-200 pb-1 mb-1.5">
-                                                    <div className="text-[9px] font-black text-black uppercase">バージョン</div>
-                                                    <button onClick={() => {
-                                                        const allSel = VERSION_LIST.every(v => songModalVersions.includes(v.value));
-                                                        setSongModalVersions(allSel ? [] : VERSION_LIST.map(v=>v.value));
-                                                    }} className="batch-btn">全選択/解除</button>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-1">
-                                                    {VERSION_LIST.map(v => (
-                                                        <button key={v.value} onClick={() => setSongModalVersions(prev => prev.includes(v.value) ? prev.filter(x=>x!==v.value) : [...prev,v.value])}
-                                                            className={`py-1 rounded border-2 border-black text-[9px] font-black text-left px-2 transition-all ${songModalVersions.includes(v.value) ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}>{v.label}</button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            {/* リセット */}
-                                            {songModalFilterActive && (
-                                                <button onClick={() => { setSongModalFavOnly(false); setSongModalDiffs([]); setSongModalVersions([]); }}
-                                                    className="w-full py-1 rounded-lg border border-gray-300 bg-gray-50 text-[10px] font-black text-gray-600 flex items-center justify-center gap-1">
-                                                    <i className="ph-bold ph-arrows-counter-clockwise"></i> フィルターをリセット
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
 
                                 {/* 結果一覧 */}
                                 <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4 custom-scrollbar">
@@ -2369,7 +2332,15 @@
                                             const matchFav = !songModalFavOnly || favIds.includes(id);
                                             const matchDiff = songModalDiffs.length === 0 || songModalDiffs.includes(String(s.difficult||"").toUpperCase());
                                             const matchVer = songModalVersions.length === 0 || songModalVersions.includes(String(s.version||""));
-                                            return matchSearch && matchFav && matchDiff && matchVer;
+                                            const lvStr = String(s.level || "");
+                                            const matchLv = songModalLevels.length === 0 || songModalLevels.some(targetLv => {
+                                                if (["17.0","18.0","19.0","20.0"].includes(targetLv)) {
+                                                    const base = targetLv.split('.')[0];
+                                                    return lvStr === base || lvStr === targetLv;
+                                                }
+                                                return lvStr === targetLv;
+                                            });
+                                            return matchSearch && matchFav && matchDiff && matchVer && matchLv;
                                         }).slice(0, 100);
 
                                         if (!songModalFilterActive && searchTerm.trim() === "") {
@@ -2411,7 +2382,6 @@
                                                             <DiffBadge diff={s.difficult} /><span className="text-black">Lv {formatLevel(s.level)}</span>
                                                         </div>
                                                     </div>
-                                                    {/* ミラーバッジ */}
                                                     <div className="flex flex-col gap-1 flex-shrink-0">
                                                         {hasMirror1 && (
                                                             <div className="mirror-icon-badge relative" style={{width:'18px',height:'18px'}}>
@@ -2436,6 +2406,132 @@
                                 <div className="flex justify-center flex-shrink-0 mt-3">
                                     <button onClick={() => setIsSongModalOpen(false)} className="w-40 bg-gray-200 text-black font-black py-3 rounded-xl border-4 border-black active:translate-y-0.5 shadow-[3px_3px_0px_#000] active:shadow-none">
                                         閉じる
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 絞り込みパネル（曲選択モーダルの上にオーバーレイ） */}
+                    {isSongModalOpen && songModalFilter === "open" && (
+                        <div className="modal-overlay" style={{zIndex:110}} onClick={() => setSongModalFilter("closed")}>
+                            <div className="modal-content !max-w-[380px] !text-left !p-0 overflow-hidden" style={{maxHeight:'85vh',display:'flex',flexDirection:'column'}} onClick={e => e.stopPropagation()}>
+                                <div className="flex items-center justify-between px-5 py-4 border-b-2 border-black">
+                                    <span className="text-base font-black">絞り込み（曲選択）</span>
+                                    <div className="flex items-center gap-2">
+                                        {songModalFilterActive && (
+                                            <button onClick={() => { setSongModalFavOnly(false); setSongModalDiffs([]); setSongModalVersions([]); setSongModalLevels([]); }}
+                                                className="flex items-center gap-1 text-[10px] font-black bg-gray-100 border border-gray-300 px-3 py-1 rounded-full">
+                                                <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
+                                            </button>
+                                        )}
+                                        <button onClick={() => setSongModalFilter("closed")} className="text-gray-400 hover:text-black">
+                                            <i className="ph-bold ph-x text-xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="overflow-y-auto px-5 py-4 space-y-6 text-black">
+                                    {/* お気に入り */}
+                                    {favorites && favorites.length > 0 && (
+                                        <div className="space-y-2">
+                                            <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">マイデータ</div>
+                                            <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
+                                                <button onClick={() => setSongModalFavOnly(false)} className={`toggle-btn-small ${!songModalFavOnly ? 'active' : ''}`} style={{color: !songModalFavOnly ? '#1b4332' : '#374151'}}>すべて</button>
+                                                <button onClick={() => setSongModalFavOnly(true)} className={`toggle-btn-small ${songModalFavOnly ? 'active' : ''}`} style={{color: songModalFavOnly ? '#1b4332' : '#374151'}}>
+                                                    <i className="ph-fill ph-star"></i> お気に入りのみ
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {/* バージョン */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                            <div className="text-[10px] font-black text-black uppercase">バージョン</div>
+                                            <button onClick={() => {
+                                                const allSel = VERSION_LIST.every(v => songModalVersions.includes(v.value));
+                                                setSongModalVersions(allSel ? [] : VERSION_LIST.map(v => v.value));
+                                            }} className="batch-btn">全選択/解除</button>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            {VERSION_LIST.map(v => (
+                                                <button key={v.value} onClick={() => setSongModalVersions(prev => prev.includes(v.value) ? prev.filter(x=>x!==v.value) : [...prev,v.value])}
+                                                    className={`filter-btn px-2 py-1.5 rounded-lg text-[10px] font-black w-full text-left ${songModalVersions.includes(v.value) ? 'active' : ''}`}>{v.label}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {/* 難易度 */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                            <div className="text-[10px] font-black text-black uppercase">難易度</div>
+                                            <button onClick={() => {
+                                                const DIFFS = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"];
+                                                const allSel = DIFFS.every(d => songModalDiffs.includes(d));
+                                                setSongModalDiffs(allSel ? [] : DIFFS);
+                                            }} className="batch-btn">全選択/解除</button>
+                                        </div>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(d => (
+                                                <button key={d} onClick={() => setSongModalDiffs(prev => prev.includes(d) ? prev.filter(x=>x!==d) : [...prev,d])}
+                                                    className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalDiffs.includes(d) ? 'active' : ''}`}>{d}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {/* レベル17 */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                            <div className="text-[10px] font-black text-black uppercase">Level 17</div>
+                                            <button onClick={() => {
+                                                const allSel = LV17_LIST.every(lv => songModalLevels.includes(lv));
+                                                setSongModalLevels(prev => allSel ? prev.filter(lv => !LV17_LIST.includes(lv)) : [...new Set([...prev, ...LV17_LIST])]);
+                                            }} className="batch-btn">全選択/解除</button>
+                                        </div>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {LV17_LIST.map(lv => (
+                                                <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])}
+                                                    className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {/* レベル18 */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                            <div className="text-[10px] font-black text-black uppercase">Level 18</div>
+                                            <button onClick={() => {
+                                                const allSel = LV18_LIST.every(lv => songModalLevels.includes(lv));
+                                                setSongModalLevels(prev => allSel ? prev.filter(lv => !LV18_LIST.includes(lv)) : [...new Set([...prev, ...LV18_LIST])]);
+                                            }} className="batch-btn">全選択/解除</button>
+                                        </div>
+                                        <div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0,5).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
+                                        <div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5,10).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
+                                    </div>
+                                    {/* レベル19 */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                            <div className="text-[10px] font-black text-black uppercase">Level 19</div>
+                                            <button onClick={() => {
+                                                const allSel = LV19_LIST.every(lv => songModalLevels.includes(lv));
+                                                setSongModalLevels(prev => allSel ? prev.filter(lv => !LV19_LIST.includes(lv)) : [...new Set([...prev, ...LV19_LIST])]);
+                                            }} className="batch-btn">全選択/解除</button>
+                                        </div>
+                                        <div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0,5).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
+                                        <div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5,10).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
+                                    </div>
+                                    {/* レベル20 */}
+                                    <div className="space-y-2 pb-2">
+                                        <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                            <div className="text-[10px] font-black text-black uppercase">Level 20</div>
+                                            <button onClick={() => {
+                                                const allSel = LV20_LIST.every(lv => songModalLevels.includes(lv));
+                                                setSongModalLevels(prev => allSel ? prev.filter(lv => !LV20_LIST.includes(lv)) : [...new Set([...prev, ...LV20_LIST])]);
+                                            }} className="batch-btn">全選択/解除</button>
+                                        </div>
+                                        <div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
+                                        <div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
+                                    </div>
+                                </div>
+                                <div className="px-5 py-4 border-t-2 border-black">
+                                    <button onClick={() => setSongModalFilter("closed")} className="w-full bg-[#40916c] text-white font-black py-3 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
+                                        この条件で絞り込む
                                     </button>
                                 </div>
                             </div>
@@ -3503,6 +3599,11 @@
                                             formatLevel={formatLevel}
                                             getBorderColor={getBorderColor}
                                             favorites={favorites}
+                                            isLoggedIn={user && !user.isAnonymous}
+                                            toggleFavorite={toggleFavorite}
+                                            toggleMirror={toggleMirror}
+                                            personalMemos={personalMemos}
+                                            onSavePersonalMemo={savePersonalMemo}
                                         />
                                     </div>
                                 )}
