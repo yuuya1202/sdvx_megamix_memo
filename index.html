@@ -1386,7 +1386,8 @@
             selectedVersions, toggleVersion, selectedBplSections, toggleBplSection,
             showOnlyFavorites, setShowOnlyFavorites, showOnlyMirrors, setShowOnlyMirrors,
             isFilterActive, LV17_LIST, LV18_LIST, LV19_LIST, LV20_LIST,
-            FilterButton, LevelSectionHeader
+            FilterButton, LevelSectionHeader,
+            bpmMin, setBpmMin, bpmMax, setBpmMax
         }) => {
             if (!isOpen) return null;
             const isLoggedIn = user && !user.isAnonymous;
@@ -1397,6 +1398,8 @@
                 selectedBplSections.forEach && toggleBplSection && selectedBplSections.slice().forEach(n => toggleBplSection(n));
                 setShowOnlyFavorites(false);
                 setShowOnlyMirrors(false);
+                setBpmMin("");
+                setBpmMax("");
             };
             return (
                 <div className="modal-overlay" onClick={onClose}>
@@ -1471,6 +1474,37 @@
                                         <button key={diff} onClick={() => toggleDifficulty(diff)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedDifficulties.includes(diff) ? 'active' : ''}`}>{diff}</button>
                                     ))}
                                 </div>
+                            </div>
+                            {/* BPM */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                    <div className="text-[10px] font-black text-black uppercase">BPM</div>
+                                    {(bpmMin !== "" || bpmMax !== "") && (
+                                        <button onClick={() => { setBpmMin(""); setBpmMax(""); }} className="batch-btn">クリア</button>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="最小"
+                                        value={bpmMin}
+                                        onChange={e => setBpmMin(e.target.value)}
+                                        className="flex-1 border-2 border-black rounded-lg px-3 py-2 text-sm font-black text-center focus:outline-none focus:border-[#52b788]"
+                                        style={{minWidth:0}}
+                                    />
+                                    <span className="font-black text-sm text-gray-400 flex-shrink-0">〜</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="最大"
+                                        value={bpmMax}
+                                        onChange={e => setBpmMax(e.target.value)}
+                                        className="flex-1 border-2 border-black rounded-lg px-3 py-2 text-sm font-black text-center focus:outline-none focus:border-[#52b788]"
+                                        style={{minWidth:0}}
+                                    />
+                                </div>
+                                <p className="text-[9px] font-bold text-gray-400">範囲表記の曲はどちらかが重なればヒット</p>
                             </div>
                             {/* レベル */}
                             <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
@@ -1956,12 +1990,20 @@
             };
 
             const handleSave = () => {
-                const toSave = { ...editingSetlist, isDraft: false };
-                onSave(toSave);
-                if (editingSetlist && editingSetlist.id) {
-                    setOpenSetlists(prev => ({ ...prev, [editingSetlist.id]: false }));
+                const incomplete = editingSetlist && editingSetlist.songs.some(id => id === null);
+                if (incomplete) {
+                    // 未完成 → 下書きダイアログを出す（離脱アクションなし）
+                    setPendingLeaveAction(null);
+                    setIsDraftSaveModalOpen(true);
+                } else {
+                    // 完成 → 正式保存
+                    const toSave = { ...editingSetlist, isDraft: false };
+                    onSave(toSave);
+                    if (editingSetlist && editingSetlist.id) {
+                        setOpenSetlists(prev => ({ ...prev, [editingSetlist.id]: false }));
+                    }
+                    setView("list");
                 }
-                setView("list");
             };
 
             const moveSong = (idx, direction) => {
@@ -2276,8 +2318,8 @@
                     <div className="flex gap-4 justify-center mt-2">
                         <button 
                             onClick={handleSave} 
-                            disabled={!canSave}
-                            className={`w-32 font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all ${canSave ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
+                            disabled={!editingSetlist || editingSetlist.name.trim() === ""}
+                            className={`w-32 font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all ${editingSetlist && editingSetlist.name.trim() !== "" ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
                         >
                             保存する
                         </button>
@@ -2587,7 +2629,7 @@
                                         }}
                                         className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
                                     >
-                                        保存せず離れる
+                                        {pendingLeaveAction ? "保存せず離れる" : "キャンセル"}
                                     </button>
                                 </div>
                             </div>
@@ -2732,6 +2774,8 @@
             const [showOnlyMirrors, setShowOnlyMirrors] = useState(false);
             const [dangerFilter, setDangerFilter] = useState("all");
             const [selectedBplSections, setSelectedBplSections] = useState([]);
+            const [bpmMin, setBpmMin] = useState("");
+            const [bpmMax, setBpmMax] = useState("");
             const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
             const [bplSection, setBplSection] = useState(1);
             const [bplLevelFilter, setBplLevelFilter] = useState("all");
@@ -3041,12 +3085,34 @@
                 return selectedLevels.length > 0;
             }, [selectedLevels]);
 
+            // BPM絞り込みヘルパー：範囲表記（"120-180"）も考慮して一部でも重なればtrue
+            const matchesBpmFilter = (song) => {
+                const minInput = bpmMin === "" ? null : parseInt(bpmMin, 10);
+                const maxInput = bpmMax === "" ? null : parseInt(bpmMax, 10);
+                if (minInput === null && maxInput === null) return true;
+                const bpmStr = String(song.bpm || "");
+                let songMin, songMax;
+                if (bpmStr.includes("-")) {
+                    const parts = bpmStr.split("-");
+                    songMin = parseInt(parts[0], 10);
+                    songMax = parseInt(parts[1], 10);
+                } else {
+                    songMin = parseInt(bpmStr, 10);
+                    songMax = songMin;
+                }
+                if (isNaN(songMin) || isNaN(songMax)) return true;
+                // 範囲が重なるかチェック：曲の範囲がフィルタ範囲と一部でもかぶればtrue
+                if (maxInput !== null && songMin > maxInput) return false;
+                if (minInput !== null && songMax < minInput) return false;
+                return true;
+            };
+
             const isFilterActive = useMemo(() => {
-                const baseActive = selectedLevels.length > 0 || selectedDifficulties.length > 0 || selectedVersions.length > 0 || selectedBplSections.length > 0;
+                const baseActive = selectedLevels.length > 0 || selectedDifficulties.length > 0 || selectedVersions.length > 0 || selectedBplSections.length > 0 || bpmMin !== "" || bpmMax !== "";
                 if (currentPage === "main") return baseActive || showOnlyFavorites || showOnlyMirrors;
                 if (currentPage === "random") return baseActive || showOnlyFavorites;
                 return baseActive;
-            }, [selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, showOnlyFavorites, showOnlyMirrors, currentPage]);
+            }, [selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, bpmMin, bpmMax, showOnlyFavorites, showOnlyMirrors, currentPage]);
 
             const generateRandomSongs = () => {
                 setIsGenerating(true);
@@ -3072,7 +3138,7 @@
 
                     const matchesVer = selectedVersions.length === 0 || selectedVersions.includes(String(s.version || ""));
 
-                    return matchesLv && matchesDiff && matchesVer;
+                    return matchesLv && matchesDiff && matchesVer && matchesBpmFilter(s);
                 });
 
                 if (filtered.length < SETLIST_TRACK_COUNT) {
@@ -3202,10 +3268,10 @@
                         const matchesSearch = 
                             String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                             String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
-                        return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesSearch && matchesFav && matchesMirror;
+                        return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesSearch && matchesFav && matchesMirror && matchesBpmFilter(s);
                     }
                     
-                    return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesFav && matchesMirror;
+                    return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesFav && matchesMirror && matchesBpmFilter(s);
                 });
 
                 if (currentPage === "ranking") {
@@ -3218,7 +3284,7 @@
                 }
 
                 return result;
-            }, [searchTerm, selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
+            }, [searchTerm, selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, bpmMin, bpmMax, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * itemsPerPage;
@@ -3879,8 +3945,10 @@
                                                             onToggleMirror={() => {}}
                                                             personalMemo={null}
                                                             onSavePersonalMemo={() => {}}
+                                                            showDangerBadge={false}
+                                                            showTips={true}
+                                                            showMemo={false}
                                                             tightMode={true}
-                                                            minimalMode={true}
                                                         />
                                                     </div>
                                                 ))}
@@ -4134,6 +4202,10 @@
                         LV20_LIST={LV20_LIST}
                         FilterButton={FilterButton}
                         LevelSectionHeader={LevelSectionHeader}
+                        bpmMin={bpmMin}
+                        setBpmMin={setBpmMin}
+                        bpmMax={bpmMax}
+                        setBpmMax={setBpmMax}
                     />
 
                     <ViewModeSelectModal 
