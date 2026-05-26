@@ -1606,7 +1606,7 @@
             const cardClassName = minimalMode 
                 ? `static-card rounded-xl p-1.5 mb-1`
                 : tightMode
-                    ? `pop-card rounded-xl p-1.5 mb-2 mx-3 cursor-pointer ${isOpen ? 'active' : ''}`
+                    ? `pop-card rounded-xl p-1.5 mb-2 mx-2 cursor-pointer ${isOpen ? 'active' : ''}`
                     : `pop-card rounded-2xl p-2 mb-4 cursor-pointer ${isOpen ? 'active' : ''}`;
 
             return (
@@ -2078,9 +2078,6 @@
                                                     const id = getSongId(song);
                                                     return (
                                                         <div key={`setlist-${sl.id}-${sIdx}`} className="relative" style={{fontSize:'0.85em'}}>
-                                                            <div className="absolute -left-1 -top-1 w-5 h-5 bg-black text-white rounded-full flex items-center justify-center font-black text-[9px] z-10 border-2 border-white shadow-sm" style={{fontSize:'11px'}}>
-                                                                {sIdx + 1}
-                                                            </div>
                                                             <SongCard
                                                                 song={song}
                                                                 viewMode="list"
