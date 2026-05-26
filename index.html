@@ -2615,7 +2615,7 @@
                                     </div>
                                     <h2 className="text-xl font-black mb-2">途中保存しますか？</h2>
                                     <p className="text-sm font-bold text-gray-600 leading-relaxed px-2">
-                                        曲がすべて揃っていないため正式保存はできませんが、下書きとして一覧に残すことができます。
+                                        楽曲が全て埋まっていません。下書きとして入力内容を保存しますか？
                                     </p>
                                 </div>
                                 <div className="flex flex-col gap-3 mt-6">
@@ -2932,6 +2932,8 @@
                 setSelectedDifficulties([]);
                 setSelectedVersions([]);
                 setSelectedBplSections([]);
+                setBpmMin("");
+                setBpmMax("");
                 setIsFilterOpen(false);
                 setIsFilterModalOpen(false);
                 setPageIndex(1);
@@ -4464,7 +4466,7 @@
                             <p>作成したセトリを使用してメガミックスバトルの試合をシミュレートします。</p>
                             <p>試合展開の分析や、試合後の復習に利用できます。</p>
                             <p></p>
-                            <p style={{marginTop:'4px'}}>※ゲージの溜まり具合は計算できないため、自分で選択する必要があります。</p>
+                            <p style={{marginTop:'4px'}}>※ゲージの溜まり具合を制御することはできないため、ギアの使用についてはご自身で選択いただく必要があります。</p>
                         </div>
                     </div>
                     {setlists.length === 0 ? (
