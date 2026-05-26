@@ -1483,28 +1483,35 @@
                                         <button onClick={() => { setBpmMin(""); setBpmMax(""); }} className="batch-btn">クリア</button>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                     <input
                                         type="number"
                                         min="0"
-                                        placeholder="最小"
                                         value={bpmMin}
-                                        onChange={e => setBpmMin(e.target.value)}
-                                        className="flex-1 border-2 border-black rounded-lg px-3 py-2 text-sm font-black text-center focus:outline-none focus:border-[#52b788]"
-                                        style={{minWidth:0}}
+                                        onChange={e => {
+                                            const v = e.target.value;
+                                            setBpmMin(v);
+                                            if (v !== "" && bpmMax !== "" && parseInt(v, 10) > parseInt(bpmMax, 10)) {
+                                                setBpmMax(v);
+                                            }
+                                        }}
+                                        className="w-16 border-2 border-black rounded-lg px-1 py-1 text-xs font-black text-center focus:outline-none focus:border-[#52b788]"
                                     />
-                                    <span className="font-black text-sm text-gray-400 flex-shrink-0">〜</span>
+                                    <span className="font-black text-sm text-black flex-shrink-0">〜</span>
                                     <input
                                         type="number"
                                         min="0"
-                                        placeholder="最大"
                                         value={bpmMax}
-                                        onChange={e => setBpmMax(e.target.value)}
-                                        className="flex-1 border-2 border-black rounded-lg px-3 py-2 text-sm font-black text-center focus:outline-none focus:border-[#52b788]"
-                                        style={{minWidth:0}}
+                                        onChange={e => {
+                                            const v = e.target.value;
+                                            setBpmMax(v);
+                                            if (v !== "" && bpmMin !== "" && parseInt(v, 10) < parseInt(bpmMin, 10)) {
+                                                setBpmMin(v);
+                                            }
+                                        }}
+                                        className="w-16 border-2 border-black rounded-lg px-1 py-1 text-xs font-black text-center focus:outline-none focus:border-[#52b788]"
                                     />
                                 </div>
-                                <p className="text-[9px] font-bold text-gray-400">範囲表記の曲はどちらかが重なればヒット</p>
                             </div>
                             {/* レベル */}
                             <div className="space-y-2"><LevelSectionHeader title="17" list={LV17_LIST} /><div className="grid grid-cols-4 gap-2">{LV17_LIST.map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
@@ -2616,7 +2623,8 @@
                                         onClick={() => {
                                             onSave({ ...editingSetlist, isDraft: true });
                                             setIsDraftSaveModalOpen(false);
-                                            if (pendingLeaveAction) { pendingLeaveAction(); setPendingLeaveAction(null); }
+                                            setPendingLeaveAction(null);
+                                            setView("list");
                                         }}
                                         className="w-full bg-yellow-400 text-black font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
                                     >
