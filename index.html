@@ -2382,6 +2382,11 @@
                             </div>
                         </div>
                     )}
+                </div>
+            )
+        };
+
+        // アプリ内ブラウザ案内モーダル（X・LINE対応）
         const InAppBrowserModal = ({ isOpen, onClose }) => {
             const [copied, setCopied] = useState(false);
             if (!isOpen) return null;
