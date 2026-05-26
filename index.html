@@ -1869,7 +1869,11 @@
             
             const [isSongModalOpen, setIsSongModalOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
-            const [songModalFilter, setSongModalFilter] = useState("all");
+            const [songModalFilter, setSongModalFilter] = useState("closed"); // "open" | "closed"
+            const [songModalFavOnly, setSongModalFavOnly] = useState(false);
+            const [songModalDiffs, setSongModalDiffs] = useState([]);
+            const [songModalVersions, setSongModalVersions] = useState([]);
+            const songModalFilterActive = songModalFavOnly || songModalDiffs.length > 0 || songModalVersions.length > 0;
             const [openSetlists, setOpenSetlists] = useState({});
             
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -1909,6 +1913,10 @@
             const openSongModal = (slotIndex) => {
                 setSelectingSlot(slotIndex);
                 setSearchTerm("");
+                setSongModalFilter("closed");
+                setSongModalFavOnly(false);
+                setSongModalDiffs([]);
+                setSongModalVersions([]);
                 setIsSongModalOpen(true);
             };
 
@@ -2049,57 +2057,52 @@
                                         )}
                                         
                                         <div className={`overflow-hidden transition-all duration-300 ${!sl.isDraft && openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
-                                            <div className="flex flex-col gap-3 mb-4 px-1 pt-2">
-                                                {/* 楽曲カードグリッド */}
-                                                <div className="grid grid-cols-5 gap-2">
-                                                    {sl.songs.map((songId, sIdx) => {
-                                                        const song = songMap[songId];
-                                                        const mirrorEntry = mirrors[songId];
-                                                        if (!song) return null;
-                                                        return (
-                                                            <div key={sIdx} className="relative">
-                                                                <div className="aspect-square rounded-xl overflow-hidden border-2 border-black relative"
-                                                                    style={{ borderColor: getBorderColor(song.difficult) }}>
-                                                                    <img
-                                                                        src={song.jacket}
-                                                                        alt={song.title}
-                                                                        className="w-full h-full object-cover"
-                                                                        crossOrigin="anonymous"
-                                                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
-                                                                    />
-                                                                    {/* ミラーバッジ */}
-                                                                    {(mirrorEntry && (mirrorEntry.first || mirrorEntry.second)) && (
-                                                                        <div style={{position:'absolute',top:'2px',right:'2px',display:'flex',flexDirection:'column',gap:'2px'}}>
-                                                                            {mirrorEntry.first && (
-                                                                                <div className="mirror-icon-badge relative" style={{width:'16px',height:'16px'}}>
-                                                                                    <i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>
-                                                                                    <span style={{position:'absolute',bottom:'-2px',right:'-2px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
-                                                                                </div>
-                                                                            )}
-                                                                            {mirrorEntry.second && (
-                                                                                <div className="mirror-icon-badge relative" style={{width:'16px',height:'16px'}}>
-                                                                                    <i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>
-                                                                                    <span style={{position:'absolute',bottom:'-2px',right:'-2px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                    {/* 番号バッジ */}
-                                                                    <div style={{position:'absolute',bottom:'2px',left:'2px',width:'16px',height:'16px',background:'rgba(0,0,0,0.75)',color:'white',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'8px',fontWeight:900}}>
-                                                                        {sIdx + 1}
+                                            <div className="flex flex-col gap-2 mb-4 pt-2">
+                                                {sl.songs.map((songId, sIdx) => {
+                                                    const song = songMap[songId];
+                                                    if (!song) return null;
+                                                    const mirrorEntry = mirrors[songId];
+                                                    return (
+                                                        <div key={sIdx} className="relative">
+                                                            <div className="absolute -left-1 -top-1 w-5 h-5 bg-black text-white rounded-full flex items-center justify-center font-black text-[9px] z-10 border-2 border-white shadow-sm">
+                                                                {sIdx + 1}
+                                                            </div>
+                                                            <div className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
+                                                                <img
+                                                                    src={song.jacket}
+                                                                    alt={song.title}
+                                                                    className="w-[58px] h-[58px] border-[3px] rounded-lg object-cover flex-shrink-0"
+                                                                    style={{ borderColor: getBorderColor(song.difficult) }}
+                                                                    crossOrigin="anonymous"
+                                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
+                                                                />
+                                                                <div className="flex-grow min-w-0">
+                                                                    <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
+                                                                    <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
+                                                                        <DiffBadge diff={song.difficult} />
+                                                                        <span className="text-black">Lv {formatLevel(song.level)}</span>
+                                                                        <span className="text-black">BPM {song.bpm || "???"}</span>
                                                                     </div>
                                                                 </div>
-                                                                {/* タイトル */}
-                                                                <div className="mt-0.5 text-[8px] font-black text-black leading-tight text-center" style={{overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
-                                                                    {song.title}
-                                                                </div>
-                                                                <div className="flex justify-center mt-0.5">
-                                                                    <DiffBadge diff={song.difficult} />
+                                                                {/* ミラーバッジ（丸アイコン） */}
+                                                                <div className="flex flex-col gap-1 flex-shrink-0">
+                                                                    {mirrorEntry && mirrorEntry.first && (
+                                                                        <div className="mirror-icon-badge relative" style={{width:'22px',height:'22px'}}>
+                                                                            <i className="ph-bold ph-arrows-left-right" style={{fontSize:'10px'}}></i>
+                                                                            <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'7px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {mirrorEntry && mirrorEntry.second && (
+                                                                        <div className="mirror-icon-badge relative" style={{width:'22px',height:'22px'}}>
+                                                                            <i className="ph-bold ph-arrows-left-right" style={{fontSize:'10px'}}></i>
+                                                                            <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'7px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
 
                                             {sl.memo && (
@@ -2172,6 +2175,7 @@
                         <label className="block text-xs font-black uppercase text-gray-500 mb-[-4px]">TRACKS</label>
                         {editingSetlist.songs.map((songId, idx) => {
                             const song = songId ? songMap[songId] : null;
+                            const mirrorEntry = song ? mirrors[songId] : null;
                             return (
                                 <div key={idx} className="relative flex items-center gap-2">
                                     <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
@@ -2193,7 +2197,24 @@
                                                     <DiffBadge diff={song.difficult} /><span className="text-black">Lv {formatLevel(song.level)}</span>
                                                 </div>
                                             </div>
-                                            <i className="ph-bold ph-arrows-left-right text-gray-400 text-xl mr-2"></i>
+                                            {/* ミラーバッジ（丸アイコン） */}
+                                            <div className="flex flex-col gap-1 flex-shrink-0 mr-1">
+                                                {mirrorEntry && mirrorEntry.first && (
+                                                    <div className="mirror-icon-badge relative" style={{width:'20px',height:'20px'}}>
+                                                        <i className="ph-bold ph-arrows-left-right" style={{fontSize:'9px'}}></i>
+                                                        <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
+                                                    </div>
+                                                )}
+                                                {mirrorEntry && mirrorEntry.second && (
+                                                    <div className="mirror-icon-badge relative" style={{width:'20px',height:'20px'}}>
+                                                        <i className="ph-bold ph-arrows-left-right" style={{fontSize:'9px'}}></i>
+                                                        <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
+                                                    </div>
+                                                )}
+                                                {(!mirrorEntry || (!mirrorEntry.first && !mirrorEntry.second)) && (
+                                                    <i className="ph-bold ph-arrows-left-right text-gray-300 text-xl"></i>
+                                                )}
+                                            </div>
                                         </div>
                                     ) : (
                                         <div onClick={() => openSongModal(idx)} className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 active:translate-y-0.5 transition-all">
@@ -2249,8 +2270,10 @@
 
                     {isSongModalOpen && (
                         <div className="modal-overlay" onClick={() => setIsSongModalOpen(false)}>
-                            <div className="modal-content" style={{ padding: '16px', maxWidth: '380px', width: '100%', height: '80vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+                            <div className="modal-content" style={{ padding: '16px', maxWidth: '380px', width: '100%', height: '85vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
                                 <h2 className="text-lg font-black mb-3 text-black">曲を選択</h2>
+
+                                {/* 検索 */}
                                 <div className="relative mb-2 flex-shrink-0">
                                     <input 
                                         type="text" 
@@ -2262,22 +2285,79 @@
                                     <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
 
-                                {/* フィルタータブ */}
-                                <div className="flex gap-1.5 mb-2 flex-shrink-0">
+                                {/* 絞り込みトグル */}
+                                <div className="flex-shrink-0 mb-2">
                                     <button
-                                        onClick={() => setSongModalFilter("all")}
-                                        className={`flex-1 py-1.5 rounded-lg border-2 border-black text-[11px] font-black transition-all ${songModalFilter === "all" ? 'bg-[#52b788] text-white shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`}
+                                        onClick={() => setSongModalFilter(songModalFilter === "open" ? "closed" : "open")}
+                                        className={`flex items-center gap-1.5 text-[11px] font-black px-3 py-1.5 rounded-lg border-2 border-black transition-all ${songModalFilter === "open" ? 'bg-[#40916c] text-white shadow-[2px_2px_0px_#1b4332]' : 'bg-white text-black shadow-[2px_2px_0px_#000]'} ${songModalFilterActive ? '!bg-[#d8f3dc] !border-[#52b788] !text-[#1b4332] !shadow-[2px_2px_0px_#52b788]' : ''}`}
                                     >
-                                        すべて
-                                    </button>
-                                    <button
-                                        onClick={() => setSongModalFilter("fav")}
-                                        className={`flex-1 py-1.5 rounded-lg border-2 border-black text-[11px] font-black transition-all flex items-center justify-center gap-1 ${songModalFilter === "fav" ? 'bg-yellow-400 text-black shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`}
-                                    >
-                                        <i className="ph-fill ph-star text-yellow-500"></i>お気に入り
+                                        <i className="ph-bold ph-funnel text-sm"></i>
+                                        絞り込み{songModalFilterActive ? '●' : ''}
+                                        <i className={`ph-bold ph-caret-down text-[10px] transition-transform ${songModalFilter === "open" ? 'rotate-180' : ''}`}></i>
                                     </button>
                                 </div>
-                                
+
+                                {/* 絞り込みパネル（折りたたみ） */}
+                                {songModalFilter === "open" && (
+                                    <div className="flex-shrink-0 mb-2 border-2 border-black rounded-xl bg-white overflow-hidden">
+                                        <div className="p-3 space-y-3 max-h-[38vh] overflow-y-auto custom-scrollbar">
+                                            {/* お気に入り */}
+                                            {(favorites && favorites.length > 0) && (
+                                                <div>
+                                                    <div className="text-[9px] font-black text-black uppercase border-b border-gray-200 pb-1 mb-1.5">マイデータ</div>
+                                                    <div className="flex gap-1.5">
+                                                        <button onClick={() => setSongModalFavOnly(false)} className={`flex-1 py-1 rounded-lg border-2 border-black text-[10px] font-black transition-all ${!songModalFavOnly ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}>すべて</button>
+                                                        <button onClick={() => setSongModalFavOnly(true)} className={`flex-1 py-1 rounded-lg border-2 border-black text-[10px] font-black transition-all flex items-center justify-center gap-1 ${songModalFavOnly ? 'bg-yellow-400 text-black' : 'bg-white text-black'}`}>
+                                                            <i className="ph-fill ph-star text-yellow-500"></i>お気に入り
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {/* 難易度 */}
+                                            <div>
+                                                <div className="flex items-center justify-between border-b border-gray-200 pb-1 mb-1.5">
+                                                    <div className="text-[9px] font-black text-black uppercase">難易度</div>
+                                                    <button onClick={() => {
+                                                        const DIFFS = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"];
+                                                        const allSel = DIFFS.every(d => songModalDiffs.includes(d));
+                                                        setSongModalDiffs(allSel ? [] : DIFFS);
+                                                    }} className="batch-btn">全選択/解除</button>
+                                                </div>
+                                                <div className="grid grid-cols-4 gap-1">
+                                                    {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(d => (
+                                                        <button key={d} onClick={() => setSongModalDiffs(prev => prev.includes(d) ? prev.filter(x=>x!==d) : [...prev,d])}
+                                                            className={`py-1 rounded border-2 border-black text-[9px] font-black uppercase transition-all ${songModalDiffs.includes(d) ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}>{d}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {/* バージョン */}
+                                            <div>
+                                                <div className="flex items-center justify-between border-b border-gray-200 pb-1 mb-1.5">
+                                                    <div className="text-[9px] font-black text-black uppercase">バージョン</div>
+                                                    <button onClick={() => {
+                                                        const allSel = VERSION_LIST.every(v => songModalVersions.includes(v.value));
+                                                        setSongModalVersions(allSel ? [] : VERSION_LIST.map(v=>v.value));
+                                                    }} className="batch-btn">全選択/解除</button>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-1">
+                                                    {VERSION_LIST.map(v => (
+                                                        <button key={v.value} onClick={() => setSongModalVersions(prev => prev.includes(v.value) ? prev.filter(x=>x!==v.value) : [...prev,v.value])}
+                                                            className={`py-1 rounded border-2 border-black text-[9px] font-black text-left px-2 transition-all ${songModalVersions.includes(v.value) ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}>{v.label}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {/* リセット */}
+                                            {songModalFilterActive && (
+                                                <button onClick={() => { setSongModalFavOnly(false); setSongModalDiffs([]); setSongModalVersions([]); }}
+                                                    className="w-full py-1 rounded-lg border border-gray-300 bg-gray-50 text-[10px] font-black text-gray-600 flex items-center justify-center gap-1">
+                                                    <i className="ph-bold ph-arrows-counter-clockwise"></i> フィルターをリセット
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 結果一覧 */}
                                 <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4 custom-scrollbar">
                                     {(() => {
                                         const favIds = favorites || [];
@@ -2286,15 +2366,17 @@
                                             const matchSearch = searchTerm.trim() === "" || 
                                                 String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                                                 String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
-                                            const matchFav = songModalFilter !== "fav" || favIds.includes(id);
-                                            return matchSearch && matchFav;
+                                            const matchFav = !songModalFavOnly || favIds.includes(id);
+                                            const matchDiff = songModalDiffs.length === 0 || songModalDiffs.includes(String(s.difficult||"").toUpperCase());
+                                            const matchVer = songModalVersions.length === 0 || songModalVersions.includes(String(s.version||""));
+                                            return matchSearch && matchFav && matchDiff && matchVer;
                                         }).slice(0, 100);
 
-                                        if (songModalFilter === "all" && searchTerm.trim() === "") {
+                                        if (!songModalFilterActive && searchTerm.trim() === "") {
                                             return (
                                                 <div className="flex flex-col items-center justify-center py-12 opacity-40">
                                                     <i className="ph-bold ph-magnifying-glass text-5xl mb-3 text-black"></i>
-                                                    <p className="text-sm font-black text-black">曲名を入力して検索してください</p>
+                                                    <p className="text-sm font-black text-black">曲名を入力 or 絞り込みで検索</p>
                                                 </div>
                                             );
                                         }
@@ -2309,7 +2391,8 @@
                                         return filtered.map((s, i) => {
                                             const id = getSongId(s);
                                             const isSelected = isTitleAlreadySelected(id);
-                                            const hasMirror = mirrors && mirrors[id] && (mirrors[id].first || mirrors[id].second);
+                                            const hasMirror1 = mirrors && mirrors[id] && mirrors[id].first;
+                                            const hasMirror2 = mirrors && mirrors[id] && mirrors[id].second;
                                             return (
                                                 <div key={i} onClick={() => !isSelected && selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
                                                     <div className="flex-shrink-0 w-12 h-12 relative overflow-hidden rounded-md">
@@ -2326,10 +2409,22 @@
                                                         <div className="text-sm font-black text-black break-words leading-tight">{s.title}</div>
                                                         <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
                                                             <DiffBadge diff={s.difficult} /><span className="text-black">Lv {formatLevel(s.level)}</span>
-                                                            {hasMirror && (
-                                                                <span className="mirror-tag"><i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>MIRROR</span>
-                                                            )}
                                                         </div>
+                                                    </div>
+                                                    {/* ミラーバッジ */}
+                                                    <div className="flex flex-col gap-1 flex-shrink-0">
+                                                        {hasMirror1 && (
+                                                            <div className="mirror-icon-badge relative" style={{width:'18px',height:'18px'}}>
+                                                                <i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>
+                                                                <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
+                                                            </div>
+                                                        )}
+                                                        {hasMirror2 && (
+                                                            <div className="mirror-icon-badge relative" style={{width:'18px',height:'18px'}}>
+                                                                <i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>
+                                                                <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
                                                 </div>
