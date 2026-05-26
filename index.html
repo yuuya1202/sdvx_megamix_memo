@@ -1355,7 +1355,7 @@
                         </div>
                         
                         <div className="max-h-[300px] overflow-y-auto pr-1 flex flex-col gap-3 mb-6">
-                            {setlists.map((sl, idx) => (
+                            {setlists.filter(sl => !sl.isDraft).map((sl, idx) => (
                                 <button 
                                     key={sl.id} 
                                     onClick={() => onSelect(sl)}
@@ -1441,7 +1441,14 @@
                             )}
                             {/* バージョン */}
                             <div className="space-y-2">
-                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">バージョン</div>
+                                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                    <div className="text-[10px] font-black text-black uppercase">バージョン</div>
+                                    <button onClick={() => {
+                                        const allSelected = VERSION_LIST.every(v => selectedVersions.includes(v.value));
+                                        if (allSelected) { VERSION_LIST.forEach(v => selectedVersions.includes(v.value) && toggleVersion(v.value)); }
+                                        else { VERSION_LIST.filter(v => !selectedVersions.includes(v.value)).forEach(v => toggleVersion(v.value)); }
+                                    }} className="batch-btn">全選択/解除</button>
+                                </div>
                                 <div className="grid grid-cols-2 gap-1.5">
                                     {VERSION_LIST.map(v => (
                                         <button key={v.value} onClick={() => toggleVersion(v.value)} className={`filter-btn px-2 py-1.5 rounded-lg text-[10px] font-black w-full text-left ${selectedVersions.includes(v.value) ? 'active' : ''}`}>{v.label}</button>
@@ -1450,7 +1457,15 @@
                             </div>
                             {/* 難易度 */}
                             <div className="space-y-2">
-                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">難易度</div>
+                                <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
+                                    <div className="text-[10px] font-black text-black uppercase">難易度</div>
+                                    <button onClick={() => {
+                                        const DIFF_LIST = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"];
+                                        const allSelected = DIFF_LIST.every(d => selectedDifficulties.includes(d));
+                                        if (allSelected) { DIFF_LIST.forEach(d => toggleDifficulty(d)); }
+                                        else { DIFF_LIST.filter(d => !selectedDifficulties.includes(d)).forEach(d => toggleDifficulty(d)); }
+                                    }} className="batch-btn">全選択/解除</button>
+                                </div>
                                 <div className="grid grid-cols-4 gap-2">
                                     {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(diff => (
                                         <button key={diff} onClick={() => toggleDifficulty(diff)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedDifficulties.includes(diff) ? 'active' : ''}`}>{diff}</button>
@@ -1847,32 +1862,48 @@
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, getSongId, formatLevel, getBorderColor }) => {
+        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, getSongId, formatLevel, getBorderColor, favorites }) => {
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null);
             
             const [isSongModalOpen, setIsSongModalOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
+            const [songModalFilter, setSongModalFilter] = useState("all");
             const [openSetlists, setOpenSetlists] = useState({});
             
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
             const [deletingId, setDeletingId] = useState(null);
             const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
             const [isSelectExportOpen, setIsSelectExportOpen] = useState(false);
+            const [isDraftSaveModalOpen, setIsDraftSaveModalOpen] = useState(false);
+            const [pendingLeaveAction, setPendingLeaveAction] = useState(null);
 
             const handleCreate = () => {
                 if (setlists.length >= MAX_SETLISTS) {
                     setIsLimitModalOpen(true);
                     return;
                 }
-                setEditingSetlist({ id: Date.now().toString(), name: "", songs: Array(SETLIST_TRACK_COUNT).fill(null), memo: "" });
+                setEditingSetlist({ id: Date.now().toString(), name: "", songs: Array(SETLIST_TRACK_COUNT).fill(null), memo: "", isDraft: true });
                 setView("edit");
             };
 
             const handleEdit = (sl) => {
                 setEditingSetlist({ ...sl, songs: [...sl.songs], memo: sl.memo || "" });
                 setView("edit");
+            };
+
+            // 編集画面を離れる前に途中保存を提案するヘルパー
+            const tryLeaveEdit = (doLeave) => {
+                const incomplete = editingSetlist && editingSetlist.songs.some(id => id === null);
+                const hasTitle = editingSetlist && editingSetlist.name.trim() !== "";
+                // 未完成かつタイトルあり → 途中保存ダイアログ
+                if (incomplete && hasTitle) {
+                    setPendingLeaveAction(() => doLeave);
+                    setIsDraftSaveModalOpen(true);
+                } else {
+                    doLeave();
+                }
             };
 
             const openSongModal = (slotIndex) => {
@@ -1903,7 +1934,8 @@
             };
 
             const handleSave = () => {
-                onSave(editingSetlist);
+                const toSave = { ...editingSetlist, isDraft: false };
+                onSave(toSave);
                 if (editingSetlist && editingSetlist.id) {
                     setOpenSetlists(prev => ({ ...prev, [editingSetlist.id]: false }));
                 }
@@ -1949,7 +1981,7 @@
                                 <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
                             </div>
                             <div className="flex gap-2">
-                                {setlists.length > 0 && (
+                                {setlists.length > 0 && setlists.some(sl => !sl.isDraft) && (
                                     <button 
                                         onClick={() => setIsSelectExportOpen(true)} 
                                         className="bg-[#fef9c3] text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1"
@@ -1971,18 +2003,29 @@
                         ) : (
                             <div className="flex flex-col gap-4 mt-2">
                                 {setlists.map((sl, idx) => (
-                                    <div key={sl.id} className="bg-white border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] transition-all">
+                                    <div key={sl.id} className={`border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] transition-all ${sl.isDraft ? 'bg-gray-100' : 'bg-white'}`}>
                                         <div 
                                             className="flex items-center justify-between cursor-pointer" 
-                                            onClick={() => setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}
+                                            onClick={() => !sl.isDraft && setOpenSetlists(prev => ({ ...prev, [sl.id]: !prev[sl.id] }))}
                                         >
-                                            <h3 className="text-base font-black text-black">#{idx + 1}　{sl.name}</h3>
-                                            <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}>
-                                                <i className="ph-bold ph-caret-circle-down text-2xl text-black"></i>
+                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                <h3 className={`text-base font-black truncate ${sl.isDraft ? 'text-gray-400' : 'text-black'}`}>#{idx + 1}　{sl.name}</h3>
+                                                {sl.isDraft && (
+                                                    <span className="flex-shrink-0 text-[9px] font-black bg-gray-300 text-gray-600 border border-gray-400 px-1.5 py-0.5 rounded-full uppercase tracking-wider">下書き</span>
+                                                )}
                                             </div>
+                                            {sl.isDraft ? (
+                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-shrink-0 text-xs font-black bg-yellow-400 border-2 border-black px-3 py-1.5 rounded-lg shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1">
+                                                    <i className="ph-bold ph-pencil-simple"></i> 続きを編集
+                                                </button>
+                                            ) : (
+                                                <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}>
+                                                    <i className="ph-bold ph-caret-circle-down text-2xl text-black"></i>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {!openSetlists[sl.id] && (
+                                        {!openSetlists[sl.id] && !sl.isDraft && (
                                             <div className="flex gap-1.5 mt-3">
                                                 {sl.songs.map((songId, sIdx) => {
                                                     const s = songMap[songId];
@@ -2005,49 +2048,58 @@
                                             </div>
                                         )}
                                         
-                                        <div className={`overflow-hidden transition-all duration-300 ${openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
-                                            <div className="flex flex-col gap-3 mb-4 px-2 pt-2">
-                                                {sl.songs.map((songId, sIdx) => {
-                                                    const song = songMap[songId];
-                                                    if (!song) return null;
-                                                    const mirrorEntry = mirrors[songId];
-                                                    return (
-                                                        <div key={sIdx} className="relative">
-                                                            <div className="absolute -left-2 -top-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center font-black text-xs z-10 border-2 border-white shadow-sm">
-                                                                {sIdx + 1}
-                                                            </div>
-                                                            <div className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2">
-                                                                <img 
-                                                                    src={song.jacket} 
-                                                                    className="w-12 h-12 border-2 rounded object-cover" 
-                                                                    style={{ borderColor: getBorderColor(song.difficult) }}
-                                                                    crossOrigin="anonymous"
-                                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                                                />
-                                                                <div className="flex-grow min-w-0">
-                                                                    <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                                    <div className="text-[10px] font-black uppercase flex items-center gap-2">
-                                                                        <DiffBadge diff={song.difficult} /><span className="text-black">Lv {formatLevel(song.level)}</span>
+                                        <div className={`overflow-hidden transition-all duration-300 ${!sl.isDraft && openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
+                                            <div className="flex flex-col gap-3 mb-4 px-1 pt-2">
+                                                {/* 楽曲カードグリッド */}
+                                                <div className="grid grid-cols-5 gap-2">
+                                                    {sl.songs.map((songId, sIdx) => {
+                                                        const song = songMap[songId];
+                                                        const mirrorEntry = mirrors[songId];
+                                                        if (!song) return null;
+                                                        return (
+                                                            <div key={sIdx} className="relative">
+                                                                <div className="aspect-square rounded-xl overflow-hidden border-2 border-black relative"
+                                                                    style={{ borderColor: getBorderColor(song.difficult) }}>
+                                                                    <img
+                                                                        src={song.jacket}
+                                                                        alt={song.title}
+                                                                        className="w-full h-full object-cover"
+                                                                        crossOrigin="anonymous"
+                                                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
+                                                                    />
+                                                                    {/* ミラーバッジ */}
+                                                                    {(mirrorEntry && (mirrorEntry.first || mirrorEntry.second)) && (
+                                                                        <div style={{position:'absolute',top:'2px',right:'2px',display:'flex',flexDirection:'column',gap:'2px'}}>
+                                                                            {mirrorEntry.first && (
+                                                                                <div className="mirror-icon-badge relative" style={{width:'16px',height:'16px'}}>
+                                                                                    <i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>
+                                                                                    <span style={{position:'absolute',bottom:'-2px',right:'-2px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {mirrorEntry.second && (
+                                                                                <div className="mirror-icon-badge relative" style={{width:'16px',height:'16px'}}>
+                                                                                    <i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>
+                                                                                    <span style={{position:'absolute',bottom:'-2px',right:'-2px',fontSize:'6px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {/* 番号バッジ */}
+                                                                    <div style={{position:'absolute',bottom:'2px',left:'2px',width:'16px',height:'16px',background:'rgba(0,0,0,0.75)',color:'white',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'8px',fontWeight:900}}>
+                                                                        {sIdx + 1}
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex flex-col gap-1 flex-shrink-0">
-                                                                    {mirrorEntry && mirrorEntry.first && (
-                                                                        <div className="mirror-icon-badge relative" title="第1区間ミラー">
-                                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
-                                                                            <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'7px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {mirrorEntry && mirrorEntry.second && (
-                                                                        <div className="mirror-icon-badge relative" title="第2区間ミラー">
-                                                                            <i className="ph-bold ph-arrows-left-right text-[10px]"></i>
-                                                                            <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'7px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
-                                                                        </div>
-                                                                    )}
+                                                                {/* タイトル */}
+                                                                <div className="mt-0.5 text-[8px] font-black text-black leading-tight text-center" style={{overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical'}}>
+                                                                    {song.title}
+                                                                </div>
+                                                                <div className="flex justify-center mt-0.5">
+                                                                    <DiffBadge diff={song.difficult} />
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    )
-                                                })}
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
 
                                             {sl.memo && (
@@ -2190,7 +2242,7 @@
                         >
                             保存する
                         </button>
-                        <button onClick={() => setView("list")} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all">
+                        <button onClick={() => tryLeaveEdit(() => setView("list"))} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all">
                             キャンセル
                         </button>
                     </div>
@@ -2199,7 +2251,7 @@
                         <div className="modal-overlay" onClick={() => setIsSongModalOpen(false)}>
                             <div className="modal-content" style={{ padding: '16px', maxWidth: '380px', width: '100%', height: '80vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
                                 <h2 className="text-lg font-black mb-3 text-black">曲を選択</h2>
-                                <div className="relative mb-3 flex-shrink-0">
+                                <div className="relative mb-2 flex-shrink-0">
                                     <input 
                                         type="text" 
                                         placeholder="曲名・読みで検索..."
@@ -2209,20 +2261,55 @@
                                     />
                                     <i className="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
+
+                                {/* フィルタータブ */}
+                                <div className="flex gap-1.5 mb-2 flex-shrink-0">
+                                    <button
+                                        onClick={() => setSongModalFilter("all")}
+                                        className={`flex-1 py-1.5 rounded-lg border-2 border-black text-[11px] font-black transition-all ${songModalFilter === "all" ? 'bg-[#52b788] text-white shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`}
+                                    >
+                                        すべて
+                                    </button>
+                                    <button
+                                        onClick={() => setSongModalFilter("fav")}
+                                        className={`flex-1 py-1.5 rounded-lg border-2 border-black text-[11px] font-black transition-all flex items-center justify-center gap-1 ${songModalFilter === "fav" ? 'bg-yellow-400 text-black shadow-[2px_2px_0px_#000]' : 'bg-white text-black'}`}
+                                    >
+                                        <i className="ph-fill ph-star text-yellow-500"></i>お気に入り
+                                    </button>
+                                </div>
                                 
                                 <div className="flex-grow overflow-y-auto flex flex-col gap-2 pr-1 pb-4 custom-scrollbar">
-                                    {searchTerm.trim() === "" ? (
-                                        <div className="flex flex-col items-center justify-center py-12 opacity-40">
-                                            <i className="ph-bold ph-magnifying-glass text-5xl mb-3 text-black"></i>
-                                            <p className="text-sm font-black text-black">曲名を入力して検索してください</p>
-                                        </div>
-                                    ) : (
-                                        songs.filter(s => 
-                                            String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                            String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase())
-                                        ).slice(0, 100).map((s, i) => {
+                                    {(() => {
+                                        const favIds = favorites || [];
+                                        const filtered = songs.filter(s => {
+                                            const id = getSongId(s);
+                                            const matchSearch = searchTerm.trim() === "" || 
+                                                String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                                String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
+                                            const matchFav = songModalFilter !== "fav" || favIds.includes(id);
+                                            return matchSearch && matchFav;
+                                        }).slice(0, 100);
+
+                                        if (songModalFilter === "all" && searchTerm.trim() === "") {
+                                            return (
+                                                <div className="flex flex-col items-center justify-center py-12 opacity-40">
+                                                    <i className="ph-bold ph-magnifying-glass text-5xl mb-3 text-black"></i>
+                                                    <p className="text-sm font-black text-black">曲名を入力して検索してください</p>
+                                                </div>
+                                            );
+                                        }
+                                        if (filtered.length === 0) {
+                                            return (
+                                                <div className="flex flex-col items-center justify-center py-12 opacity-40">
+                                                    <i className="ph-bold ph-ghost text-5xl mb-3 text-black"></i>
+                                                    <p className="text-sm font-black text-black">該当する曲が見つかりません</p>
+                                                </div>
+                                            );
+                                        }
+                                        return filtered.map((s, i) => {
                                             const id = getSongId(s);
                                             const isSelected = isTitleAlreadySelected(id);
+                                            const hasMirror = mirrors && mirrors[id] && (mirrors[id].first || mirrors[id].second);
                                             return (
                                                 <div key={i} onClick={() => !isSelected && selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
                                                     <div className="flex-shrink-0 w-12 h-12 relative overflow-hidden rounded-md">
@@ -2239,13 +2326,16 @@
                                                         <div className="text-sm font-black text-black break-words leading-tight">{s.title}</div>
                                                         <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
                                                             <DiffBadge diff={s.difficult} /><span className="text-black">Lv {formatLevel(s.level)}</span>
+                                                            {hasMirror && (
+                                                                <span className="mirror-tag"><i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>MIRROR</span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
                                                 </div>
-                                            )
-                                        })
-                                    )}
+                                            );
+                                        });
+                                    })()}
                                 </div>
                                 
                                 <div className="flex justify-center flex-shrink-0 mt-3">
@@ -2256,11 +2346,42 @@
                             </div>
                         </div>
                     )}
-                </div>
-            )
-        };
-
-        // アプリ内ブラウザ案内モーダル（X・LINE対応）
+                    {isDraftSaveModalOpen && (
+                        <div className="modal-overlay" onClick={() => { setIsDraftSaveModalOpen(false); }}>
+                            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                                <div className="mb-4">
+                                    <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-yellow-100">
+                                        <i className="ph-bold ph-floppy-disk text-3xl text-yellow-600"></i>
+                                    </div>
+                                    <h2 className="text-xl font-black mb-2">途中保存しますか？</h2>
+                                    <p className="text-sm font-bold text-gray-600 leading-relaxed px-2">
+                                        曲がすべて揃っていないため正式保存はできませんが、下書きとして一覧に残すことができます。
+                                    </p>
+                                </div>
+                                <div className="flex flex-col gap-3 mt-6">
+                                    <button 
+                                        onClick={() => {
+                                            onSave({ ...editingSetlist, isDraft: true });
+                                            setIsDraftSaveModalOpen(false);
+                                            if (pendingLeaveAction) { pendingLeaveAction(); setPendingLeaveAction(null); }
+                                        }}
+                                        className="w-full bg-yellow-400 text-black font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                                    >
+                                        <i className="ph-bold ph-floppy-disk mr-1"></i> 下書き保存する
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            setIsDraftSaveModalOpen(false);
+                                            if (pendingLeaveAction) { pendingLeaveAction(); setPendingLeaveAction(null); }
+                                        }}
+                                        className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                                    >
+                                        保存せず離れる
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
         const InAppBrowserModal = ({ isOpen, onClose }) => {
             const [copied, setCopied] = useState(false);
             if (!isOpen) return null;
@@ -3281,6 +3402,7 @@
                                             getSongId={getSongId}
                                             formatLevel={formatLevel}
                                             getBorderColor={getBorderColor}
+                                            favorites={favorites}
                                         />
                                     </div>
                                 )}
@@ -3356,7 +3478,7 @@
                                         <div className="mb-4">
                                             <div className="toggle-btn-group">
                                                 <button onClick={() => setTermsTab("terms")} className={`toggle-btn-small ${termsTab === "terms" ? 'active' : ''}`}>利用規約</button>
-                                                <button onClick={() => setTermsTab("privacy")} className={`toggle-btn-small ${termsTab === "privacy" ? 'active' : ''}`}>プライバシーポリシー</button>
+                                                <button onClick={() => setTermsTab("privacy")} className={`toggle-btn-small ${termsTab === "privacy" ? 'active' : ''}`} style={{lineHeight:1.2}}>プライバシー<br/>ポリシー</button>
                                                 <button onClick={() => setTermsTab("credits")} className={`toggle-btn-small ${termsTab === "credits" ? 'active' : ''}`}>クレジット</button>
                                             </div>
                                         </div>
@@ -4079,7 +4201,7 @@
                             <div>
                                 <p className="section-label mb-3">2. 使用セトリ</p>
                                 <div className="flex flex-col gap-2">
-                                    {setlists.map(sl => (
+                                    {setlists.filter(sl => !sl.isDraft).map(sl => (
                                         <button key={sl.id} onClick={() => { setSelectedSetlistId(sl.id); setIntroOutroSongId(""); }}
                                             className={`w-full text-left px-4 py-3 rounded-xl border-2 font-black text-sm transition-all ${selectedSetlistId === sl.id ? 'border-[#6366f1] bg-[#eef2ff] shadow-[3px_3px_0px_#6366f1]' : 'border-black bg-white shadow-[2px_2px_0px_#000]'}`}>
                                             <div className="flex items-center gap-2">
