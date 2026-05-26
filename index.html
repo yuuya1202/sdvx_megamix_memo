@@ -1872,10 +1872,12 @@
             const [searchTerm, setSearchTerm] = useState("");
             const [songModalFilter, setSongModalFilter] = useState("closed"); // "open" | "closed"
             const [songModalFavOnly, setSongModalFavOnly] = useState(false);
+            const [songModalMirrorOnly, setSongModalMirrorOnly] = useState(false);
             const [songModalDiffs, setSongModalDiffs] = useState([]);
             const [songModalVersions, setSongModalVersions] = useState([]);
             const [songModalLevels, setSongModalLevels] = useState([]);
-            const songModalFilterActive = songModalFavOnly || songModalDiffs.length > 0 || songModalVersions.length > 0 || songModalLevels.length > 0;
+            const [songModalBpls, setSongModalBpls] = useState([]);
+            const songModalFilterActive = songModalFavOnly || songModalMirrorOnly || songModalDiffs.length > 0 || songModalVersions.length > 0 || songModalLevels.length > 0 || songModalBpls.length > 0;
             const [openSetlists, setOpenSetlists] = useState({});
             
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -1917,9 +1919,11 @@
                 setSearchTerm("");
                 setSongModalFilter("closed");
                 setSongModalFavOnly(false);
+                setSongModalMirrorOnly(false);
                 setSongModalDiffs([]);
                 setSongModalVersions([]);
                 setSongModalLevels([]);
+                setSongModalBpls([]);
                 setIsSongModalOpen(true);
             };
 
@@ -2060,54 +2064,27 @@
                                         )}
                                         
                                         <div className={`overflow-hidden transition-all duration-300 ${!sl.isDraft && openSetlists[sl.id] ? 'max-h-[2000px] mt-4 opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
-                                            <div className="flex flex-col gap-2 mb-4 pt-2">
+                                            <div className="flex flex-col gap-0 mb-4 pt-2">
                                                 {sl.songs.map((songId, sIdx) => {
                                                     const song = songMap[songId];
                                                     if (!song) return null;
-                                                    const mirrorEntry = mirrors[songId];
+                                                    const id = getSongId(song);
                                                     return (
-                                                        <div key={sIdx} className="relative">
-                                                            <div className="absolute -left-1 -top-1 w-5 h-5 bg-black text-white rounded-full flex items-center justify-center font-black text-[9px] z-10 border-2 border-white shadow-sm">
-                                                                {sIdx + 1}
-                                                            </div>
-                                                            <div
-                                                                className="flex items-center gap-3 bg-gray-50 border-2 border-black rounded-xl p-2 cursor-pointer active:translate-y-0.5 transition-transform hover:bg-gray-100"
-                                                                onClick={(e) => { e.stopPropagation(); setSelectedDetailSong(song); }}
-                                                            >
-                                                                <img
-                                                                    src={song.jacket}
-                                                                    alt={song.title}
-                                                                    className="w-[58px] h-[58px] border-[3px] rounded-lg object-cover flex-shrink-0"
-                                                                    style={{ borderColor: getBorderColor(song.difficult) }}
-                                                                    crossOrigin="anonymous"
-                                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
-                                                                />
-                                                                <div className="flex-grow min-w-0">
-                                                                    <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
-                                                                    <div className="text-[10px] font-black uppercase flex items-center gap-2 mt-1">
-                                                                        <DiffBadge diff={song.difficult} />
-                                                                        <span className="text-black">Lv {formatLevel(song.level)}</span>
-                                                                        <span className="text-black">BPM {song.bpm || "???"}</span>
-                                                                    </div>
-                                                                </div>
-                                                                {/* ミラーバッジ（丸アイコン） */}
-                                                                <div className="flex flex-col gap-1 flex-shrink-0">
-                                                                    {mirrorEntry && mirrorEntry.first && (
-                                                                        <div className="mirror-icon-badge relative" style={{width:'22px',height:'22px'}}>
-                                                                            <i className="ph-bold ph-arrows-left-right" style={{fontSize:'10px'}}></i>
-                                                                            <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'7px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>1</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {mirrorEntry && mirrorEntry.second && (
-                                                                        <div className="mirror-icon-badge relative" style={{width:'22px',height:'22px'}}>
-                                                                            <i className="ph-bold ph-arrows-left-right" style={{fontSize:'10px'}}></i>
-                                                                            <span style={{position:'absolute',bottom:'-3px',right:'-3px',fontSize:'7px',fontWeight:900,lineHeight:1,background:'#6366f1',color:'white',borderRadius:'99px',padding:'1px 2px',border:'1px solid white'}}>2</span>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <i className="ph-bold ph-caret-right text-gray-300 text-sm flex-shrink-0"></i>
-                                                            </div>
-                                                        </div>
+                                                        <SongCard
+                                                            key={`setlist-${sl.id}-${sIdx}`}
+                                                            song={song}
+                                                            viewMode="list"
+                                                            showDangerBadge={false}
+                                                            showTips={true}
+                                                            showMemo={false}
+                                                            isLoggedIn={isLoggedIn}
+                                                            isFavorite={isLoggedIn && favorites.includes(id)}
+                                                            onToggleFavorite={() => toggleFavorite && toggleFavorite(id)}
+                                                            mirrorData={mirrors[id]}
+                                                            onToggleMirror={(section) => toggleMirror && toggleMirror(id, section)}
+                                                            personalMemo={personalMemos && personalMemos[id]}
+                                                            onSavePersonalMemo={(memo) => onSavePersonalMemo && onSavePersonalMemo(id, memo)}
+                                                        />
                                                     );
                                                 })}
                                             </div>
@@ -2330,6 +2307,7 @@
                                                 String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                                                 String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
                                             const matchFav = !songModalFavOnly || favIds.includes(id);
+                                            const matchMirror = !songModalMirrorOnly || (mirrors && mirrors[id] && (mirrors[id].first || mirrors[id].second));
                                             const matchDiff = songModalDiffs.length === 0 || songModalDiffs.includes(String(s.difficult||"").toUpperCase());
                                             const matchVer = songModalVersions.length === 0 || songModalVersions.includes(String(s.version||""));
                                             const lvStr = String(s.level || "");
@@ -2340,7 +2318,8 @@
                                                 }
                                                 return lvStr === targetLv;
                                             });
-                                            return matchSearch && matchFav && matchDiff && matchVer && matchLv;
+                                            const matchBpl = songModalBpls.length === 0 || songModalBpls.includes(Number(s.bpl));
+                                            return matchSearch && matchFav && matchMirror && matchDiff && matchVer && matchLv && matchBpl;
                                         }).slice(0, 100);
 
                                         if (!songModalFilterActive && searchTerm.trim() === "") {
@@ -2420,7 +2399,7 @@
                                     <span className="text-base font-black">絞り込み（曲選択）</span>
                                     <div className="flex items-center gap-2">
                                         {songModalFilterActive && (
-                                            <button onClick={() => { setSongModalFavOnly(false); setSongModalDiffs([]); setSongModalVersions([]); setSongModalLevels([]); }}
+                                            <button onClick={() => { setSongModalFavOnly(false); setSongModalMirrorOnly(false); setSongModalDiffs([]); setSongModalVersions([]); setSongModalLevels([]); setSongModalBpls([]); }}
                                                 className="flex items-center gap-1 text-[10px] font-black bg-gray-100 border border-gray-300 px-3 py-1 rounded-full">
                                                 <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
                                             </button>
@@ -2431,7 +2410,7 @@
                                     </div>
                                 </div>
                                 <div className="overflow-y-auto px-5 py-4 space-y-6 text-black">
-                                    {/* お気に入り */}
+                                    {/* お気に入り・ミラー */}
                                     {favorites && favorites.length > 0 && (
                                         <div className="space-y-2">
                                             <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">マイデータ</div>
@@ -2439,6 +2418,12 @@
                                                 <button onClick={() => setSongModalFavOnly(false)} className={`toggle-btn-small ${!songModalFavOnly ? 'active' : ''}`} style={{color: !songModalFavOnly ? '#1b4332' : '#374151'}}>すべて</button>
                                                 <button onClick={() => setSongModalFavOnly(true)} className={`toggle-btn-small ${songModalFavOnly ? 'active' : ''}`} style={{color: songModalFavOnly ? '#1b4332' : '#374151'}}>
                                                     <i className="ph-fill ph-star"></i> お気に入りのみ
+                                                </button>
+                                            </div>
+                                            <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
+                                                <button onClick={() => setSongModalMirrorOnly(false)} className={`toggle-btn-small ${!songModalMirrorOnly ? 'active' : ''}`} style={{color: !songModalMirrorOnly ? '#1b4332' : '#374151'}}>すべて</button>
+                                                <button onClick={() => setSongModalMirrorOnly(true)} className={`toggle-btn-small ${songModalMirrorOnly ? 'active' : ''}`} style={{color: songModalMirrorOnly ? '#1b4332' : '#374151'}}>
+                                                    <i className="ph-bold ph-arrows-left-right"></i> ミラーのみ
                                                 </button>
                                             </div>
                                         </div>
@@ -2527,6 +2512,18 @@
                                         </div>
                                         <div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
                                         <div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
+                                    </div>
+                                    {/* BPL（S6）課題曲 */}
+                                    <div className="space-y-2 pb-2">
+                                        <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">BPL（S6）課題曲</div>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[1,2,3,4,5,6,7].map(n => (
+                                                <button key={n} onClick={() => setSongModalBpls(prev => prev.includes(n) ? prev.filter(x=>x!==n) : [...prev,n])}
+                                                    className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${songModalBpls.includes(n) ? 'active' : ''}`}>
+                                                    区分{n}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="px-5 py-4 border-t-2 border-black">
@@ -3408,12 +3405,13 @@
                                     </div>
                                     <div className="flex justify-end items-center mb-4">
                                         <div
-                                            className="view-mode-badge"
+                                            className={`view-mode-badge ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
                                             onClick={() => setIsFilterModalOpen(true)}
-                                            style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
+                                            style={isFilterActive ? {boxShadow:'3px 3px 0px #52b788'} : {}}
                                         >
                                             <i className="ph-bold ph-funnel text-sm"></i>
                                             絞り込み{isFilterActive ? '●' : ''}
+                                            <i className="ph-bold ph-caret-down text-[10px]"></i>
                                         </div>
                                     </div>
                                     <div className="mb-2">
@@ -3473,12 +3471,13 @@
                                     </div>
                                     <div className="flex justify-end items-center gap-2 mb-3">
                                         <div
-                                            className="view-mode-badge"
+                                            className={`view-mode-badge ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
                                             onClick={() => setIsFilterModalOpen(true)}
-                                            style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
+                                            style={isFilterActive ? {boxShadow:'3px 3px 0px #52b788'} : {}}
                                         >
                                             <i className="ph-bold ph-funnel text-sm"></i>
                                             絞り込み{isFilterActive ? '●' : ''}
+                                            <i className="ph-bold ph-caret-down text-[10px]"></i>
                                         </div>
                                         {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
                                             <button 
@@ -3534,12 +3533,13 @@
                                                     表示形式
                                                 </div>
                                                 <div
-                                                    className="view-mode-badge"
+                                                    className={`view-mode-badge ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
                                                     onClick={() => setIsFilterModalOpen(true)}
-                                                    style={isFilterActive ? { background: '#d8f3dc', borderColor: '#52b788' } : {}}
+                                                    style={isFilterActive ? {boxShadow:'3px 3px 0px #52b788'} : {}}
                                                 >
                                                     <i className="ph-bold ph-funnel text-sm"></i>
                                                     絞り込み{isFilterActive ? '●' : ''}
+                                                    <i className="ph-bold ph-caret-down text-[10px]"></i>
                                                 </div>
                                             </div>
                                             <div className="relative">
