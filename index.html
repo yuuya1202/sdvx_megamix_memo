@@ -1612,7 +1612,7 @@
                     <div onClick={() => !minimalMode && setIsOpen(!isOpen)} className={cardClassName}>
                         {renderDangerBadges()}
                         <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-3'}`}>
-                            <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : tightMode ? 'w-[46px] h-[46px]' : 'w-[58px] h-[58px]'} relative overflow-hidden rounded-lg`}>
+                            <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : tightMode ? 'w-[40px] h-[40px]' : 'w-[58px] h-[58px]'} relative overflow-hidden rounded-lg`}>
                                 {song.jacket ? (
                                     <img 
                                         src={song.jacket} 
@@ -1632,16 +1632,16 @@
                                 )}
                             </div>
                             <div className="flex-grow min-w-0">
-                                <h3 className={`${minimalMode ? 'text-sm' : tightMode ? 'text-[13px]' : 'text-base'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
-                                <div className={`flex flex-nowrap items-center gap-x-2 gap-y-0.5 whitespace-nowrap`}>
+                                <h3 className={`${minimalMode ? 'text-sm' : tightMode ? 'text-[11px]' : 'text-base'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
+                                <div className={`flex flex-nowrap items-center gap-x-1.5 gap-y-0.5 whitespace-nowrap`}>
                                     <DiffBadge diff={song.difficult} />
-                                    <div className="flex items-baseline gap-1 font-black text-black leading-none">
-                                        <span className={`${minimalMode || tightMode ? 'text-[8px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
-                                        <span className={`${minimalMode || tightMode ? 'text-sm' : 'text-lg'} tracking-tight leading-none`}>{displayLevel}</span>
+                                    <div className="flex items-baseline gap-0.5 font-black text-black leading-none">
+                                        <span className={`${minimalMode || tightMode ? 'text-[7px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>Lv</span>
+                                        <span className={`${minimalMode || tightMode ? 'text-xs' : 'text-lg'} tracking-tight leading-none`}>{displayLevel}</span>
                                     </div>
-                                    <div className="flex items-baseline gap-1 font-black text-black leading-none">
-                                        <span className={`${minimalMode || tightMode ? 'text-[8px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
-                                        <span className={`${minimalMode || tightMode ? 'text-sm' : 'text-lg'} tracking-tight leading-none whitespace-nowrap`}>{song.bpm || "???"}</span>
+                                    <div className="flex items-baseline gap-0.5 font-black text-black leading-none">
+                                        <span className={`${minimalMode || tightMode ? 'text-[7px]' : 'text-[9px]'} uppercase tracking-tight text-black font-black`}>BPM</span>
+                                        <span className={`${minimalMode || tightMode ? 'text-xs' : 'text-lg'} tracking-tight leading-none whitespace-nowrap`}>{song.bpm || "???"}</span>
                                     </div>
                                 </div>
                                 {!minimalMode && personalMemo && (
@@ -2224,6 +2224,12 @@
                                                 {(!mirrorEntry || (!mirrorEntry.first && !mirrorEntry.second)) && (
                                                     <i className="ph-bold ph-arrows-left-right text-gray-300 text-xl"></i>
                                                 )}
+                                                {/* お気に入りバッジ */}
+                                                {(favorites || []).includes(songId) && (
+                                                    <div className="w-5 h-5 rounded-full bg-yellow-50 border border-yellow-400 flex items-center justify-center mt-0.5">
+                                                        <i className="ph-fill ph-star text-yellow-400" style={{fontSize:'9px'}}></i>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ) : (
@@ -2372,6 +2378,11 @@
                                                         </div>
                                                     </div>
                                                     <div className="flex flex-col gap-1 flex-shrink-0">
+                                                        {(favorites || []).includes(id) && (
+                                                            <div className="w-[18px] h-[18px] rounded-full bg-yellow-50 border border-yellow-400 flex items-center justify-center">
+                                                                <i className="ph-fill ph-star text-yellow-400" style={{fontSize:'8px'}}></i>
+                                                            </div>
+                                                        )}
                                                         {hasMirror1 && (
                                                             <div className="mirror-icon-badge relative" style={{width:'18px',height:'18px'}}>
                                                                 <i className="ph-bold ph-arrows-left-right" style={{fontSize:'8px'}}></i>
@@ -2406,7 +2417,7 @@
                         <div className="modal-overlay" style={{zIndex:110}} onClick={() => setSongModalFilter("closed")}>
                             <div className="modal-content !max-w-[380px] !text-left !p-0 overflow-hidden" style={{maxHeight:'85vh',display:'flex',flexDirection:'column'}} onClick={e => e.stopPropagation()}>
                                 <div className="flex items-center justify-between px-5 py-4 border-b-2 border-black">
-                                    <span className="text-base font-black">絞り込み（曲選択）</span>
+                                    <span className="text-base font-black">絞り込み</span>
                                     <div className="flex items-center gap-2">
                                         {songModalFilterActive && (
                                             <button onClick={() => { setSongModalFavOnly(false); setSongModalMirrorOnly(false); setSongModalDiffs([]); setSongModalVersions([]); setSongModalLevels([]); setSongModalBpls([]); }}
