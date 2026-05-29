@@ -2901,7 +2901,7 @@
 
             // --- User Profile & Setlists Fetch（onSnapshot→getDocに変更）---
             useEffect(() => {
-                if (!user || !firebase) return;
+                if (!user || !firebase || user.isAnonymous) return;
 
                 const fetchUserData = async () => {
                     const { doc, getDoc } = window.FirebaseSDK;
