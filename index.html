@@ -2979,12 +2979,12 @@
                 if (!firebase) return;
                 const { signOut, signInAnonymously } = window.FirebaseSDK;
                 try {
+                    setIsLogoutModalOpen(false);
                     await signOut(firebase.auth);
                     await signInAnonymously(firebase.auth);
                     setShowOnlyFavorites(false);
                     setShowOnlyMirrors(false);
                     setCurrentPage("main");
-                    setIsLogoutModalOpen(false);
                 } catch (error) {
                     console.error("Logout Error:", error);
                 }
