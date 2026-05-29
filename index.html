@@ -10,7 +10,6 @@
     <!-- 背景画像のプリロード -->
     <link rel="preload" href="https://yuuya1202.github.io/Image_Background/IMG_Background.jpg" as="image">
     <link rel="preload" href="https://yuuya1202.github.io/Image_Background/IMG_SetlistBackground.png" as="image">
-    <link rel="preload" href="https://yuuya1202.github.io/Image_Background/IMG_Random_Background.png" as="image">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2758,9 +2757,9 @@
             
             // 出力用データ管理
             const [exportData, setExportData] = useState({ 
-                title: "ランダム選曲 結果", 
+                title: "", 
                 songs: [], 
-                bg: "https://yuuya1202.github.io/Image_Background/IMG_Random_Background.png" 
+                bg: "https://yuuya1202.github.io/Image_Background/IMG_SetlistBackground.png" 
             });
             const [previewUrl, setPreviewUrl] = useState(null);
             
@@ -3166,11 +3165,6 @@
                     }
                     const selected = shuffled.slice(0, SETLIST_TRACK_COUNT);
                     setRandomSongs(selected);
-                    setExportData({
-                        title: "ランダム選曲 結果",
-                        songs: selected,
-                        bg: "https://yuuya1202.github.io/Image_Background/IMG_Random_Background.png"
-                    });
                     setIsGenerating(false);
                     // 1枚ずつ時間差で表示
                     selected.forEach((_, i) => {
@@ -3582,20 +3576,7 @@
                                             絞り込み{isFilterActive ? '●' : ''}
                                             <i className="ph-bold ph-caret-down text-[10px]"></i>
                                         </div>
-                                        {hasGeneratedRandom && randomSongs.length > 0 && !isGenerating && (
-                                            <button 
-                                                onClick={performImageExport} 
-                                                disabled={isSavingImage}
-                                                className="bg-[#fef9c3] text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-2"
-                                            >
-                                                {isSavingImage ? (
-                                                    <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                                                ) : (
-                                                    <i className="ph-bold ph-image"></i>
-                                                )}
-                                                画像出力
-                                            </button>
-                                        )}
+
                                     </div>
 
                                     <div className="flex flex-col gap-3">
