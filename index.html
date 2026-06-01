@@ -3576,7 +3576,7 @@
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-end items-center gap-2 mb-3">
+                                    <div className="flex justify-end items-center gap-2 mb-2">
                                         <div
                                             className={`view-mode-badge ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
                                             onClick={() => setIsFilterModalOpen(true)}
@@ -3885,7 +3885,7 @@
                                 )}
 
                                 {currentPage === "ranking" && (
-                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pt-2">
                                         {paginatedSongs.map((song, idx) => {
                                             const globalIdx = (pageIndex - 1) * itemsPerPage + idx;
                                             let currentRank = globalIdx + 1;
