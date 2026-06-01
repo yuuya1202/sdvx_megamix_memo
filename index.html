@@ -3885,7 +3885,7 @@
                                 )}
 
                                 {currentPage === "ranking" && (
-                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pt-2">
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{paddingTop:'12px'}}>
                                         {paginatedSongs.map((song, idx) => {
                                             const globalIdx = (pageIndex - 1) * itemsPerPage + idx;
                                             let currentRank = globalIdx + 1;
