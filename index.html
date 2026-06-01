@@ -3528,7 +3528,7 @@
                                         </div>
                                     </div>
                                     {!isLoading && (
-                                        <div className="flex justify-center mt-2 mb-2">
+                                        <div className="flex justify-center" style={{marginTop:'8px', marginBottom:'8px'}}>
                                             <div className="hit-counter">
                                                 <span>{allFilteredSongs.length} 譜面</span>
                                             </div>
@@ -3892,7 +3892,7 @@
                                 )}
 
                                 {currentPage === "ranking" && (
-                                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 mt-0">
+                                    <div>
                                         {paginatedSongs.map((song, idx) => {
                                             const globalIdx = (pageIndex - 1) * itemsPerPage + idx;
                                             let currentRank = globalIdx + 1;
