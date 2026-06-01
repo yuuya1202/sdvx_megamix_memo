@@ -3488,7 +3488,7 @@
 
                         <div className="space-y-6">
                             {currentPage === "ranking" && (
-                                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-2">
                                     <div className="flex items-center gap-2 mb-2">
                                         <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
                                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
@@ -3517,7 +3517,7 @@
                                             <button onClick={() => setRankSection("section2")} className={`toggle-btn-small ${rankSection === "section2" ? 'active' : ''}`}>第2区間</button>
                                         </div>
                                     </div>
-                                    <div className="mb-1">
+                                    <div className="mb-0">
                                         <div className="toggle-btn-group">
                                             <button onClick={() => setSortOrder("desc")} className={`toggle-btn-small ${sortOrder === "desc" ? 'active' : ''}`}>
                                                 <i className="ph-bold ph-sort-descending"></i> 多い順
@@ -3566,6 +3566,17 @@
                                         <i className="ph-fill ph-shuffle text-3xl text-[#e9edc9]"></i>
                                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ランダム選曲</h2>
                                     </div>
+                                    <div className="flex flex-col gap-3">
+                                        {/* 補足コメント */}
+                                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md text-white">
+                                            <div className="text-[12px] font-black leading-relaxed">
+                                                <p>「生成する」ボタンを押すと、ランダムに5曲が選ばれます。</p>
+                                                <p>絞り込みを活用することで、抽選範囲をカスタマイズできます。</p>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
                                     <div className="flex justify-end items-center gap-2 mb-3">
                                         <div
                                             className={`view-mode-badge ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
@@ -3580,13 +3591,6 @@
                                     </div>
 
                                     <div className="flex flex-col gap-3">
-                                        {/* 補足コメント */}
-                                        <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md text-white">
-                                            <div className="text-[12px] font-black leading-relaxed">
-                                                <p>「生成する」ボタンを押すと、条件に合う楽曲からランダムに5曲が選ばれます。</p>
-                                                <p>絞り込みを活用することで、抽選範囲を自分好みにカスタマイズできます。</p>
-                                            </div>
-                                        </div>
 
                                         {/* 生成ボタン */}
                                         <button 
