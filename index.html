@@ -3486,7 +3486,7 @@
                             </div>
                         )}
 
-                        <div className={currentPage === "ranking" ? "" : "space-y-6"}>
+                        <div className={["ranking","random"].includes(currentPage) ? "" : "space-y-6"}>
                             {currentPage === "ranking" && (
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-2">
                                     <div className="flex items-center gap-2 mb-2">
