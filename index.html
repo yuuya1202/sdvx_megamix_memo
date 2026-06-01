@@ -3527,6 +3527,13 @@
                                             </button>
                                         </div>
                                     </div>
+                                    {!isLoading && (
+                                        <div className="flex justify-center mt-3">
+                                            <div className="hit-counter">
+                                                <span>{allFilteredSongs.length} 譜面</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -3885,7 +3892,7 @@
                                 )}
 
                                 {currentPage === "ranking" && (
-                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{paddingTop:'12px'}}>
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         {paginatedSongs.map((song, idx) => {
                                             const globalIdx = (pageIndex - 1) * itemsPerPage + idx;
                                             let currentRank = globalIdx + 1;
