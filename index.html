@@ -3467,7 +3467,7 @@
                         )}
                     </div>
 
-                    <header className={`text-center pt-8 ${['random','main','ranking','setlist','simulation','bpl'].includes(currentPage) ? 'mb-4' : 'mb-10'}`}>
+                    <header className={`text-center pt-8 ${currentPage === 'ranking' ? 'mb-0' : ['random','main','setlist','simulation','bpl'].includes(currentPage) ? 'mb-4' : 'mb-10'}`}>
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
                         </div>
@@ -3528,7 +3528,7 @@
                                         </div>
                                     </div>
                                     {!isLoading && (
-                                        <div className="flex justify-center mt-3 mb-0">
+                                        <div className="flex justify-center mt-3 mb-3">
                                             <div className="hit-counter">
                                                 <span>{allFilteredSongs.length} 譜面</span>
                                             </div>
