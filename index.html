@@ -867,6 +867,403 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef } = React;
 
+        // ===== 多言語対応 =====
+        const TRANSLATIONS = {
+            ja: {
+                "nav_main": `メインページ`,
+                "nav_setlist": `セトリ管理`,
+                "nav_random": `ランダム選曲`,
+                "nav_ranking": `チェイン数ランキング`,
+                "nav_simulation": `シミュレーション`,
+                "nav_bpl": `BPL（S6）課題曲`,
+                "nav_terms": `ガイドライン`,
+                "nav_contact": `お問い合わせ`,
+                "nav_logout": `ログアウト`,
+                "auth_login": `ログイン`,
+                "auth_loggedin": `ログイン中`,
+                "auth_logout_title": `ログアウト`,
+                "auth_logout_confirm": `ログアウトしてもよろしいですか？`,
+                "auth_logout_btn": `ログアウトする`,
+                "auth_login_error": `ログインに失敗しました.`,
+                "auth_save_error": `保存に失敗しました。時間をおいて再度お試しください。`,
+                "common_cancel": `キャンセル`,
+                "common_close": `閉じる`,
+                "common_save": `保存する`,
+                "common_delete": `削除する`,
+                "common_confirm": `確認`,
+                "common_reset": `リセット`,
+                "common_filter": `絞り込み`,
+                "common_filter_apply": `この条件で絞り込む`,
+                "common_all": `すべて`,
+                "common_back_to_main": `メインページに戻る`,
+                "common_move": `移動する`,
+                "common_external_confirm": `外部サイトへ移動してもよろしいですか？`,
+                "common_select_all": `全選択/解除`,
+                "common_view_toggle": `表示切替`,
+                "common_list_view": `リスト表示`,
+                "common_grid_view": `グリッド表示`,
+                "common_not_found": `楽曲が見つかりません`,
+                "common_prev": `前へ`,
+                "common_next": `次へ`,
+                "common_new": `新規`,
+                "common_chart_count": `{n} 譜面`,
+                "filter_title": `絞り込み`,
+                "filter_my_data": `マイデータ`,
+                "filter_fav_only": `お気に入りのみ`,
+                "filter_mirror_only": `ミラーのみ`,
+                "filter_version": `バージョン`,
+                "filter_difficulty": `難易度`,
+                "filter_bpm": `BPM`,
+                "filter_bpl": `BPL（S6）課題曲`,
+                "filter_section_n": `区分{n}`,
+                "song_section1": `第1区間`,
+                "song_section2": `第2区間`,
+                "song_start_pos": `開始位置`,
+                "song_end_pos": `終了位置`,
+                "song_chain": `チェイン数`,
+                "song_chart_view": `画像で確認`,
+                "song_chart_none": `画像なし`,
+                "song_video_view": `動画で確認`,
+                "song_video_none": `動画なし`,
+                "song_video_modal_title": `動画で確認`,
+                "song_my_memo": `自分用メモ`,
+                "song_favorite": `お気に入り`,
+                "song_chart_tab_alt": `別タブ`,
+                "song_chart_close": `閉じる`,
+                "song_already_selected": `選択済`,
+                "main_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
+                "main_search_placeholder": `曲名・読みで探す...`,
+                "ranking_title": `チェイン数ランキング`,
+                "ranking_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
+                "ranking_section1": `第1区間`,
+                "ranking_section2": `第2区間`,
+                "ranking_desc": `多い順`,
+                "ranking_asc": `少ない順`,
+                "random_title": `ランダム選曲`,
+                "random_desc1": `「生成する」ボタンを押すと、ランダムに5曲が選ばれます。`,
+                "random_desc2": `絞り込みを活用することで、抽選範囲をカスタマイズできます。`,
+                "random_generate": `生成する`,
+                "random_complete": `生成完了`,
+                "random_not_enough": `条件に合う曲が不足しています`,
+                "setlist_title": `セトリ管理`,
+                "setlist_export_btn": `画像出力`,
+                "setlist_create_btn": `新規`,
+                "setlist_empty": `作成されたセトリがありません`,
+                "setlist_draft_badge": `下書き`,
+                "setlist_continue_edit": `続きを編集`,
+                "setlist_my_memo": `自分用メモ`,
+                "setlist_edit_title": `セトリ作成`,
+                "setlist_name_label": `セトリ名`,
+                "setlist_tracks_label": `TRACKS`,
+                "setlist_song_select": `曲を選択する`,
+                "setlist_save": `保存する`,
+                "setlist_edit_btn": `編集する`,
+                "setlist_delete_btn": `削除する`,
+                "song_modal_title": `曲を選択`,
+                "song_modal_search": `曲名・読みで検索...`,
+                "song_modal_search_hint": `曲名を入力 or 絞り込みで検索`,
+                "song_modal_no_result": `該当する曲が見つかりません`,
+                "modal_delete_setlist_title": `セトリの削除`,
+                "modal_delete_setlist_body": `このセトリを削除してもよろしいですか？`,
+                "modal_setlist_limit_title": `作成上限です`,
+                "modal_setlist_limit_body": `セトリは最大{MAX}件まで作成可能です。新しいセトリを作成するには、既存のセトリを削除してください。`,
+                "modal_export_title": `出力するセトリを選択`,
+                "modal_export_body": `画像として保存したいセトリを選んでください`,
+                "modal_draft_title": `確認`,
+                "modal_draft_body": `楽曲が全て埋まっていません。下書きとして入力内容を保存しますか？`,
+                "modal_draft_save": `下書き保存する`,
+                "modal_draft_leave": `保存せず離れる`,
+                "modal_image_preview_title": `画像プレビュー`,
+                "modal_image_preview_desc": `生成された画像を確認してください`,
+                "modal_image_save_pc": `PC：画像を右クリック ＞ 名前を付けて保存`,
+                "modal_image_save_sp": `スマホ：画像を長押し ＞ 画像を保存`,
+                "modal_filter_title": `絞り込み`,
+                "modal_view_select_title": `表示形式を選択`,
+                "inapp_title": `ブラウザアプリで開いてください`,
+                "inapp_body": `アプリ内ブラウザではGoogleログインが使えません。下のボタンでURLをコピーして、Safari / Chrome などのブラウザに貼り付けて開いてください。`,
+                "inapp_copy_btn": `URLをコピーする`,
+                "inapp_copied_toast": `URLをコピーしました！`,
+                "sim_title": `シミュレーション`,
+                "sim_desc1": `作成したセトリを使用してメガミックスバトルの試合をシミュレートします。`,
+                "sim_desc2": `試合展開の分析や、試合後の復習に利用できます。`,
+                "sim_desc3": `※ゲージの溜まり具合を制御することはできないため、ギアの使用についてはご自身で選択いただく必要があります。`,
+                "sim_no_setlist": `セトリがありません`,
+                "sim_no_setlist_sub": `先にセトリ管理からセトリを作成してください`,
+                "sim_start_btn": `開始する`,
+                "sim_setup_step1": `1. 先攻 / 後攻`,
+                "sim_first": `先攻`,
+                "sim_second": `後攻`,
+                "sim_setup_step2": `2. 使用セトリ`,
+                "sim_intro_label_first": `アウトロ曲の想定`,
+                "sim_intro_label_second": `イントロ曲の想定`,
+                "sim_intro_desc_first": `ターン12：対戦相手が選んだと想定して、アウトロ曲を選択してください。`,
+                "sim_intro_desc_second": `ターン1：対戦相手が選んだと想定して、イントロ曲を選択してください。`,
+                "sim_go_start": `スタート！`,
+                "sim_battle_label": `バトル中`,
+                "sim_turn_label": `{n} / 12 ターン`,
+                "sim_turn_intro": `イントロターン`,
+                "sim_turn_outro": `アウトロターン`,
+                "sim_turn_my_song": `自選曲`,
+                "sim_turn_opp_song": `相手選曲`,
+                "sim_turn_intro_my": `イントロ（自選）`,
+                "sim_turn_intro_opp": `イントロ（相手選曲）`,
+                "sim_turn_outro_my": `アウトロ（自選）`,
+                "sim_turn_outro_opp": `アウトロ（相手選曲）`,
+                "sim_back_to_setup": `設定に戻る`,
+                "sim_go_back_1": `1つ戻る`,
+                "sim_song_select": `使用曲を選択`,
+                "sim_song_intro": `使用曲（イントロ）`,
+                "sim_song_outro": `使用曲（アウトロ）`,
+                "sim_song_opp": `使用曲（相手）`,
+                "sim_opp_song_placeholder": `相手の選曲`,
+                "sim_my_eg": `自分のEG`,
+                "sim_opp_eg": `相手のEG`,
+                "sim_eg_none": `なし`,
+                "sim_result_label": `勝敗`,
+                "sim_win": `勝ち`,
+                "sim_draw": `同点`,
+                "sim_lose": `負け`,
+                "sim_stars_preview": `このターンの獲得★`,
+                "sim_next_turn": `次のターンへ`,
+                "sim_end_match": `試合終了`,
+                "sim_history_label": `入力履歴`,
+                "sim_validation_missing": `未入力項目があります：{items}`,
+                "sim_validation_song": `使用曲`,
+                "sim_validation_result": `勝敗`,
+                "sim_back_to_last": `戻る`,
+                "sim_retry": `もう一度`,
+                "sim_opp_song_history": `相手の選曲`,
+                "bpl_title": `BPL（S6）課題曲`,
+                "bpl_notice": `📋 課題曲が発表され次第対応を行います。`,
+                "contact_title": `お問い合わせ`,
+                "contact_desc": `本サービスに関するご質問、不具合報告、楽曲情報の誤り、または改善のご提案などがございましたら、以下のいずれかの方法でご連絡をお願いいたします。`,
+                "contact_x_title": `X(旧Twitter)で連絡`,
+                "contact_x_body": `管理者のアカウント(@Yuuya1202)へ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。`,
+                "contact_x_btn": `DMを送る`,
+                "contact_form_title": `専用フォームから送信`,
+                "contact_form_body": `Googleフォームよりお問い合わせ内容を送信いただけます。SNSアカウントをお持ちでない方はこちらをご利用ください。`,
+                "contact_form_btn": `フォームを開く`,
+                "terms_title": `ガイドライン`,
+                "terms_notice": `本内容に関するお問い合わせは「お問い合わせ・不具合報告」ページからお願いいたします。`,
+                "terms_tab_terms": `利用規約`,
+                "terms_tab_privacy": `プライバシーポリシー`,
+                "terms_tab_credits": `クレジット`,
+                "terms_unofficial_body": `本サイトは非公式のファンサイトであり、株式会社コナミアミューズメント、および株式会社コナミデジタルエンタテインメントとは一切関係がありません。`,
+                "terms_ip_body": `本サービス内で使用しているジャケット画像等の知的財産権は、すべて各権利所有者に帰属します。権利者様からの申し立てがあった場合、速やかに削除等の対応を行います。`,
+                "terms_accuracy_body": `提供する情報の正確性には細心の注意を払っていますが、手動入力による誤りが含まれる可能性があります。情報の利用はユーザー自身の判断で行ってください。`,
+                "privacy_title": `プライバシーポリシー`,
+                "credits_title": `クレジット`,
+                "terms_footer_note": `※記載内容は予告なく更新される場合があります。`,
+                "lang_modal_title": `言語を選択`,
+                "lang_ja": `日本語`,
+                "lang_ko": `한국어`,
+                "common_page_info": `{start}〜{end}件 / 全{total}件`,
+            },
+            ko: {
+                "nav_main": `메인 페이지`,
+                "nav_setlist": `세트리스트 관리`,
+                "nav_random": `랜덤 선곡`,
+                "nav_ranking": `체인 수 랭킹`,
+                "nav_simulation": `시뮬레이션`,
+                "nav_bpl": `BPL(S6) 과제곡`,
+                "nav_terms": `가이드라인`,
+                "nav_contact": `문의하기`,
+                "nav_logout": `로그아웃`,
+                "auth_login": `로그인`,
+                "auth_loggedin": `로그인 중`,
+                "auth_logout_title": `로그아웃`,
+                "auth_logout_confirm": `로그아웃하시겠습니까?`,
+                "auth_logout_btn": `로그아웃하기`,
+                "auth_login_error": `로그인에 실패했습니다.`,
+                "auth_save_error": `저장에 실패했습니다. 잠시 후 다시 시도해 주세요.`,
+                "common_cancel": `취소`,
+                "common_close": `닫기`,
+                "common_save": `저장하기`,
+                "common_delete": `삭제하기`,
+                "common_confirm": `확인`,
+                "common_reset": `초기화`,
+                "common_filter": `필터`,
+                "common_filter_apply": `이 조건으로 필터링`,
+                "common_all": `전체`,
+                "common_back_to_main": `메인 페이지로 돌아가기`,
+                "common_move": `이동하기`,
+                "common_external_confirm": `외부 사이트로 이동하시겠습니까?`,
+                "common_select_all": `전체 선택/해제`,
+                "common_view_toggle": `보기 전환`,
+                "common_list_view": `리스트 표시`,
+                "common_grid_view": `그리드 표시`,
+                "common_not_found": `악곡을 찾을 수 없습니다`,
+                "common_prev": `이전`,
+                "common_next": `다음`,
+                "common_new": `신규`,
+                "common_chart_count": `{n} 채보`,
+                "filter_title": `필터링`,
+                "filter_my_data": `내 데이터`,
+                "filter_fav_only": `애정곡만`,
+                "filter_mirror_only": `미러만`,
+                "filter_version": `버전`,
+                "filter_difficulty": `난이도`,
+                "filter_bpm": `BPM`,
+                "filter_bpl": `BPL（S6）과제곡`,
+                "filter_section_n": `구분{n}`,
+                "song_section1": `제1구간`,
+                "song_section2": `제2구간`,
+                "song_start_pos": `시작 위치`,
+                "song_end_pos": `종료 위치`,
+                "song_chain": `체인 수`,
+                "song_chart_view": `이미지로 확인`,
+                "song_chart_none": `이미지 없음`,
+                "song_video_view": `영상으로 확인`,
+                "song_video_none": `영상 없음`,
+                "song_video_modal_title": `영상으로 확인`,
+                "song_my_memo": `개인 메모`,
+                "song_favorite": `애정곡`,
+                "song_chart_tab_alt": `새 탭`,
+                "song_chart_close": `닫기`,
+                "song_already_selected": `선택됨`,
+                "main_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
+                "main_search_placeholder": `곡명・읽는 법으로 검색...`,
+                "ranking_title": `체인 수 랭킹`,
+                "ranking_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
+                "ranking_section1": `제1구간`,
+                "ranking_section2": `제2구간`,
+                "ranking_desc": `많은 순`,
+                "ranking_asc": `적은 순`,
+                "random_title": `랜덤 선곡`,
+                "random_desc1": `「생성하기」버튼을 누르면 랜덤으로 5곡이 선택됩니다.`,
+                "random_desc2": `필터를 활용하면 추첨 범위를 지정할 수 있습니다.`,
+                "random_generate": `생성하기`,
+                "random_complete": `생성 완료`,
+                "random_not_enough": `조건에 맞는 곡이 부족합니다`,
+                "setlist_title": `세트리스트 관리`,
+                "setlist_export_btn": `이미지 출력`,
+                "setlist_create_btn": `신규`,
+                "setlist_empty": `작성된 세트리스트가 없습니다`,
+                "setlist_draft_badge": `초안`,
+                "setlist_continue_edit": `이어서 편집`,
+                "setlist_my_memo": `개인 메모`,
+                "setlist_edit_title": `세트리스트 작성`,
+                "setlist_name_label": `세트리스트 이름`,
+                "setlist_tracks_label": `TRACKS`,
+                "setlist_song_select": `곡을 선택하기`,
+                "setlist_save": `저장하기`,
+                "setlist_edit_btn": `편집하기`,
+                "setlist_delete_btn": `삭제하기`,
+                "song_modal_title": `곡 선택`,
+                "song_modal_search": `곡명・읽는 법으로 검색...`,
+                "song_modal_search_hint": `곡명을 입력하거나 필터로 검색`,
+                "song_modal_no_result": `해당하는 곡을 찾을 수 없습니다`,
+                "modal_delete_setlist_title": `세트리스트 삭제`,
+                "modal_delete_setlist_body": `이 세트리스트를 삭제하시겠습니까?`,
+                "modal_setlist_limit_title": `작성 한도에 도달했습니다`,
+                "modal_setlist_limit_body": `세트리스트는 최대 {MAX}개까지 작성 가능합니다. 새 세트리스트를 작성하려면 기존 세트리스트를 삭제해주세요.`,
+                "modal_export_title": `출력할 세트리스트 선택`,
+                "modal_export_body": `이미지로 저장할 세트리스트를 선택해주세요`,
+                "modal_draft_title": `확인`,
+                "modal_draft_body": `곡이 모두 채워지지 않았습니다. 초안으로 입력 내용을 저장하시겠습니까?`,
+                "modal_draft_save": `초안을 저장하기`,
+                "modal_draft_leave": `저장하지 않고 나가기`,
+                "modal_image_preview_title": `이미지 미리보기`,
+                "modal_image_preview_desc": `생성된 이미지를 확인해주세요`,
+                "modal_image_save_pc": `PC: 이미지 우클릭 ＞ 다른 이름으로 저장`,
+                "modal_image_save_sp": `스마트폰: 이미지 길게 누르기 ＞ 이미지 저장`,
+                "modal_filter_title": `필터링`,
+                "modal_view_select_title": `표시 형식 선택`,
+                "inapp_title": `브라우저 앱에서 열어 주세요`,
+                "inapp_body": `앱 내 브라우저에서는 Google 로그인을 사용할 수 없습니다.아래 버튼으로 URL을 복사한 후 Safari나 Chrome 같은 브라우저에 붙여넣어 열어 주세요.`,
+                "inapp_copy_btn": `URL 복사하기`,
+                "inapp_copied_toast": `URL이 복사되었습니다!`,
+                "sim_title": `시뮬레이션`,
+                "sim_desc1": `작성한 세트리스트를 사용해 메가믹스 배틀 경기를 시뮬레이션합니다.`,
+                "sim_desc2": `경기 전개의 분석이나 경기 후 복습에 활용할 수 있습니다.`,
+                "sim_desc3": `※ 게이지가 차는 정도는 제어할 수 없으므로, 기어 사용 여부는 직접 선택해야 합니다.`,
+                "sim_no_setlist": `세트리스트가 없습니다`,
+                "sim_no_setlist_sub": `먼저 세트리스트 관리에서 세트리스트를 작성해주세요`,
+                "sim_start_btn": `시작하기`,
+                "sim_setup_step1": `1. 선공 / 후공`,
+                "sim_first": `선공`,
+                "sim_second": `후공`,
+                "sim_setup_step2": `2. 사용 세트리스트`,
+                "sim_intro_label_first": `아웃트로 곡 설정`,
+                "sim_intro_label_second": `인트로 곡 설정`,
+                "sim_intro_desc_first": `턴 12: 상대방이 선택했다고 가정하여 아웃트로 곡을 선택해주세요.`,
+                "sim_intro_desc_second": `턴 1: 상대방이 선택했다고 가정하여 인트로 곡을 선택해주세요.`,
+                "sim_go_start": `시작!`,
+                "sim_battle_label": `배틀 중`,
+                "sim_turn_label": `{n} / 12 턴`,
+                "sim_turn_intro": `인트로 턴`,
+                "sim_turn_outro": `아웃트로 턴`,
+                "sim_turn_my_song": `자신의 선곡`,
+                "sim_turn_opp_song": `상대방 선곡`,
+                "sim_turn_intro_my": `인트로（자신의 선곡）`,
+                "sim_turn_intro_opp": `인트로（상대방 선곡）`,
+                "sim_turn_outro_my": `아웃트로（자신의 선곡）`,
+                "sim_turn_outro_opp": `아웃트로（상대방 선곡）`,
+                "sim_back_to_setup": `설정으로 돌아가기`,
+                "sim_go_back_1": `1개 뒤로`,
+                "sim_song_select": `사용 곡 선택`,
+                "sim_song_intro": `사용 곡（인트로）`,
+                "sim_song_outro": `사용 곡（아웃트로）`,
+                "sim_song_opp": `사용 곡（상대방）`,
+                "sim_opp_song_placeholder": `상대방의 선곡`,
+                "sim_my_eg": `내 EG`,
+                "sim_opp_eg": `상대방 EG`,
+                "sim_eg_none": `없음`,
+                "sim_result_label": `승패`,
+                "sim_win": `승리`,
+                "sim_draw": `무승부`,
+                "sim_lose": `패배`,
+                "sim_stars_preview": `이번 턴 획득 ★`,
+                "sim_next_turn": `다음 턴으로`,
+                "sim_end_match": `경기 종료`,
+                "sim_history_label": `입력 기록`,
+                "sim_validation_missing": `입력되지 않은 항목이 있습니다: {items}`,
+                "sim_validation_song": `사용 곡`,
+                "sim_validation_result": `승패`,
+                "sim_back_to_last": `돌아가기`,
+                "sim_retry": `다시 하기`,
+                "sim_opp_song_history": `상대방의 선곡`,
+                "bpl_title": `BPL（S6）과제곡`,
+                "bpl_notice": `📋 과제곡이 발표되는 대로 대응할 예정입니다.`,
+                "contact_title": `문의하기`,
+                "contact_desc": `본 서비스에 관한 질문, 오류 신고, 악곡 정보의 오류 또는 개선 제안 등이 있으시면 아래 방법 중 하나로 연락해 주세요.`,
+                "contact_x_title": `X(구 Twitter)로 연락`,
+                "contact_x_body": `관리자 계정(@Yuuya1202)으로 직접 다이렉트 메시지(DM)를 보내주세요. 신속하게 대응 가능합니다.`,
+                "contact_x_btn": `DM 보내기`,
+                "contact_form_title": `전용 양식으로 보내기`,
+                "contact_form_body": `Google 양식을 통해 문의 내용을 보내실 수 있습니다. SNS 계정이 없는 분은 이 방법을 이용해 주세요.`,
+                "contact_form_btn": `양식 열기`,
+                "terms_title": `가이드라인`,
+                "terms_notice": `본 내용에 관한 문의는 「문의・오류 신고」 페이지에서 부탁드립니다.`,
+                "terms_tab_terms": `이용약관`,
+                "terms_tab_privacy": `개인정보처리방침`,
+                "terms_tab_credits": `크레딧`,
+                "terms_unofficial_body": `본 사이트는 비공식 팬 사이트이며, 주식회사 코나미 어뮤즈먼트 및 주식회사 코나미 디지털 엔터테인먼트와는 일절 관계가 없습니다.`,
+                "terms_ip_body": `본 서비스 내에서 사용하고 있는 재킷 이미지 등의 지식재산권은 모두 각 권리자에게 귀속됩니다. 권리자로부터 이의 제기가 있을 경우, 신속히 삭제 등의 조치를 취하겠습니다.`,
+                "terms_accuracy_body": `제공하는 정보의 정확성에는 세심한 주의를 기울이고 있으나, 수동 입력으로 인한 오류가 포함될 가능성이 있습니다. 정보 이용은 사용자 본인의 판단에 따라 진행해 주세요.`,
+                "privacy_title": `개인정보처리방침`,
+                "credits_title": `크레딧`,
+                "terms_footer_note": `※ 기재 내용은 예고 없이 업데이트될 수 있습니다.`,
+                "lang_modal_title": `언어 선택`,
+                "lang_ja": `日本語`,
+                "lang_ko": `한국어`,
+                "common_page_info": `{start}〜{end}건 / 전체 {total}건`,
+            },
+        };
+        const t = (lang, key, vars) => {
+            let s = (TRANSLATIONS[lang] && TRANSLATIONS[lang][key])
+                ? TRANSLATIONS[lang][key]
+                : (TRANSLATIONS.ja[key] || key);
+            if (vars) {
+                Object.keys(vars).forEach(k => {
+                    s = s.split('{' + k + '}').join(String(vars[k]));
+                });
+            }
+            return s;
+        };
+
+
+
         const firebaseConfig = {
             apiKey: "AIzaSyDSa7sQ4L9w894TSK8RPs4-XdFZ28CUEgA",
             authDomain: "sdvx-megamix-memo.firebaseapp.com",
@@ -965,7 +1362,7 @@
         };
 
         // 外部サイト確認用モーダル（主に動画用）
-        const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type }) => {
+        const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type, lang = 'ja' }) => {
             if (!isOpen) return null;
             return (
                 <div className="modal-overlay" onClick={onCancel}>
@@ -974,9 +1371,9 @@
                             <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black ${type === 'video' ? 'bg-[#fec5bb]' : (type === 'contact' ? 'bg-[#d8f3dc]' : 'bg-[#e9edc9]')}`}>
                                 <i className={`ph-bold ${type === 'video' ? 'ph-youtube-logo' : (type === 'contact' ? 'ph-chat-centered-text' : (type === 'x' ? 'ph-x-logo' : 'ph-file-text'))} text-3xl text-black`}></i>
                             </div>
-                            <h2 className="text-xl font-black mb-2">確認</h2>
+                            <h2 className="text-xl font-black mb-2">{t(lang,"common_confirm")}</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
-                                外部サイトへ移動してもよろしいですか？
+                                {t(lang,'common_external_confirm')}
                             </p>
                         </div>
                         <div className="flex flex-col gap-3 mt-8">
@@ -984,13 +1381,13 @@
                                 onClick={onConfirm}
                                 className="w-full bg-[#52b788] text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                移動する
+                                {t(lang,'common_move')}
                             </button>
                             <button 
                                 onClick={onCancel}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                キャンセル
+                                {t(lang,'common_cancel')}
                             </button>
                         </div>
                     </div>
@@ -999,7 +1396,7 @@
         };
 
         // 譜面プレビュー用（全画面オーバーレイ）
-        const ChartPreviewModal = ({ isOpen, url, title, onCancel }) => {
+        const ChartPreviewModal = ({ isOpen, url, title, onCancel, lang = 'ja' }) => {
             if (!isOpen) return null;
             return ReactDOM.createPortal(
                 <div style={{
@@ -1022,13 +1419,13 @@
                                 onClick={() => window.open(url, '_blank')}
                                 style={{background:'#333', border:'none', borderRadius:'8px', padding:'6px 10px', color:'white', fontSize:'11px', fontWeight:900, display:'flex', alignItems:'center', gap:'4px'}}
                             >
-                                <i className="ph-bold ph-arrow-square-out"></i> 別タブ
+                                <i className="ph-bold ph-arrow-square-out"></i> {t(lang,'song_chart_tab_alt')}
                             </button>
                             <button
                                 onClick={onCancel}
                                 style={{background:'#e11d48', border:'none', borderRadius:'8px', padding:'6px 12px', color:'white', fontSize:'11px', fontWeight:900, display:'flex', alignItems:'center', gap:'4px'}}
                             >
-                                <i className="ph-bold ph-x"></i> 閉じる
+                                <i className="ph-bold ph-x"></i> {t(lang,'common_close')}
                             </button>
                         </div>
                     </div>
@@ -1055,7 +1452,7 @@
         };
 
         // 楽曲詳細モーダル（グリッドモード用）
-        const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel, showMemo }) => {
+        const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel, showMemo, lang = 'ja' }) => {
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
             const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
             const [localMemo, setLocalMemo] = React.useState(personalMemo || "");
@@ -1135,7 +1532,7 @@
                                     })()}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="section-label">第1区間</span>
+                                            <span className="section-label">{t(lang,"song_section1")}</span>
                                             {isLoggedIn && (
                                                 <button onClick={() => onToggleMirror('first')} className={`mirror-btn ${(mirrorData && mirrorData.first) ? 'active' : ''}`}>
                                                     <i className="ph-bold ph-arrows-left-right text-sm"></i>
@@ -1143,14 +1540,14 @@
                                             )}
                                         </div>
                                         <div className="grid grid-cols-3 gap-2 mt-2">
-                                            <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_start_pos")}</p><p className="stat-value">{song.start_pos || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_end_pos")}</p><p className="stat-value">{song.end_pos || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_chain")}</p><p className="stat-value">{song.combo || "-"}</p></div>
                                         </div>
                                     </div>
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="section-label">第2区間</span>
+                                            <span className="section-label">{t(lang,"song_section2")}</span>
                                             {isLoggedIn && (
                                                 <button onClick={() => onToggleMirror('second')} className={`mirror-btn ${(mirrorData && mirrorData.second) ? 'active' : ''}`}>
                                                     <i className="ph-bold ph-arrows-left-right text-sm"></i>
@@ -1159,40 +1556,40 @@
                                         </div>
                                         <div className="grid grid-cols-3 gap-2 mt-2">
                                             {/* ラベル重複解消 */}
-                                            <div className="stat-box"><p className="stat-label">開始位置</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">終了位置</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">チェイン数</p><p className="stat-value">{song.combo2 || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_start_pos')}</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_end_pos')}</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_chain')}</p><p className="stat-value">{song.combo2 || "-"}</p></div>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3 mb-6">
                                         {song.site_link ? (
                                             <button className="link-button chart" onClick={(e) => handleChartClick(e, song.site_link)}>
-                                                <i className="ph-bold ph-file-text text-lg"></i>画像で確認
+                                                <i className="ph-bold ph-file-text text-lg"></i>{t(lang,'song_chart_view')}
                                             </button>
                                         ) : (
-                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>画像なし</div>
+                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>{t(lang,"song_chart_none")}</div>
                                         )}
                                         
                                         {song.movie_link ? (
                                             <button className="link-button video" onClick={(e) => handleVideoClick(e, song.movie_link)}>
-                                                <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
+                                                <i className="ph-bold ph-youtube-logo text-lg"></i>{t(lang,'song_video_view')}
                                             </button>
                                         ) : (
-                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
+                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>{t(lang,"song_video_none")}</div>
                                         )}
                                     </div>
 
                                     {showMemo && song.memo && (
                                         <div className="bg-green-50 p-4 rounded-xl border-2 border-black">
-                                            <p className="text-[10px] font-black uppercase mb-1">運営コメント</p>
+                                            <p className="text-[10px] font-black uppercase mb-1">{t(lang,"song_ops_comment")}</p>
                                             <p className="text-sm font-bold whitespace-pre-wrap">{song.memo}</p>
                                         </div>
                                     )}
 
                                     {isLoggedIn && (
                                         <div>
-                                            <p className="text-[10px] font-black uppercase mb-1">自分用メモ</p>
+                                            <p className="text-[10px] font-black uppercase mb-1">{t(lang,"song_my_memo")}</p>
                                             <textarea 
                                                 className="memo-textarea" 
                                                 value={localMemo}
@@ -1212,7 +1609,7 @@
                         <div className="modal-overlay" onClick={() => setVideoModal({ isOpen: false, url: '' })}>
                             <div className="modal-content !p-3 !max-w-[400px]" onClick={e => e.stopPropagation()}>
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-black">動画で確認</span>
+                                    <span className="text-sm font-black">{t(lang,"song_video_modal_title")}</span>
                                     <button onClick={() => setVideoModal({ isOpen: false, url: '' })} className="text-gray-400 hover:text-black">
                                         <i className="ph-bold ph-x text-xl"></i>
                                     </button>
@@ -1234,12 +1631,13 @@
                         url={chartModal.url}
                         title={song.title}
                         onCancel={() => setChartModal({ ...chartModal, isOpen: false })}
+                        lang={lang}
                     />
                 </>
             );
         };
 
-        const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
+        const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel, lang = 'ja' }) => {
             if (!isOpen) return null;
             return (
                 <div className="modal-overlay" onClick={onCancel}>
@@ -1248,9 +1646,9 @@
                             <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-red-100">
                                 <i className="ph-bold ph-sign-out text-3xl text-red-600"></i>
                             </div>
-                            <h2 className="text-xl font-black mb-2">ログアウト</h2>
+                            <h2 className="text-xl font-black mb-2">{t(lang,"auth_logout_title")}</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
-                                ログアウトしてもよろしいですか？
+                                {t(lang,'auth_logout_confirm')}
                             </p>
                         </div>
                         <div className="flex flex-col gap-3 mt-8">
@@ -1258,13 +1656,13 @@
                                 onClick={onConfirm}
                                 className="w-full bg-red-500 text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                ログアウトする
+                                {t(lang,'auth_logout_btn')}
                             </button>
                             <button 
                                 onClick={onCancel}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                キャンセル
+                                {t(lang,'common_cancel')}
                             </button>
                         </div>
                     </div>
@@ -1272,7 +1670,7 @@
             );
         };
 
-        const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
+        const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, lang = 'ja' }) => {
             if (!isOpen) return null;
             return (
                 <div className="modal-overlay" onClick={onCancel}>
@@ -1281,9 +1679,9 @@
                             <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-orange-100">
                                 <i className="ph-bold ph-trash text-3xl text-orange-600"></i>
                             </div>
-                            <h2 className="text-xl font-black mb-2">セトリの削除</h2>
+                            <h2 className="text-xl font-black mb-2">{t(lang,"modal_delete_setlist_title")}</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
-                                このセトリを削除してもよろしいですか？
+                                {t(lang,'modal_delete_setlist_body')}
                             </p>
                         </div>
                         <div className="flex flex-col gap-3 mt-8">
@@ -1291,13 +1689,13 @@
                                 onClick={onConfirm}
                                 className="w-full bg-orange-500 text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                削除する
+                                {t(lang,'common_delete')}
                             </button>
                             <button 
                                 onClick={onCancel}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                キャンセル
+                                {t(lang,'common_cancel')}
                             </button>
                         </div>
                     </div>
@@ -1305,14 +1703,14 @@
             );
         };
 
-        const ImagePreviewModal = ({ isOpen, imageUrl, onCancel }) => {
+        const ImagePreviewModal = ({ isOpen, imageUrl, onCancel, lang = 'ja' }) => {
             if (!isOpen || !imageUrl) return null;
             return (
                 <div className="modal-overlay" onClick={onCancel}>
                     <div className="modal-content" style={{ maxWidth: '420px', padding: '16px' }} onClick={e => e.stopPropagation()}>
                         <div className="mb-4">
-                            <h2 className="text-xl font-black mb-1">画像プレビュー</h2>
-                            <p className="text-[10px] font-bold text-gray-500 mb-4">生成された画像を確認してください</p>
+                            <h2 className="text-xl font-black mb-1">{t(lang,"modal_image_preview_title")}</h2>
+                            <p className="text-[10px] font-bold text-gray-500 mb-4">{t(lang,"modal_image_preview_desc")}</p>
                             <div className="border-4 border-black rounded-xl overflow-hidden bg-gray-200 aspect-video relative mb-4">
                                 <img src={imageUrl} alt="preview" className="w-full h-full object-contain" />
                             </div>
@@ -1320,9 +1718,7 @@
                                 <p className="text-[11px] font-black text-blue-700 leading-relaxed flex items-center gap-2">
                                     <i className="ph-bold ph-info text-base"></i>
                                     <span>
-                                        【保存方法】<br/>
-                                        PC：画像を右クリック ＞ 名前を付けて保存<br/>
-                                        スマホ：画像を長押し ＞ 画像を保存
+                                        {t(lang,'modal_image_save_pc')}<br/>{t(lang,'modal_image_save_sp')}
                                     </span>
                                 </p>
                             </div>
@@ -1332,7 +1728,7 @@
                                 onClick={onCancel}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none transition-all"
                             >
-                                閉じる
+                                {t(lang,'common_close')}
                             </button>
                         </div>
                     </div>
@@ -1340,7 +1736,7 @@
             );
         };
 
-        const SetlistSelectExportModal = ({ isOpen, onClose, setlists, onSelect }) => {
+        const SetlistSelectExportModal = ({ isOpen, onClose, setlists, onSelect, lang = 'ja' }) => {
             if (!isOpen) return null;
             return (
                 <div className="modal-overlay" onClick={onClose}>
@@ -1349,8 +1745,8 @@
                             <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-blue-100">
                                 <i className="ph-bold ph-image text-3xl text-blue-600"></i>
                             </div>
-                            <h2 className="text-xl font-black mb-2">出力するセトリを選択</h2>
-                            <p className="text-[10px] font-bold text-gray-500">画像として保存したいセトリを選んでください</p>
+                            <h2 className="text-xl font-black mb-2">{t(lang,"modal_export_title")}</h2>
+                            <p className="text-[10px] font-bold text-gray-500">{t(lang,"modal_export_body")}</p>
                         </div>
                         
                         <div className="max-h-[300px] overflow-y-auto pr-1 flex flex-col gap-3 mb-6">
@@ -1373,14 +1769,14 @@
                             onClick={onClose}
                             className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none transition-all"
                         >
-                            キャンセル
+                            {t(lang,'common_cancel')}
                         </button>
                     </div>
                 </div>
             );
         };
 
-        const FilterModal = ({ isOpen, onClose, currentPage, user,
+        const FilterModal = ({ lang = 'ja', isOpen, onClose, currentPage, user,
             selectedLevels, toggleLevel, selectedDifficulties, toggleDifficulty,
             selectedVersions, toggleVersion, selectedBplSections, toggleBplSection,
             showOnlyFavorites, setShowOnlyFavorites, showOnlyMirrors, setShowOnlyMirrors,
@@ -1405,11 +1801,11 @@
                     <div className="modal-content !max-w-[380px] !text-left !p-0 overflow-hidden" style={{maxHeight:'85vh',display:'flex',flexDirection:'column'}} onClick={e => e.stopPropagation()}>
                         {/* ヘッダー */}
                         <div className="flex items-center justify-between px-5 py-4 border-b-2 border-black">
-                            <span className="text-base font-black">絞り込み</span>
+                            <span className="text-base font-black">{t(lang,"modal_filter_title")}</span>
                             <div className="flex items-center gap-2">
                                 {isFilterActive && (
                                     <button onClick={resetAll} className="flex items-center gap-1 text-[10px] font-black bg-gray-100 border border-gray-300 px-3 py-1 rounded-full">
-                                        <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
+                                        <i className="ph-bold ph-arrows-counter-clockwise"></i> {t(lang,'common_reset')}
                                     </button>
                                 )}
                                 <button onClick={onClose} className="text-gray-400 hover:text-black">
@@ -1422,20 +1818,20 @@
                             {/* お気に入り・ミラー（ログイン時のみ） */}
                             {isLoggedIn && (currentPage === "main" || currentPage === "random") && (
                                 <div className="space-y-2">
-                                    <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">マイデータ</div>
+                                    <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_my_data')}</div>
                                     {(currentPage === "main" || currentPage === "random") && (
                                         <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
-                                            <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`} style={{color: !showOnlyFavorites ? '#1b4332' : '#374151'}}>すべて</button>
+                                            <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`} style={{color: !showOnlyFavorites ? '#1b4332' : '#374151'}}>{t(lang,'common_all')}</button>
                                             <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`} style={{color: showOnlyFavorites ? '#1b4332' : '#374151'}}>
-                                                <i className="ph-fill ph-star"></i> お気に入りのみ
+                                                <i className="ph-fill ph-star"></i> {t(lang,'filter_fav_only')}
                                             </button>
                                         </div>
                                     )}
                                     {currentPage === "main" && (
                                         <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
-                                            <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`} style={{color: !showOnlyMirrors ? '#1b4332' : '#374151'}}>すべて</button>
+                                            <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`} style={{color: !showOnlyMirrors ? '#1b4332' : '#374151'}}>{t(lang,'common_all')}</button>
                                             <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`} style={{color: showOnlyMirrors ? '#1b4332' : '#374151'}}>
-                                                <i className="ph-bold ph-arrows-left-right"></i> ミラーのみ
+                                                <i className="ph-bold ph-arrows-left-right"></i> {t(lang,'filter_mirror_only')}
                                             </button>
                                         </div>
                                     )}
@@ -1444,12 +1840,12 @@
                             {/* バージョン */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                                    <div className="text-[10px] font-black text-black uppercase">バージョン</div>
+                                    <div className="text-[10px] font-black text-black uppercase">{t(lang,'filter_version')}</div>
                                     <button onClick={() => {
                                         const allSelected = VERSION_LIST.every(v => selectedVersions.includes(v.value));
                                         if (allSelected) { VERSION_LIST.forEach(v => selectedVersions.includes(v.value) && toggleVersion(v.value)); }
                                         else { VERSION_LIST.filter(v => !selectedVersions.includes(v.value)).forEach(v => toggleVersion(v.value)); }
-                                    }} className="batch-btn">全選択/解除</button>
+                                    }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                 </div>
                                 <div className="grid grid-cols-2 gap-1.5">
                                     {VERSION_LIST.map(v => (
@@ -1460,13 +1856,13 @@
                             {/* 難易度 */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                                    <div className="text-[10px] font-black text-black uppercase">難易度</div>
+                                    <div className="text-[10px] font-black text-black uppercase">{t(lang,'filter_difficulty')}</div>
                                     <button onClick={() => {
                                         const DIFF_LIST = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"];
                                         const allSelected = DIFF_LIST.every(d => selectedDifficulties.includes(d));
                                         if (allSelected) { DIFF_LIST.forEach(d => toggleDifficulty(d)); }
                                         else { DIFF_LIST.filter(d => !selectedDifficulties.includes(d)).forEach(d => toggleDifficulty(d)); }
-                                    }} className="batch-btn">全選択/解除</button>
+                                    }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                 </div>
                                 <div className="grid grid-cols-4 gap-2">
                                     {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(diff => (
@@ -1479,7 +1875,7 @@
                                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
                                     <div className="text-[10px] font-black text-black uppercase">BPM</div>
                                     {(bpmMin !== "" || bpmMax !== "") && (
-                                        <button onClick={() => { setBpmMin(""); setBpmMax(""); }} className="batch-btn">クリア</button>
+                                        <button onClick={() => { setBpmMin(""); setBpmMax(""); }} className="batch-btn">{t(lang,'common_reset')}</button>
                                     )}
                                 </div>
                                 <div className="flex items-center gap-1.5">
@@ -1519,11 +1915,11 @@
                             <div className="space-y-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             {/* BPL（S6）課題曲 */}
                             <div className="space-y-2 pb-2">
-                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">BPL（S6）課題曲</div>
+                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl')}</div>
                                 <div className="grid grid-cols-4 gap-2">
                                     {[1,2,3,4,5,6,7].map(n => (
                                         <button key={n} onClick={() => toggleBplSection(n)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedBplSections.includes(n) ? 'active' : ''}`}>
-                                            区分{n}
+                                            {t(lang,'filter_section_n').replace('{n}',String(n))}
                                         </button>
                                     ))}
                                 </div>
@@ -1531,7 +1927,7 @@
                         </div>
                         <div className="px-5 py-4 border-t-2 border-black flex-shrink-0">
                             <button onClick={onClose} className="w-full bg-[#40916c] text-white font-black py-3 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
-                                この条件で絞り込む
+                                {t(lang,'common_filter_apply')}
                             </button>
                         </div>
                     </div>
@@ -1539,33 +1935,33 @@
             );
         };
 
-        const ViewModeSelectModal = ({ isOpen, viewMode, onSelect, onCancel }) => {
+        const ViewModeSelectModal = ({ isOpen, viewMode, onSelect, onCancel, lang = 'ja' }) => {
             if (!isOpen) return null;
             return (
                 <div className="modal-overlay" onClick={onCancel}>
                     <div className="modal-content" style={{ maxWidth: '320px' }} onClick={e => e.stopPropagation()}>
-                        <h2 className="text-lg font-black mb-3">表示形式を選択</h2>
+                        <h2 className="text-lg font-black mb-3">{t(lang,"modal_view_select_title")}</h2>
                         <div className="flex flex-col gap-4">
                             <button 
                                 onClick={() => { onSelect('list'); onCancel(); }}
                                 className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
                             >
-                                <i className="ph-bold ph-list text-2xl"></i> リスト表示
+                                <i className="ph-bold ph-list text-2xl"></i> {t(lang,'common_list_view')}
                             </button>
                             <button 
                                 onClick={() => { onSelect('grid'); onCancel(); }}
                                 className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
                             >
-                                <i className="ph-bold ph-squares-four text-2xl"></i> グリッド表示
+                                <i className="ph-bold ph-squares-four text-2xl"></i> {t(lang,'common_grid_view')}
                             </button>
                         </div>
-                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">閉じる</button>
+                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">{t(lang,'common_close')}</button>
                     </div>
                 </div>
             );
         };
 
-        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, showMemo, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false }) => {
+        const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, showMemo, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false, lang = 'ja' }) => {
             const [isOpen, setIsOpen] = useState(false);
             const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
             const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
@@ -1747,7 +2143,7 @@
                                 )}
                                 {isLoggedIn && (
                                     <div className="flex items-center justify-between mb-3" onClick={e => e.stopPropagation()}>
-                                        <span className="section-label" style={{textDecorationColor: '#3b82f6'}}>お気に入り</span>
+                                        <span className="section-label" style={{textDecorationColor: '#3b82f6'}}>{t(lang,'song_favorite')}</span>
                                         <button
                                             onClick={handleFavoriteClick}
                                             className={`fav-btn ${isFavorite ? 'active' : ''}`}
@@ -1757,7 +2153,7 @@
                                     </div>
                                 )}
                                 <div className="flex items-center justify-between mb-3 text-black">
-                                    <span className="section-label">第1区間</span>
+                                    <span className="section-label">{t(lang,'song_section1')}</span>
                                     {isLoggedIn && (
                                         <button
                                             onClick={(e) => handleMirrorClick(e, 'first')}
@@ -1769,21 +2165,21 @@
                                 </div>
                                 <div className="grid grid-cols-3 gap-2 mb-6">
                                     <div className="stat-box">
-                                        <p className="stat-label">開始位置</p>
+                                        <p className="stat-label">{t(lang,'song_start_pos')}</p>
                                         <p className="stat-value">{song.start_pos || "-"}</p>
                                     </div>
                                     <div className="stat-box">
-                                        <p className="stat-label">終了位置</p>
+                                        <p className="stat-label">{t(lang,'song_end_pos')}</p>
                                         <p className="stat-value">{song.end_pos || "-"}</p>
                                     </div>
                                     <div className="stat-box">
-                                        <p className="stat-label">チェイン数</p>
+                                        <p className="stat-label">{t(lang,'song_chain')}</p>
                                         <p className="stat-value">{song.combo || "-"}</p>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between mb-3 text-black">
-                                    <span className="section-label">第2区間</span>
+                                    <span className="section-label">{t(lang,'song_section2')}</span>
                                     {isLoggedIn && (
                                         <button
                                             onClick={(e) => handleMirrorClick(e, 'second')}
@@ -1795,15 +2191,15 @@
                                 </div>
                                 <div className="grid grid-cols-3 gap-2 mb-6">
                                     <div className="stat-box">
-                                        <p className="stat-label">開始位置</p>
+                                        <p className="stat-label">{t(lang,'song_start_pos')}</p>
                                         <p className="stat-value">{song.start_pos2 || "-"}</p>
                                     </div>
                                     <div className="stat-box">
-                                        <p className="stat-label">終了位置</p>
+                                        <p className="stat-label">{t(lang,'song_end_pos')}</p>
                                         <p className="stat-value">{song.end_pos2 || "-"}</p>
                                     </div>
                                     <div className="stat-box">
-                                        <p className="stat-label">チェイン数</p>
+                                        <p className="stat-label">{t(lang,'song_chain')}</p>
                                         <p className="stat-value">{song.combo2 || "-"}</p>
                                     </div>
                                 </div>
@@ -1811,18 +2207,18 @@
                                 <div className="grid grid-cols-2 gap-3 mb-6">
                                     {song.site_link ? (
                                         <button className="link-button chart" onClick={(e) => handleChartClick(e, song.site_link)}>
-                                            <i className="ph-bold ph-file-text text-lg"></i>画像で確認
+                                            <i className="ph-bold ph-file-text text-lg"></i>{t(lang,'song_chart_view')}
                                         </button>
                                     ) : (
-                                        <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>画像なし</div>
+                                        <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>{t(lang,'song_chart_none')}</div>
                                     )}
                                     
                                     {song.movie_link ? (
                                         <button className="link-button video" onClick={(e) => handleVideoClick(e, song.movie_link)}>
-                                            <i className="ph-bold ph-youtube-logo text-lg"></i>動画で確認
+                                            <i className="ph-bold ph-youtube-logo text-lg"></i>{t(lang,'song_video_view')}
                                         </button>
                                     ) : (
-                                        <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>動画なし</div>
+                                        <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>{t(lang,'song_video_none')}</div>
                                     )}
                                 </div>
 
@@ -1830,7 +2226,7 @@
                                     <>
                                         <div className="flex items-center gap-1.5 mb-2 font-black text-[13px] uppercase tracking-wider text-black">
                                             <i className="ph-fill ph-chat-centered-dots text-[#40916c] text-lg"></i>
-                                            <span>運営コメント</span>
+                                            <span>{t(lang,"song_ops_comment")}</span>
                                         </div>
                                         <div className="bg-white border-2 border-black p-4 rounded-xl shadow-inner min-h-[60px] mb-4">
                                             <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">
@@ -1844,7 +2240,7 @@
                                     <div className="mt-4 pt-4 border-t-2 border-gray-100" onClick={e => e.stopPropagation()}>
                                         <div className="flex items-center gap-1.5 mb-2 font-black text-[13px] uppercase tracking-wider text-black">
                                             <i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i>
-                                            <span>自分用メモ</span>
+                                            <span>{t(lang,"song_my_memo")}</span>
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <textarea 
@@ -1866,7 +2262,7 @@
                         <div className="modal-overlay" onClick={() => setVideoModal({ isOpen: false, url: '' })}>
                             <div className="modal-content !p-3 !max-w-[400px]" onClick={e => e.stopPropagation()}>
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-black">動画で確認</span>
+                                    <span className="text-sm font-black">{t(lang,'song_video_modal_title')}</span>
                                     <button onClick={() => setVideoModal({ isOpen: false, url: '' })} className="text-gray-400 hover:text-black">
                                         <i className="ph-bold ph-x text-xl"></i>
                                     </button>
@@ -1887,7 +2283,7 @@
             );
         };
 
-        const SetlistLimitModal = ({ isOpen, onClose }) => {
+        const SetlistLimitModal = ({ isOpen, onClose, lang = 'ja' }) => {
             if (!isOpen) return null;
             return (
                 <div className="modal-overlay" onClick={onClose}>
@@ -1896,9 +2292,9 @@
                             <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-blue-100">
                                 <i className="ph-bold ph-info text-3xl text-blue-600"></i>
                             </div>
-                            <h2 className="text-xl font-black mb-2">作成上限です</h2>
+                            <h2 className="text-xl font-black mb-2">{t(lang,"modal_setlist_limit_title")}</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed px-4">
-                                セトリは最大{MAX_SETLISTS}件まで作成可能です。<br/>新しいセトリを作成するには、既存のセトリを削除してください。
+                                {t(lang,'modal_setlist_limit_body').replace('{MAX}',String(MAX_SETLISTS))}
                             </p>
                         </div>
                         <div className="mt-8">
@@ -1906,7 +2302,7 @@
                                 onClick={onClose}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 translate-y-1 active:shadow-none transition-all"
                             >
-                                閉じる
+                                {t(lang,'common_close')}
                             </button>
                         </div>
                     </div>
@@ -1914,7 +2310,7 @@
             );
         };
 
-        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, getSongId, formatLevel, getBorderColor, favorites, isLoggedIn, toggleFavorite, toggleMirror, personalMemos, onSavePersonalMemo }) => {
+        const SetlistManager = ({ songs, songMap, setlists, mirrors, onSave, onDelete, onExport, getSongId, formatLevel, getBorderColor, favorites, isLoggedIn, toggleFavorite, toggleMirror, personalMemos, onSavePersonalMemo, lang = 'ja' }) => {
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null);
@@ -2053,7 +2449,7 @@
                         <div className="flex items-center justify-between mb-2 mt-2">
                             <div className="flex items-center gap-2">
                                 <i className="ph-fill ph-list-numbers text-3xl text-[#52b788]"></i>
-                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">セトリ管理</h2>
+                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'setlist_title')}</h2>
                             </div>
                             <div className="flex gap-2">
                                 {setlists.length > 0 && setlists.some(sl => !sl.isDraft) && (
@@ -2061,7 +2457,7 @@
                                         onClick={() => setIsSelectExportOpen(true)} 
                                         className="bg-[#fef9c3] text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1"
                                     >
-                                        <i className="ph-bold ph-image"></i> 画像出力
+                                        <i className="ph-bold ph-image"></i> {t(lang,'setlist_export_btn')}
                                     </button>
                                 )}
                                 <button onClick={handleCreate} className="bg-white text-black font-black py-1.5 px-3 rounded-lg border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-xs flex items-center gap-1">
@@ -2073,7 +2469,7 @@
                         {setlists.length === 0 ? (
                             <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md text-white text-center mt-2">
                                 <i className="ph-bold ph-music-notes text-4xl text-white/50 mb-2 block"></i>
-                                <p className="text-sm font-bold">作成されたセトリがありません</p>
+                                <p className="text-sm font-bold">{t(lang,"setlist_empty")}</p>
                             </div>
                         ) : (
                             <div className="flex flex-col gap-4 mt-2">
@@ -2086,12 +2482,12 @@
                                             <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
                                                 <h3 className="text-base font-black truncate text-black min-w-0">#{idx + 1}　{sl.name}</h3>
                                                 {sl.isDraft && (
-                                                    <span className="flex-shrink-0 text-[9px] font-black bg-gray-300 text-gray-600 border border-gray-400 px-1.5 py-0.5 rounded-full uppercase tracking-wider">下書き</span>
+                                                    <span className="flex-shrink-0 text-[9px] font-black bg-gray-300 text-gray-600 border border-gray-400 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t(lang,"setlist_draft_badge")}</span>
                                                 )}
                                             </div>
                                             {sl.isDraft ? (
                                                 <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className="flex-shrink-0 ml-2 text-xs font-black bg-yellow-400 border-2 border-black px-3 py-1.5 rounded-lg shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1">
-                                                    <i className="ph-bold ph-pencil-simple"></i> 続きを編集
+                                                    <i className="ph-bold ph-pencil-simple"></i> {t(lang,'setlist_continue_edit')}
                                                 </button>
                                             ) : (
                                                 <div className={`transition-transform duration-300 ${openSetlists[sl.id] ? 'rotate-180' : ''}`}>
@@ -2144,6 +2540,7 @@
                                                                 mirrorData={mirrors[id]}
                                                                 onToggleMirror={(section) => toggleMirror && toggleMirror(id, section)}
                                                                 personalMemo={personalMemos && personalMemos[id]}
+                                                                lang={lang}
                                                                 onSavePersonalMemo={(memo) => onSavePersonalMemo && onSavePersonalMemo(id, memo)}
                                                                 tightMode={true}
                                                             />
@@ -2156,7 +2553,7 @@
                                                 <div className="mt-4 pt-4 border-t-2 border-gray-100">
                                                     <div className="flex items-center gap-1.5 mb-2 font-black text-[10px] uppercase tracking-wider text-black">
                                                         <i className="ph-bold ph-pencil-simple text-blue-500 text-lg"></i>
-                                                        <span>自分用メモ</span>
+                                                        <span>{t(lang,'song_my_memo')}</span>
                                                     </div>
                                                     <div className="bg-gray-50 border-2 border-black p-3 rounded-xl min-h-[40px]">
                                                         <p className="text-sm font-bold text-black whitespace-pre-wrap leading-relaxed">
@@ -2168,10 +2565,10 @@
 
                                             <div className="flex gap-4 mt-6 justify-center">
                                                 <button onClick={(e) => { e.stopPropagation(); handleEdit(sl); }} className={getButtonClass("bg-yellow-400")}>
-                                                    <i className="ph-bold ph-pencil-simple"></i> 編集する
+                                                    <i className="ph-bold ph-pencil-simple"></i> {t(lang,'setlist_edit_btn')}
                                                 </button>
                                                 <button onClick={(e) => { e.stopPropagation(); requestDelete(sl.id); }} className={getButtonClass("bg-red-500", "text-white")}>
-                                                    <i className="ph-bold ph-trash"></i> 削除する
+                                                    <i className="ph-bold ph-trash"></i> {t(lang,'common_delete')}
                                                 </button>
                                             </div>
                                         </div>
@@ -2222,10 +2619,10 @@
 
             return (
                 <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000]">
-                    <h3 className="text-xl font-black mb-4 text-black border-b-4 border-[#52b788] pb-2 inline-block">セトリ作成</h3>
+                    <h3 className="text-xl font-black mb-4 text-black border-b-4 border-[#52b788] pb-2 inline-block">{t(lang,'setlist_edit_title')}</h3>
                     
                     <div className="mb-6">
-                        <label className="block text-xs font-black uppercase text-gray-500 mb-1">セトリ名</label>
+                        <label className="block text-xs font-black uppercase text-gray-500 mb-1">{t(lang,'setlist_name_label')}</label>
                         <input 
                             type="text" 
                             value={editingSetlist.name} 
@@ -2290,7 +2687,7 @@
                                     ) : (
                                         <div onClick={() => openSongModal(idx)} className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 active:translate-y-0.5 transition-all">
                                             <i className="ph-bold ph-plus-circle text-2xl text-gray-400 mr-2"></i>
-                                            <span className="text-gray-500 font-bold text-sm">曲を選択する</span>
+                                            <span className="text-gray-500 font-bold text-sm">{t(lang,'setlist_song_select')}</span>
                                         </div>
                                     )}
                                     </div>
@@ -2316,7 +2713,7 @@
                     </div>
 
                     <div className="mb-6">
-                        <label className="block text-xs font-black uppercase text-gray-500 mb-1">自分用メモ</label>
+                        <label className="block text-xs font-black uppercase text-gray-500 mb-1">{t(lang,'song_my_memo')}</label>
                         <textarea 
                             value={editingSetlist.memo || ""} 
                             onChange={e => setEditingSetlist({...editingSetlist, memo: e.target.value.slice(0, 60)})}
@@ -2332,23 +2729,23 @@
                             disabled={!editingSetlist || editingSetlist.name.trim() === ""}
                             className={`w-32 font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] transition-all ${editingSetlist && editingSetlist.name.trim() !== "" ? 'bg-[#52b788] text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-300'}`}
                         >
-                            保存する
+                            {t(lang,'common_save')}
                         </button>
                         <button onClick={() => tryLeaveEdit(() => setView("list"))} className="w-32 bg-gray-200 text-black font-black py-2 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all">
-                            キャンセル
+                            {t(lang,'common_cancel')}
                         </button>
                     </div>
 
                     {isSongModalOpen && (
                         <div className="modal-overlay" onClick={() => setIsSongModalOpen(false)}>
                             <div className="modal-content" style={{ padding: '16px', maxWidth: '380px', width: '100%', height: '85vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-                                <h2 className="text-lg font-black mb-3 text-black">曲を選択</h2>
+                                <h2 className="text-lg font-black mb-3 text-black">{t(lang,"song_modal_title")}</h2>
 
                                 {/* 検索 */}
                                 <div className="relative mb-2 flex-shrink-0">
                                     <input 
                                         type="text" 
-                                        placeholder="曲名・読みで検索..."
+                                        placeholder={t(lang,"song_modal_search")}
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
                                         className="w-full bg-gray-50 border-2 border-black rounded-lg py-2 px-3 pl-8 text-sm font-bold focus:outline-none focus:border-[#52b788] text-black"
@@ -2363,7 +2760,7 @@
                                         className={`flex items-center gap-1.5 text-[11px] font-black px-3 py-1.5 rounded-lg border-2 border-black transition-all ${songModalFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332] shadow-[2px_2px_0px_#52b788]' : songModalFilter === "open" ? 'bg-[#40916c] text-white shadow-[2px_2px_0px_#1b4332]' : 'bg-white text-black shadow-[2px_2px_0px_#000]'}`}
                                     >
                                         <i className="ph-bold ph-funnel text-sm"></i>
-                                        絞り込み{songModalFilterActive ? '●' : ''}
+                                        {t(lang,'common_filter')}{songModalFilterActive ? '●' : ''}
                                         <i className={`ph-bold ph-caret-down text-[10px] transition-transform ${songModalFilter === "open" ? 'rotate-180' : ''}`}></i>
                                     </button>
                                 </div>
@@ -2397,7 +2794,7 @@
                                             return (
                                                 <div className="flex flex-col items-center justify-center py-12 opacity-40">
                                                     <i className="ph-bold ph-magnifying-glass text-5xl mb-3 text-black"></i>
-                                                    <p className="text-sm font-black text-black">曲名を入力 or 絞り込みで検索</p>
+                                                    <p className="text-sm font-black text-black">{t(lang,"song_modal_search_hint")}</p>
                                                 </div>
                                             );
                                         }
@@ -2405,7 +2802,7 @@
                                             return (
                                                 <div className="flex flex-col items-center justify-center py-12 opacity-40">
                                                     <i className="ph-bold ph-ghost text-5xl mb-3 text-black"></i>
-                                                    <p className="text-sm font-black text-black">該当する曲が見つかりません</p>
+                                                    <p className="text-sm font-black text-black">{t(lang,"song_modal_no_result")}</p>
                                                 </div>
                                             );
                                         }
@@ -2451,7 +2848,7 @@
                                                             </div>
                                                         )}
                                                     </div>
-                                                    {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">選択済</span>}
+                                                    {isSelected && <span className="text-[10px] font-black text-red-500 bg-red-100 px-2 py-1 rounded whitespace-nowrap">{t(lang,'song_already_selected')}</span>}
                                                 </div>
                                             );
                                         });
@@ -2460,7 +2857,7 @@
                                 
                                 <div className="flex justify-center flex-shrink-0 mt-3">
                                     <button onClick={() => setIsSongModalOpen(false)} className="w-40 bg-gray-200 text-black font-black py-3 rounded-xl border-4 border-black active:translate-y-0.5 shadow-[3px_3px_0px_#000] active:shadow-none">
-                                        閉じる
+                                        {t(lang,'common_close')}
                                     </button>
                                 </div>
                             </div>
@@ -2472,12 +2869,12 @@
                         <div className="modal-overlay" style={{zIndex:110}} onClick={() => setSongModalFilter("closed")}>
                             <div className="modal-content !max-w-[380px] !text-left !p-0 overflow-hidden" style={{maxHeight:'85vh',display:'flex',flexDirection:'column'}} onClick={e => e.stopPropagation()}>
                                 <div className="flex items-center justify-between px-5 py-4 border-b-2 border-black">
-                                    <span className="text-base font-black">絞り込み</span>
+                                    <span className="text-base font-black">{t(lang,'filter_title')}</span>
                                     <div className="flex items-center gap-2">
                                         {songModalFilterActive && (
                                             <button onClick={() => { setSongModalFavOnly(false); setSongModalMirrorOnly(false); setSongModalDiffs([]); setSongModalVersions([]); setSongModalLevels([]); setSongModalBpls([]); }}
                                                 className="flex items-center gap-1 text-[10px] font-black bg-gray-100 border border-gray-300 px-3 py-1 rounded-full">
-                                                <i className="ph-bold ph-arrows-counter-clockwise"></i> リセット
+                                                <i className="ph-bold ph-arrows-counter-clockwise"></i> {t(lang,'common_reset')}
                                             </button>
                                         )}
                                         <button onClick={() => setSongModalFilter("closed")} className="text-gray-400 hover:text-black">
@@ -2489,17 +2886,17 @@
                                     {/* お気に入り・ミラー */}
                                     {favorites && favorites.length > 0 && (
                                         <div className="space-y-2">
-                                            <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">マイデータ</div>
+                                            <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_my_data')}</div>
                                             <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
-                                                <button onClick={() => setSongModalFavOnly(false)} className={`toggle-btn-small ${!songModalFavOnly ? 'active' : ''}`} style={{color: !songModalFavOnly ? '#1b4332' : '#374151'}}>すべて</button>
+                                                <button onClick={() => setSongModalFavOnly(false)} className={`toggle-btn-small ${!songModalFavOnly ? 'active' : ''}`} style={{color: !songModalFavOnly ? '#1b4332' : '#374151'}}>{t(lang,'common_all')}</button>
                                                 <button onClick={() => setSongModalFavOnly(true)} className={`toggle-btn-small ${songModalFavOnly ? 'active' : ''}`} style={{color: songModalFavOnly ? '#1b4332' : '#374151'}}>
-                                                    <i className="ph-fill ph-star"></i> お気に入りのみ
+                                                    <i className="ph-fill ph-star"></i> {t(lang,'filter_fav_only')}
                                                 </button>
                                             </div>
                                             <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
-                                                <button onClick={() => setSongModalMirrorOnly(false)} className={`toggle-btn-small ${!songModalMirrorOnly ? 'active' : ''}`} style={{color: !songModalMirrorOnly ? '#1b4332' : '#374151'}}>すべて</button>
+                                                <button onClick={() => setSongModalMirrorOnly(false)} className={`toggle-btn-small ${!songModalMirrorOnly ? 'active' : ''}`} style={{color: !songModalMirrorOnly ? '#1b4332' : '#374151'}}>{t(lang,'common_all')}</button>
                                                 <button onClick={() => setSongModalMirrorOnly(true)} className={`toggle-btn-small ${songModalMirrorOnly ? 'active' : ''}`} style={{color: songModalMirrorOnly ? '#1b4332' : '#374151'}}>
-                                                    <i className="ph-bold ph-arrows-left-right"></i> ミラーのみ
+                                                    <i className="ph-bold ph-arrows-left-right"></i> {t(lang,'filter_mirror_only')}
                                                 </button>
                                             </div>
                                         </div>
@@ -2507,11 +2904,11 @@
                                     {/* バージョン */}
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                                            <div className="text-[10px] font-black text-black uppercase">バージョン</div>
+                                            <div className="text-[10px] font-black text-black uppercase">{t(lang,'filter_version')}</div>
                                             <button onClick={() => {
                                                 const allSel = VERSION_LIST.every(v => songModalVersions.includes(v.value));
                                                 setSongModalVersions(allSel ? [] : VERSION_LIST.map(v => v.value));
-                                            }} className="batch-btn">全選択/解除</button>
+                                            }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-1.5">
                                             {VERSION_LIST.map(v => (
@@ -2523,12 +2920,12 @@
                                     {/* 難易度 */}
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
-                                            <div className="text-[10px] font-black text-black uppercase">難易度</div>
+                                            <div className="text-[10px] font-black text-black uppercase">{t(lang,'filter_difficulty')}</div>
                                             <button onClick={() => {
                                                 const DIFFS = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"];
                                                 const allSel = DIFFS.every(d => songModalDiffs.includes(d));
                                                 setSongModalDiffs(allSel ? [] : DIFFS);
-                                            }} className="batch-btn">全選択/解除</button>
+                                            }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                         </div>
                                         <div className="grid grid-cols-4 gap-2">
                                             {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(d => (
@@ -2544,7 +2941,7 @@
                                             <button onClick={() => {
                                                 const allSel = LV17_LIST.every(lv => songModalLevels.includes(lv));
                                                 setSongModalLevels(prev => allSel ? prev.filter(lv => !LV17_LIST.includes(lv)) : [...new Set([...prev, ...LV17_LIST])]);
-                                            }} className="batch-btn">全選択/解除</button>
+                                            }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                         </div>
                                         <div className="grid grid-cols-4 gap-2">
                                             {LV17_LIST.map(lv => (
@@ -2560,7 +2957,7 @@
                                             <button onClick={() => {
                                                 const allSel = LV18_LIST.every(lv => songModalLevels.includes(lv));
                                                 setSongModalLevels(prev => allSel ? prev.filter(lv => !LV18_LIST.includes(lv)) : [...new Set([...prev, ...LV18_LIST])]);
-                                            }} className="batch-btn">全選択/解除</button>
+                                            }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                         </div>
                                         <div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0,5).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
                                         <div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5,10).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
@@ -2572,7 +2969,7 @@
                                             <button onClick={() => {
                                                 const allSel = LV19_LIST.every(lv => songModalLevels.includes(lv));
                                                 setSongModalLevels(prev => allSel ? prev.filter(lv => !LV19_LIST.includes(lv)) : [...new Set([...prev, ...LV19_LIST])]);
-                                            }} className="batch-btn">全選択/解除</button>
+                                            }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                         </div>
                                         <div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0,5).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
                                         <div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5,10).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
@@ -2584,19 +2981,19 @@
                                             <button onClick={() => {
                                                 const allSel = LV20_LIST.every(lv => songModalLevels.includes(lv));
                                                 setSongModalLevels(prev => allSel ? prev.filter(lv => !LV20_LIST.includes(lv)) : [...new Set([...prev, ...LV20_LIST])]);
-                                            }} className="batch-btn">全選択/解除</button>
+                                            }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                         </div>
                                         <div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
                                         <div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
                                     </div>
                                     {/* BPL（S6）課題曲 */}
                                     <div className="space-y-2 pb-2">
-                                        <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">BPL（S6）課題曲</div>
+                                        <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl')}</div>
                                         <div className="grid grid-cols-4 gap-2">
                                             {[1,2,3,4,5,6,7].map(n => (
                                                 <button key={n} onClick={() => setSongModalBpls(prev => prev.includes(n) ? prev.filter(x=>x!==n) : [...prev,n])}
                                                     className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${songModalBpls.includes(n) ? 'active' : ''}`}>
-                                                    区分{n}
+                                                    {t(lang,'filter_section_n').replace('{n}',String(n))}
                                                 </button>
                                             ))}
                                         </div>
@@ -2604,7 +3001,7 @@
                                 </div>
                                 <div className="px-5 py-4 border-t-2 border-black">
                                     <button onClick={() => setSongModalFilter("closed")} className="w-full bg-[#40916c] text-white font-black py-3 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
-                                        この条件で絞り込む
+                                        {t(lang,'common_filter_apply')}
                                     </button>
                                 </div>
                             </div>
@@ -2619,7 +3016,7 @@
                                     </div>
                                     <h2 className="text-xl font-black mb-2">確認</h2>
                                     <p className="text-sm font-bold text-gray-600 leading-relaxed px-2">
-                                        楽曲が全て埋まっていません。下書きとして入力内容を保存しますか？
+                                        {t(lang,'modal_draft_body')}
                                     </p>
                                 </div>
                                 <div className="flex flex-col gap-3 mt-6">
@@ -2632,7 +3029,7 @@
                                         }}
                                         className="w-full bg-yellow-400 text-black font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
                                     >
-                                        <i className="ph-bold ph-floppy-disk mr-1"></i> 下書き保存する
+                                        <i className="ph-bold ph-floppy-disk mr-1"></i> {t(lang,'modal_draft_save')}
                                     </button>
                                     <button 
                                         onClick={() => {
@@ -2641,7 +3038,7 @@
                                         }}
                                         className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
                                     >
-                                        {pendingLeaveAction ? "保存せず離れる" : "キャンセル"}
+                                        {pendingLeaveAction ? t(lang,'modal_draft_leave') : t(lang,'common_cancel')}
                                     </button>
                                 </div>
                             </div>
@@ -2651,8 +3048,36 @@
             )
         };
 
+
+        // ===== 言語切替モーダル =====
+        const LangSelectModal = ({ isOpen, currentLang, onSelect, onClose, lang = 'ja' }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal-content" style={{maxWidth:'280px'}} onClick={e => e.stopPropagation()}>
+                        <div className="mb-5">
+                            <div className="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3 border-4 border-black bg-[#d8f3dc]">
+                                <i className="ph-bold ph-globe text-2xl text-black"></i>
+                            </div>
+                            <h2 className="text-lg font-black mb-1">言語 / Language</h2>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <button onClick={() => { onSelect('ja'); onClose(); }}
+                                className={`w-full py-3 rounded-xl font-black text-sm border-4 border-black transition-all flex items-center justify-center gap-2 ${currentLang === 'ja' ? 'bg-[#52b788] text-white shadow-[4px_4px_0px_#1b4332]' : 'bg-white text-black shadow-[4px_4px_0px_#000]'}`}>
+                                🇯🇵 {t(lang,'lang_ja')}{currentLang === 'ja' && <i className="ph-bold ph-check-circle text-base ml-1"></i>}
+                            </button>
+                            <button onClick={() => { onSelect('ko'); onClose(); }}
+                                className={`w-full py-3 rounded-xl font-black text-sm border-4 border-black transition-all flex items-center justify-center gap-2 ${currentLang === 'ko' ? 'bg-[#52b788] text-white shadow-[4px_4px_0px_#1b4332]' : 'bg-white text-black shadow-[4px_4px_0px_#000]'}`}>
+                                🇰🇷 한국어{currentLang === 'ko' && <i className="ph-bold ph-check-circle text-base ml-1"></i>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         // アプリ内ブラウザ案内モーダル（X・LINE対応）
-        const InAppBrowserModal = ({ isOpen, onClose }) => {
+        const InAppBrowserModal = ({ isOpen, onClose, lang = 'ja' }) => {
             const [copied, setCopied] = useState(false);
             if (!isOpen) return null;
             const currentUrl = window.location.href;
@@ -2678,7 +3103,7 @@
                             <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-[#e8f4fd]">
                                 <i className="ph-bold ph-warning text-3xl text-[#1d9bf0]"></i>
                             </div>
-                            <h2 className="text-lg font-black mb-3 leading-snug">ブラウザアプリで<br/>開いてください</h2>
+                            <h2 className="text-lg font-black mb-3 leading-snug">{t(lang,"inapp_title")}</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed">
                                 アプリ内ブラウザではGoogleログインが使えません。<br/><br/>
                                 下のボタンでURLをコピーして、<span className="font-black text-black">Safari / Chrome</span> などのブラウザに貼り付けて開いてください。
@@ -2696,13 +3121,13 @@
                                 className="w-full bg-[#1d9bf0] text-white font-black py-4 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2"
                             >
                                 <i className="ph-bold ph-copy text-lg"></i>
-                                URLをコピーする
+                                {t(lang,'inapp_copy_btn')}
                             </button>
                             <button
                                 onClick={onClose}
                                 className="w-full bg-gray-100 text-black font-black py-3 rounded-xl border-4 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm"
                             >
-                                閉じる
+                                {t(lang,'common_close')}
                             </button>
                         </div>
                     </div>
@@ -2730,7 +3155,7 @@
                             animation: 'toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                         }}>
                             <i className="ph-bold ph-check-circle text-xl"></i>
-                            URLをコピーしました！
+                            {t(lang,'inapp_copied_toast')}
                         </div>
                     )}
                 </div>
@@ -2738,6 +3163,8 @@
         };
 
         const App = () => {
+            const [lang, setLang] = useState('ja');
+            const [isLangModalOpen, setIsLangModalOpen] = useState(false);
             const [songs, setSongs] = useState([]);
             const [isLoading, setIsLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState("");
@@ -2801,6 +3228,18 @@
             const isInAppBrowser = () => {
                 const ua = navigator.userAgent || "";
                 return /Twitter for (iPhone|Android|iPad)/i.test(ua) || /Line\//i.test(ua);
+            };
+
+            const saveLang = async (newLang) => {
+                setLang(newLang);
+                if (!user || user.isAnonymous || !firebase) return;
+                const { doc, setDoc, getDoc } = window.FirebaseSDK;
+                const ref = doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'userData', 'main');
+                try {
+                    const snap = await getDoc(ref);
+                    const existing = snap.exists() ? snap.data() : {};
+                    await setDoc(ref, { ...existing, lang: newLang });
+                } catch(e) { console.error("lang save error", e); }
             };
 
             const getSongId = (song) => `${song.title}_${song.difficult}`;
@@ -3000,7 +3439,7 @@
                     }, { merge: true });
                 } catch (err) {
                     console.error("Firestore Profile Write Error:", err);
-                    setSaveError("保存に失敗しました。時間をおいて再度お試しください。");
+                    setSaveError(t(lang,"auth_save_error"));
                 }
             };
 
@@ -3314,7 +3753,7 @@
             const LevelSectionHeader = ({ title, list }) => (
                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
                     <div className="text-[10px] font-black text-black uppercase leading-none">Level {title}</div>
-                    <button onClick={() => toggleLevelRange(list)} className="batch-btn">全選択/解除</button>
+                    <button onClick={() => toggleLevelRange(list)} className="batch-btn">{t(lang,'common_select_all')}</button>
                 </div>
             );
 
@@ -3397,18 +3836,18 @@
                             {isNavOpen && (
                                 <div className="dropdown-panel" onClick={() => setIsNavOpen(false)}>
                                     <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-music-notes text-base"></i> メインページ
+                                        <i className="ph-bold ph-music-notes text-base"></i> {t(lang,'nav_main')}
                                     </button>
                                     {user && !user.isAnonymous && (
                                         <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
-                                            <i className="ph-bold ph-list-numbers text-base"></i> セトリ管理
+                                            <i className="ph-bold ph-list-numbers text-base"></i> {t(lang,'nav_setlist')}
                                         </button>
                                     )}
                                     <button onClick={() => setCurrentPage("random")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "random" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-shuffle text-base"></i> ランダム選曲
+                                        <i className="ph-bold ph-shuffle text-base"></i> {t(lang,'nav_random')}
                                     </button>
                                     <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-trophy text-base"></i> チェイン数ランキング
+                                        <i className="ph-bold ph-trophy text-base"></i> {t(lang,'nav_ranking')}
                                     </button>
                                     {FEATURE_DANGER_PAGE && (
                                         <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
@@ -3417,22 +3856,26 @@
                                     )}
                                     {user && !user.isAnonymous && (
                                         <button onClick={() => setCurrentPage("simulation")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "simulation" ? 'active' : ''}`}>
-                                            <i className="ph-bold ph-sword text-base"></i> シミュレーション
+                                            <i className="ph-bold ph-sword text-base"></i> {t(lang,'nav_simulation')}
                                         </button>
                                     )}
                                     <button onClick={() => setCurrentPage("bpl")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "bpl" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-star text-base"></i> BPL（S6）課題曲
+                                        <i className="ph-bold ph-star text-base"></i> {t(lang,'nav_bpl')}
                                     </button>
                                     <div className="border-t-2 border-gray-100 my-1"></div>
                                     <button onClick={() => setCurrentPage("terms")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "terms" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-file-text text-base"></i> ガイドライン
+                                        <i className="ph-bold ph-file-text text-base"></i> {t(lang,'nav_terms')}
                                     </button>
                                     <button onClick={() => setCurrentPage("contact")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "contact" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-chat-centered-text text-base"></i> お問い合わせ
+                                        <i className="ph-bold ph-chat-centered-text text-base"></i> {t(lang,'nav_contact')}
+                                    </button>
+                                    <div className="border-t-2 border-gray-100 my-1"></div>
+                                    <button onClick={() => { setIsNavOpen(false); setIsLangModalOpen(true); }} className="dropdown-item hover:bg-gray-50">
+                                        <i className="ph-bold ph-globe text-base"></i> {lang === 'ja' ? '日本語' : '한국어'}
                                     </button>
                                     {user && !user.isAnonymous && (
                                         <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
-                                            <i className="ph-bold ph-sign-out text-base"></i> ログアウト
+                                            <i className="ph-bold ph-sign-out text-base"></i> {t(lang,'nav_logout')}
                                         </button>
                                     )}
                                 </div>
@@ -3450,7 +3893,7 @@
                                 )}
                                 <div className="flex flex-col items-start leading-none">
                                     <span className="text-[9px] font-black text-black truncate max-w-[80px] mb-0.5">{user.displayName || "USER"}</span>
-                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">ログイン中</span>
+                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">{t(lang,"auth_loggedin")}</span>
                                 </div>
                             </div>
                         ) : (
@@ -3460,7 +3903,7 @@
                                 ) : (
                                     <>
                                         <i className="ph-bold ph-user-circle text-lg text-[#52b788]"></i>
-                                        ログイン
+                                        {t(lang,'auth_login')}
                                     </>
                                 )}
                             </button>
@@ -3480,7 +3923,7 @@
                             <div className="flex justify-center mb-2">
                                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
                                     <span className="text-[11px] font-black text-white/80 tracking-wide">
-                                        📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。
+                                        {t(lang,'main_notice')}
                                     </span>
                                 </div>
                             </div>
@@ -3491,7 +3934,7 @@
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-2">
                                     <div className="flex items-center gap-2 mb-2">
                                         <i className="ph-fill ph-trophy text-3xl text-yellow-400"></i>
-                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">チェイン数ランキング</h2>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'ranking_title')}</h2>
                                     </div>
                                     <div className="flex justify-center mb-2">
                                         <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
@@ -3507,30 +3950,30 @@
                                             style={isFilterActive ? {boxShadow:'3px 3px 0px #52b788'} : {}}
                                         >
                                             <i className="ph-bold ph-funnel text-sm"></i>
-                                            絞り込み{isFilterActive ? '●' : ''}
+                                            {t(lang,'common_filter')}{isFilterActive ? '●' : ''}
                                             <i className="ph-bold ph-caret-down text-[10px]"></i>
                                         </div>
                                     </div>
                                     <div className="mb-2">
                                         <div className="toggle-btn-group">
-                                            <button onClick={() => setRankSection("section1")} className={`toggle-btn-small ${rankSection === "section1" ? 'active' : ''}`}>第1区間</button>
-                                            <button onClick={() => setRankSection("section2")} className={`toggle-btn-small ${rankSection === "section2" ? 'active' : ''}`}>第2区間</button>
+                                            <button onClick={() => setRankSection("section1")} className={`toggle-btn-small ${rankSection === "section1" ? 'active' : ''}`}>{t(lang,'ranking_section1')}</button>
+                                            <button onClick={() => setRankSection("section2")} className={`toggle-btn-small ${rankSection === "section2" ? 'active' : ''}`}>{t(lang,'ranking_section2')}</button>
                                         </div>
                                     </div>
                                     <div className="mb-0">
                                         <div className="toggle-btn-group">
                                             <button onClick={() => setSortOrder("desc")} className={`toggle-btn-small ${sortOrder === "desc" ? 'active' : ''}`}>
-                                                <i className="ph-bold ph-sort-descending"></i> 多い順
+                                                <i className="ph-bold ph-sort-descending"></i> {t(lang,'ranking_desc')}
                                             </button>
                                             <button onClick={() => setSortOrder("asc")} className={`toggle-btn-small ${sortOrder === "asc" ? 'active' : ''}`}>
-                                                <i className="ph-bold ph-sort-ascending"></i> 少ない順
+                                                <i className="ph-bold ph-sort-ascending"></i> {t(lang,'ranking_asc')}
                                             </button>
                                         </div>
                                     </div>
                                     {!isLoading && (
                                         <div className="flex justify-center" style={{marginTop:'8px', marginBottom:'8px'}}>
                                             <div className="hit-counter">
-                                                <span>{allFilteredSongs.length} 譜面</span>
+                                                <span>{t(lang,'common_chart_count').replace('{n}',String(allFilteredSongs.length))}</span>
                                             </div>
                                         </div>
                                     )}
@@ -3555,7 +3998,7 @@
                                     </div>
                                     <div className="flex flex-col gap-2">
                                             <div className="toggle-btn-group">
-                                                <button onClick={() => setDangerFilter("all")} className={`toggle-btn-small ${dangerFilter === "all" ? 'active' : ''}`}>すべて</button>
+                                                <button onClick={() => setDangerFilter("all")} className={`toggle-btn-small ${dangerFilter === "all" ? 'active' : ''}`}>{t(lang,'common_all')}</button>
                                                 <button onClick={() => setDangerFilter("yosyu")} className={`toggle-btn-small ${dangerFilter === "yosyu" ? 'active' : ''}`}>
                                                     <span style={{color: dangerFilter === "yosyu" ? "#b45309" : "#ffb703"}}>■</span> 要予習のみ
                                                 </button>
@@ -3571,14 +4014,14 @@
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                     <div className="flex items-center gap-2 mb-2">
                                         <i className="ph-fill ph-shuffle text-3xl text-[#e9edc9]"></i>
-                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ランダム選曲</h2>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'random_title')}</h2>
                                     </div>
                                     <div className="mb-2">
                                         {/* 補足コメント */}
                                         <div className="bg-white/10 py-2 px-4 rounded-2xl border border-white/10 backdrop-blur-md text-white">
                                             <div className="text-[12px] font-black leading-relaxed">
-                                                <p>「生成する」ボタンを押すと、ランダムに5曲が選ばれます。</p>
-                                                <p>絞り込みを活用することで、抽選範囲をカスタマイズできます。</p>
+                                                <p>{t(lang,'random_desc1')}</p>
+                                                <p>{t(lang,'random_desc2')}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -3590,7 +4033,7 @@
                                             style={isFilterActive ? {boxShadow:'3px 3px 0px #52b788'} : {}}
                                         >
                                             <i className="ph-bold ph-funnel text-sm"></i>
-                                            絞り込み{isFilterActive ? '●' : ''}
+                                            {t(lang,'common_filter')}{isFilterActive ? '●' : ''}
                                             <i className="ph-bold ph-caret-down text-[10px]"></i>
                                         </div>
 
@@ -3609,7 +4052,7 @@
                                             ) : (
                                                 <>
                                                     <i className="ph-bold ph-dice-five text-2xl"></i>
-                                                    生成する
+                                                    {t(lang,'random_generate')}
                                                 </>
                                             )}
                                         </button>
@@ -3624,7 +4067,7 @@
                                             <div className="flex justify-end mb-1 gap-2">
                                                 <div className="view-mode-badge" onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}>
                                                     <i className={`ph-bold ${viewMode === 'list' ? 'ph-squares-four' : 'ph-list'}`}></i>
-                                                    表示切替
+                                                    {t(lang,'common_view_toggle')}
                                                 </div>
                                                 <div
                                                     className={`view-mode-badge ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
@@ -3632,14 +4075,14 @@
                                                     style={isFilterActive ? {boxShadow:'3px 3px 0px #52b788'} : {}}
                                                 >
                                                     <i className="ph-bold ph-funnel text-sm"></i>
-                                                    絞り込み{isFilterActive ? '●' : ''}
+                                                    {t(lang,'common_filter')}{isFilterActive ? '●' : ''}
                                                     <i className="ph-bold ph-caret-down text-[10px]"></i>
                                                 </div>
                                             </div>
                                             <div className="relative">
                                                 <input
                                                     type="text"
-                                                    placeholder="曲名・読みで探す..."
+                                                    placeholder={t(lang,"main_search_placeholder")}
                                                     className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 text-sm font-bold focus:outline-none shadow-[4px_4px_0px_#000]"
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -3659,7 +4102,7 @@
                                                 <div className="flex flex-col gap-3">
                                                     <div className="flex justify-center">
                                                         <div className="hit-counter">
-                                                            <span>{allFilteredSongs.length} 譜面</span>
+                                                            <span>{t(lang,'common_chart_count').replace('{n}', String(allFilteredSongs.length))}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -3697,7 +4140,8 @@
                                             toggleFavorite={toggleFavorite}
                                             toggleMirror={toggleMirror}
                                             personalMemos={personalMemos}
-                                            onSavePersonalMemo={savePersonalMemo}
+                                            lang={lang}
+                                        onSavePersonalMemo={savePersonalMemo}
                                         />
                                     </div>
                                 )}
@@ -3706,12 +4150,12 @@
                                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                         <div className="flex items-center gap-2 mb-4">
                                             <i className="ph-fill ph-chat-centered-text text-3xl text-[#52b788]"></i>
-                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">お問い合わせ</h2>
+                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'contact_title')}</h2>
                                         </div>
 
                                         <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-6 text-white">
                                             <p className="text-[13px] font-black leading-relaxed">
-                                                本サービスに関するご質問、不具合報告、楽曲情報の誤り、または改善のご提案などがございましたら、以下のいずれかの方法でご連絡をお願いいたします。
+                                                {t(lang,'contact_desc')}
                                             </p>
                                         </div>
 
@@ -3719,39 +4163,39 @@
                                             <div className="contact-method-card">
                                                 <div className="flex items-center gap-2">
                                                     <i className="ph-fill ph-x-logo text-xl text-black"></i>
-                                                    <h3 className="text-sm font-black text-black">X(旧Twitter)で連絡</h3>
+                                                    <h3 className="text-sm font-black text-black">{t(lang,"contact_x_title")}</h3>
                                                 </div>
                                                 <p className="text-xs font-bold text-gray-600 leading-relaxed">
-                                                    管理者のアカウント(@Yuuya1202)へ直接ダイレクトメッセージ(DM)をお送りください。迅速な対応が可能です。
+                                                    {t(lang,'contact_x_body')}
                                                 </p>
                                                 <button 
                                                     onClick={() => setContactLinkModal({ isOpen: true, url: REPRESENTATIVE_X_URL, type: 'x' })}
                                                     className="link-button chart mt-2"
                                                 >
-                                                    <i className="ph-bold ph-paper-plane-tilt text-lg"></i>DMを送る
+                                                    <i className="ph-bold ph-paper-plane-tilt text-lg"></i>{t(lang,'contact_x_btn')}
                                                 </button>
                                             </div>
 
                                             <div className="contact-method-card">
                                                 <div className="flex items-center gap-2">
                                                     <i className="ph-fill ph-file-text text-xl text-black"></i>
-                                                    <h3 className="text-sm font-black text-black">専用フォームから送信</h3>
+                                                    <h3 className="text-sm font-black text-black">{t(lang,"contact_form_title")}</h3>
                                                 </div>
                                                 <p className="text-xs font-bold text-gray-600 leading-relaxed">
-                                                    Googleフォームよりお問い合わせ内容を送信いただけます。SNSアカウントをお持ちでない方はこちらをご利用ください。
+                                                    {t(lang,'contact_form_body')}
                                                 </p>
                                                 <button 
                                                     onClick={() => setContactLinkModal({ isOpen: true, url: CONTACT_FORM_URL, type: 'contact' })}
                                                     className="link-button video mt-2"
                                                 >
-                                                    <i className="ph-bold ph-list-checks text-lg"></i>フォームを開く
+                                                    <i className="ph-bold ph-list-checks text-lg"></i>{t(lang,'contact_form_btn')}
                                                 </button>
                                             </div>
                                         </div>
 
                                         <div className="mt-10 flex justify-center">
                                             <button onClick={() => setCurrentPage("main")} className="page-btn">
-                                                メインページに戻る
+                                                {t(lang,'common_back_to_main')}
                                             </button>
                                         </div>
                                     </div>
@@ -3761,20 +4205,27 @@
                                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                         <div className="flex items-center gap-2 mb-4">
                                             <i className="ph-fill ph-file-text text-3xl text-blue-400"></i>
-                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">ガイドライン</h2>
+                                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'terms_title')}</h2>
                                         </div>
                                         
                                         <div className="bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-md mb-4 text-white">
                                             <p className="text-[11px] font-black leading-relaxed">
-                                                本内容に関するお問い合わせは「お問い合わせ・不具合報告」ページからお願いいたします。
+                                                {t(lang,'terms_notice')}
                                             </p>
                                         </div>
+                                        {lang === 'ko' && (
+                                            <div className="bg-yellow-400/20 border border-yellow-400/40 rounded-2xl px-4 py-3 mb-4 text-white">
+                                                <p className="text-[11px] font-black leading-relaxed">
+                                                    ※ 본 페이지의 내용은 일본어로만 제공됩니다.
+                                                </p>
+                                            </div>
+                                        )}
 
                                         <div className="mb-4">
                                             <div className="toggle-btn-group">
-                                                <button onClick={() => setTermsTab("terms")} className={`toggle-btn-small ${termsTab === "terms" ? 'active' : ''}`}>利用規約</button>
-                                                <button onClick={() => setTermsTab("privacy")} className={`toggle-btn-small ${termsTab === "privacy" ? 'active' : ''}`} style={{lineHeight:1.2}}>プライバシー<br/>ポリシー</button>
-                                                <button onClick={() => setTermsTab("credits")} className={`toggle-btn-small ${termsTab === "credits" ? 'active' : ''}`}>クレジット</button>
+                                                <button onClick={() => setTermsTab("terms")} className={`toggle-btn-small ${termsTab === "terms" ? 'active' : ''}`}>{t(lang,'terms_tab_terms')}</button>
+                                                <button onClick={() => setTermsTab("privacy")} className={`toggle-btn-small ${termsTab === "privacy" ? 'active' : ''}`} style={{lineHeight:1.2}}>{t(lang,'terms_tab_privacy')}</button>
+                                                <button onClick={() => setTermsTab("credits")} className={`toggle-btn-small ${termsTab === "credits" ? 'active' : ''}`}>{t(lang,'terms_tab_credits')}</button>
                                             </div>
                                         </div>
 
@@ -3782,7 +4233,7 @@
                                             <div className="space-y-4 text-sm font-bold leading-relaxed text-black">
                                                 {termsTab === "terms" && (
                                                     <div className="animate-in fade-in duration-300">
-                                                        <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">利用規約</h3>
+                                                        <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">{t(lang,"terms_tab_terms")}</h3>
                                                         
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">非公式サービスについて</h4>
                                                         <p>本サイトは非公式のファンサイトであり、株式会社コナミアミューズメント、および株式会社コナミデジタルエンタテインメントとは一切関係がありません。</p>
@@ -3812,7 +4263,7 @@
                                                 
                                                 {termsTab === "privacy" && (
                                                     <div className="animate-in fade-in duration-300">
-                                                        <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">プライバシーポリシー</h3>
+                                                        <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">{t(lang,"terms_tab_privacy")}</h3>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">情報の取得について</h4>
                                                         <p>本サービスでは、Googleログインの際に、ユーザーの識別、およびデータの紐付けを目的として、Googleアカウントに登録されているユーザー名、メールアドレス、プロフィール画像、およびサービス固有の識別子（UID）を取得します。</p>
@@ -3836,7 +4287,7 @@
 
                                                 {termsTab === "credits" && (
                                                     <div className="animate-in fade-in duration-300">
-                                                        <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">クレジット</h3>
+                                                        <h3 className="text-base font-black border-b-2 border-gray-100 pb-2 mb-4">{t(lang,"terms_tab_credits")}</h3>
 
                                                         <h4 className="font-black border-l-4 border-[#52b788] pl-2 text-sm uppercase">運営メンバー</h4>
                                                         <ul className="list-disc list-inside space-y-1 text-sm">
@@ -3880,12 +4331,12 @@
                                                     </div>
                                                 )}
                                                 
-                                                <p className="mt-8 text-[10px] text-gray-400 text-center italic">※記載内容は予告なく更新される場合があります。</p>
+                                                <p className="mt-8 text-[10px] text-gray-400 text-center italic">{t(lang,'terms_footer_note')}</p>
                                             </div>
                                         </div>
                                         <div className="mt-8 flex justify-center">
                                             <button onClick={() => setCurrentPage("main")} className="page-btn">
-                                                メインページに戻る
+                                                {t(lang,'common_back_to_main')}
                                             </button>
                                         </div>
                                     </div>
@@ -3941,6 +4392,7 @@
                                                             </div>
                                                         </div>
                                                         <SongCard 
+                                                            lang={lang}
                                                             key={`random-${getSongId(song)}-${idx}`} 
                                                             song={song} 
                                                             isLoggedIn={false}
@@ -3960,7 +4412,7 @@
                                                 {isRandomComplete && (
                                                     <div className="text-center mt-3" style={{animation: 'fadeIn 0.5s ease'}}>
                                                         <span className="text-white/60 text-[11px] font-black uppercase tracking-widest">
-                                                            <i className="ph-bold ph-check-circle mr-1"></i>生成完了
+                                                            <i className="ph-bold ph-check-circle mr-1"></i>{t(lang,'random_complete')}
                                                         </span>
                                                     </div>
                                                 )}
@@ -3969,7 +4421,7 @@
                                             hasGeneratedRandom && !isGenerating && (
                                                 <div className="text-center py-20 bg-white/10 border-4 border-white/20 border-dashed rounded-3xl">
                                                     <i className="ph-bold ph-dice-five text-4xl text-white/30 mb-4 block"></i>
-                                                    <p className="font-black text-white/50 text-sm">条件に合う曲が不足しています</p>
+                                                    <p className="font-black text-white/50 text-sm">{t(lang,'random_not_enough')}</p>
                                                 </div>
                                             )
                                         )}
@@ -3978,6 +4430,7 @@
                                 
                                 {currentPage === "simulation" && (
                                     <SimulationPage
+                                        lang={lang}
                                         setlists={setlists}
                                         songMap={songMap}
                                         user={user}
@@ -3998,12 +4451,12 @@
                                             {/* ヘッダー */}
                                             <div className="flex items-center gap-2 mb-2">
                                                 <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
-                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">BPL（S6）課題曲</h2>
+                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'bpl_title')}</h2>
                                             </div>
                                             <div className="flex justify-center mb-4">
                                                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
                                                     <span className="text-[11px] font-black text-white/80 tracking-wide">
-                                                        📋 課題曲が発表され次第対応を行います。
+                                                        {t(lang,'bpl_notice')}
                                                     </span>
                                                 </div>
                                             </div>
@@ -4013,7 +4466,7 @@
                                                     onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
                                                 >
                                                     <i className={`ph-bold ${bplViewMode === "list" ? "ph-squares-four" : "ph-list"} text-sm`}></i>
-                                                    表示切替
+                                                    {t(lang,'common_view_toggle')}
                                                 </div>
                                             </div>
 
@@ -4025,14 +4478,14 @@
                                                         onClick={() => setBplSection(n)}
                                                         className={`toggle-btn-small ${bplSection === n ? 'active' : ''}`}
                                                     >
-                                                        区分{n}
+                                                        {t(lang,'filter_section_n').replace('{n}',String(n))}
                                                     </button>
                                                 ))}
                                             </div>
 
                                             {/* レベルトグル */}
                                             <div className="toggle-btn-group mb-4">
-                                                {[["all","すべて"],["17","17"],["18","18"]].map(([val, label]) => (
+                                                {[["all", t(lang,'common_all')],["17","17"],["18","18"]].map(([val, label]) => (
                                                     <button
                                                         key={val}
                                                         onClick={() => setBplLevelFilter(val)}
@@ -4047,7 +4500,7 @@
                                             {bplFiltered.length === 0 ? (
                                                 <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                                     <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
-                                                    <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
+                                                    <p className="font-black text-gray-400 text-sm">{t(lang,'common_not_found')}</p>
                                                 </div>
                                             ) : (
                                                 <div className={bplViewMode === 'grid' ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
@@ -4069,6 +4522,7 @@
                                                                 personalMemo={personalMemos[songId]}
                                                                 onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
                                                                 onOpenGridDetail={() => setSelectedGridSong(song)}
+                                                                lang={lang}
                                                             />
                                                         );
                                                     })}
@@ -4098,6 +4552,7 @@
                                                     personalMemo={personalMemos[songId]}
                                                     onSavePersonalMemo={(memo) => savePersonalMemo(songId, memo)}
                                                     onOpenGridDetail={() => setSelectedGridSong(song)}
+                                                    lang={lang}
                                                 />
                                             );
                                         })}
@@ -4107,14 +4562,14 @@
                                 {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
-                                        <p className="font-black text-gray-400 text-sm">楽曲が見つかりません</p>
+                                        <p className="font-black text-gray-400 text-sm">{t(lang,'common_not_found')}</p>
                                     </div>
                                 )}
 
                                 {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
-                                            <i className="ph-bold ph-caret-left"></i> 前へ
+                                            <i className="ph-bold ph-caret-left"></i> {t(lang,'common_prev')}
                                         </button>
                                         <div className="flex flex-col items-center gap-1">
                                             <select
@@ -4128,11 +4583,11 @@
                                                 ))}
                                             </select>
                                             <div className="text-[10px] font-bold text-white/70">
-                                                {(pageIndex - 1) * itemsPerPage + 1}〜{Math.min(pageIndex * itemsPerPage, allFilteredSongs.length)}件 / 全{allFilteredSongs.length}件
+                                                {t(lang,'common_page_info',{start:(pageIndex-1)*itemsPerPage+1,end:Math.min(pageIndex*itemsPerPage,allFilteredSongs.length),total:allFilteredSongs.length})}
                                             </div>
                                         </div>
                                         <button onClick={() => handlePageChange(pageIndex + 1)} disabled={pageIndex >= totalPages} className="page-btn">
-                                            次へ <i className="ph-bold ph-caret-right"></i>
+                                            {t(lang,'common_next')} <i className="ph-bold ph-caret-right"></i>
                                         </button>
                                     </div>
                                 )}
@@ -4159,18 +4614,23 @@
                         />
                     )}
 
+                    <LangSelectModal isOpen={isLangModalOpen} currentLang={lang} onSelect={saveLang} onClose={() => setIsLangModalOpen(false)} lang={lang} />
+
                     <LogoutConfirmModal 
+                        lang={lang}
                         isOpen={isLogoutModalOpen}
                         onConfirm={logout}
                         onCancel={() => setIsLogoutModalOpen(false)}
                     />
 
                     <InAppBrowserModal
+                        lang={lang}
                         isOpen={isInAppBrowserModalOpen}
                         onClose={() => setIsInAppBrowserModalOpen(false)}
                     />
 
                     <ImagePreviewModal 
+                        lang={lang}
                         isOpen={!!previewUrl}
                         imageUrl={previewUrl}
                         onCancel={handleClosePreview}
@@ -4181,9 +4641,11 @@
                         onConfirm={() => { window.open(contactLinkModal.url, '_blank', 'noopener,noreferrer'); setContactLinkModal({ ...contactLinkModal, isOpen: false }); }}
                         onCancel={() => setContactLinkModal({ ...contactLinkModal, isOpen: false })}
                         type={contactLinkModal.type}
+                        lang={lang}
                     />
 
                     <FilterModal
+                        lang={lang}
                         isOpen={isFilterModalOpen}
                         onClose={() => setIsFilterModalOpen(false)}
                         currentPage={currentPage}
@@ -4218,7 +4680,7 @@
         };
 
         // ===== シミュレーションページ =====
-        const SimulationPage = ({ setlists, songMap, user }) => {
+        const SimulationPage = ({ setlists, songMap, user, lang = 'ja' }) => {
             const [phase, setPhase] = useState("top");
 
             const [side, setSide] = useState("先攻");
@@ -4248,12 +4710,12 @@
             const isMySongTurn = (t) => side === "先攻" ? [2,4,6,8,10,12].includes(t) : [1,3,5,7,9,11].includes(t);
             const isMySelectTurn = (t) => side === "先攻" ? [2,4,6,8,10].includes(t) : [3,5,7,9,11].includes(t);
 
-            const getTurnLabel = (t) => {
-                if (t === 1 && side === "先攻") return "イントロ（相手選曲）";
-                if (t === 1 && side === "後攻") return "イントロ（自選）";
-                if (t === 12 && side === "先攻") return "アウトロ（自選）";
-                if (t === 12 && side === "後攻") return "アウトロ（相手選曲）";
-                return isMySongTurn(t) ? "自選曲" : "相手選曲";
+            const getTurnLabel = (tn) => {
+                if (tn === 1 && side === "先攻") return t(lang,"sim_turn_intro_opp");
+                if (tn === 1 && side === "後攻") return t(lang,"sim_turn_intro_my");
+                if (tn === 12 && side === "先攻") return t(lang,"sim_turn_outro_my");
+                if (tn === 12 && side === "後攻") return t(lang,"sim_turn_outro_opp");
+                return isMySongTurn(tn) ? t(lang,"sim_turn_my_song") : t(lang,"sim_turn_opp_song");
             };
 
             const calcStars = (myG, oppG, res) => {
@@ -4281,9 +4743,9 @@
             const handleTurnSubmit = () => {
                 const mySelect = isMySelectTurn(turn);
                 const missing = [];
-                if (mySelect && !currentSongId) missing.push("使用曲");
-                if (!result) missing.push("勝敗");
-                if (missing.length > 0) { setValidationMsg(`未入力項目があります：${missing.join("・")}`); return; }
+                if (mySelect && !currentSongId) missing.push(t(lang,"sim_validation_song"));
+                if (!result) missing.push(t(lang,'sim_result_label'));
+                if (missing.length > 0) { setValidationMsg(t(lang,"sim_validation_missing",{items: missing.join("・")})); return; }
                 setValidationMsg("");
 
                 const myIntroOutro = isIntroOutroTurn(turn);
@@ -4301,7 +4763,7 @@
                     songForHistory = songMap[currentSongId];
                     songTitle = songForHistory ? songForHistory.title : "（未選択）";
                 } else {
-                    songForHistory = null; songTitle = "相手の選曲";
+                    songForHistory = null; songTitle = t(lang,"sim_opp_song_history");
                 }
 
                 const newEntry = {
@@ -4447,26 +4909,26 @@
                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                     <div className="flex items-center gap-2 mb-4">
                         <i className="ph-fill ph-sword text-3xl text-[#a78bfa]"></i>
-                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">シミュレーション</h2>
+                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'sim_title')}</h2>
                     </div>
                     {/* 補足テキスト（要注意リスト・ランダム選曲と同スタイル） */}
                     <div className="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md mb-3 text-white">
                         <div className="text-[12px] font-black leading-relaxed space-y-1">
-                            <p>作成したセトリを使用してメガミックスバトルの試合をシミュレートします。</p>
-                            <p>試合展開の分析や、試合後の復習に利用できます。</p>
+                            <p>{t(lang,'sim_desc1')}</p>
+                            <p>{t(lang,'sim_desc2')}</p>
                             <p></p>
-                            <p style={{marginTop:'4px'}}>※ゲージの溜まり具合を制御することはできないため、ギアの使用についてはご自身で選択いただく必要があります。</p>
+                            <p style={{marginTop:'4px'}}>{t(lang,'sim_desc3')}</p>
                         </div>
                     </div>
                     {setlists.length === 0 ? (
                         <div className="text-center py-8 bg-white border-4 border-dashed border-gray-200 rounded-2xl">
                             <i className="ph-bold ph-list-numbers text-4xl text-gray-300 mb-3 block"></i>
-                            <p className="font-black text-gray-400 text-sm mb-1">セトリがありません</p>
-                            <p className="text-xs text-gray-400 font-bold">先にセトリ管理から<br/>セトリを作成してください</p>
+                            <p className="font-black text-gray-400 text-sm mb-1">{t(lang,'sim_no_setlist')}</p>
+                            <p className="text-xs text-gray-400 font-bold">{t(lang,'sim_no_setlist_sub')}</p>
                         </div>
                     ) : (
                         <button onClick={() => setPhase("setup")} className="w-full bg-[#6366f1] text-white font-black py-4 rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base flex items-center justify-center gap-2">
-                            <i className="ph-bold ph-play-circle text-xl"></i>開始する
+                            <i className="ph-bold ph-play-circle text-xl"></i>{t(lang,'sim_start_btn')}
                         </button>
                     )}
                 </div>
@@ -4474,27 +4936,27 @@
 
             // ===== SETUP =====
             if (phase === "setup") {
-                const introOutroLabel = side === "先攻" ? "アウトロ曲の想定" : "イントロ曲の想定";
+                const introOutroLabel = side === "先攻" ? t(lang,"sim_intro_label_first") : t(lang,"sim_intro_label_second");
                 const introOutroDesc = side === "先攻"
-                    ? "ターン12：対戦相手が選んだと想定して、アウトロ曲を選択してください。"
-                    : "ターン1：対戦相手が選んだと想定して、イントロ曲を選択してください。";
+                    ? t(lang,"sim_intro_desc_first")
+                    : t(lang,"sim_intro_desc_second");
                 const canStart = selectedSetlistId && introOutroSongId;
                 return (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                         <div className="flex items-center gap-2 mb-4">
                             <i className="ph-fill ph-gear text-3xl text-[#a78bfa]"></i>
-                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">シミュレーション</h2>
+                            <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'sim_title')}</h2>
                         </div>
                         <div className="bg-white border-4 border-black rounded-3xl p-5 shadow-[8px_8px_0px_#000] space-y-6">
                             <div>
-                                <p className="section-label mb-3">1. 先攻 / 後攻</p>
+                                <p className="section-label mb-3">{t(lang,"sim_setup_step1")}</p>
                                 <div className="toggle-btn-group">
-                                    <button onClick={() => { setSide("先攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "先攻" ? 'active' : ''}`}><i className="ph-bold ph-arrow-right"></i> 先攻</button>
-                                    <button onClick={() => { setSide("後攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "後攻" ? 'active' : ''}`}><i className="ph-bold ph-arrow-left"></i> 後攻</button>
+                                    <button onClick={() => { setSide("先攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "先攻" ? 'active' : ''}`}><i className="ph-bold ph-arrow-right"></i> {t(lang,'sim_first')}</button>
+                                    <button onClick={() => { setSide("後攻"); setIntroOutroSongId(""); }} className={`toggle-btn-small ${side === "後攻" ? 'active' : ''}`}><i className="ph-bold ph-arrow-left"></i> {t(lang,'sim_second')}</button>
                                 </div>
                             </div>
                             <div>
-                                <p className="section-label mb-3">2. 使用セトリ</p>
+                                <p className="section-label mb-3">{t(lang,"sim_setup_step2")}</p>
                                 <div className="flex flex-col gap-2">
                                     {setlists.filter(sl => !sl.isDraft).map(sl => (
                                         <button key={sl.id} onClick={() => { setSelectedSetlistId(sl.id); setIntroOutroSongId(""); }}
@@ -4531,7 +4993,7 @@
                             <div className="flex gap-3 pt-2">
                                 <button onClick={() => setPhase("top")} className="flex-none px-4 py-3 bg-gray-100 border-2 border-black rounded-xl font-black text-sm shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all"><i className="ph-bold ph-arrow-left"></i></button>
                                 <button onClick={handleStart} disabled={!canStart} className={`flex-1 py-3 rounded-xl font-black text-sm border-2 border-black transition-all flex items-center justify-center gap-2 ${canStart ? 'bg-[#6366f1] text-white shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
-                                    <i className="ph-bold ph-play-circle"></i> スタート！
+                                    <i className="ph-bold ph-play-circle"></i> {t(lang,'sim_go_start')}
                                 </button>
                             </div>
                         </div>
@@ -4554,8 +5016,8 @@
                         <div className="mb-3">
                             <div className="flex items-center gap-2 mb-2">
                                 <i className="ph-fill ph-sword text-xl text-[#a78bfa]"></i>
-                                <span className="text-base font-black italic text-white uppercase">バトル中</span>
-                                <span className="ml-auto text-xs font-black text-white/60">{turn} / 12 ターン</span>
+                                <span className="text-base font-black italic text-white uppercase">{t(lang,'sim_battle_label')}</span>
+                                <span className="ml-auto text-xs font-black text-white/60">{t(lang,'sim_turn_label').replace('{n}',String(turn))}</span>
                             </div>
                             <div className="bg-white border-4 border-black rounded-2xl p-3 shadow-[6px_6px_0px_#000] flex items-center gap-3">
                                 <div className="flex-1 text-center">
@@ -4581,12 +5043,12 @@
                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-xs border-2 border-black ${myTurn ? 'bg-[#6366f1] text-white' : 'bg-gray-200 text-black'}`}>{turn}</div>
                                     <div>
                                         <div className="font-black text-sm text-black">{getTurnLabel(turn)}</div>
-                                        {(turn === 1 || turn === 12) && <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? 'イントロターン' : 'アウトロターン'}</div>}
+                                        {(turn === 1 || turn === 12) && <div className="text-[10px] text-[#6366f1] font-black">{turn === 1 ? t(lang,'sim_turn_intro') : t(lang,'sim_turn_outro')}</div>}
                                     </div>
                                 </div>
                                 <button onClick={handleGoBack} className="flex items-center gap-1 text-[11px] font-black text-gray-500 bg-gray-100 border-2 border-gray-300 rounded-lg px-2 py-1 active:translate-y-0.5 transition-all flex-shrink-0">
                                     <i className="ph-bold ph-arrow-counter-clockwise text-xs"></i>
-                                    {history.length === 0 ? '設定に戻る' : '1つ戻る'}
+                                    {history.length === 0 ? t(lang,'sim_back_to_setup') : t(lang,'sim_go_back_1')}
                                 </button>
                             </div>
 
@@ -4601,7 +5063,7 @@
                             {/* 自選ターン：ジャケット選曲 */}
                             {mySelect && (
                                 <div>
-                                    <p className="section-label mb-2">使用曲を選択</p>
+                                    <p className="section-label mb-2">{t(lang,"sim_song_select")}</p>
                                     <div className="grid grid-cols-5 gap-2">
                                         {setlistSongs.map(song => {
                                             const id = `${song.title}_${song.difficult}`;
@@ -4635,7 +5097,7 @@
                             {/* イントロ/アウトロ固定表示 */}
                             {myIntroOutro && introOutroSong && (
                                 <div>
-                                    <p className="section-label mb-2">使用曲（{turn === 1 ? 'イントロ' : 'アウトロ'}）</p>
+                                    <p className="section-label mb-2">{turn === 1 ? t(lang,'sim_song_intro') : t(lang,'sim_song_outro')}</p>
                                     <div className="flex items-center gap-2 bg-[#eef2ff] border-2 border-[#6366f1] rounded-xl p-2">
                                         {introOutroSong.jacket && <img src={introOutroSong.jacket} style={{width:'32px',height:'32px',borderRadius:'6px',objectFit:'cover',border:`2px solid ${getBorderColor(introOutroSong.difficult)}`}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />}
                                         <div className="min-w-0">
@@ -4649,9 +5111,9 @@
                             {/* 相手ターン */}
                             {!myTurn && (
                                 <div>
-                                    <p className="section-label mb-2">使用曲（相手）</p>
+                                    <p className="section-label mb-2">{t(lang,"sim_song_opp")}</p>
                                     <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 text-sm font-black text-gray-400 flex items-center gap-2">
-                                        <i className="ph-bold ph-user"></i> 相手の選曲
+                                        <i className="ph-bold ph-user"></i> {t(lang,'sim_opp_song_placeholder')}
                                     </div>
                                 </div>
                             )}
@@ -4660,25 +5122,25 @@
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <p className="text-[11px] font-black text-black uppercase mb-1.5 flex items-center gap-1">
-                                        <span className="w-4 h-4 rounded-full bg-[#6366f1] text-white text-[8px] font-black flex items-center justify-center">自</span>自分のEG
+                                        <span className="w-4 h-4 rounded-full bg-[#6366f1] text-white text-[8px] font-black flex items-center justify-center">{t(lang,'sim_my_eg').charAt(0)}</span>{t(lang,'sim_my_eg')}
                                     </p>
-                                    <div className="flex gap-1">{[0,1,2,3].map(v => <button key={v} onClick={() => setMyGear(v)} className={gearBtnClass(v, myGear)}>{v === 0 ? 'なし' : `Lv${v}`}</button>)}</div>
+                                    <div className="flex gap-1">{[0,1,2,3].map(v => <button key={v} onClick={() => setMyGear(v)} className={gearBtnClass(v, myGear)}>{v === 0 ? t(lang,'sim_eg_none') : `Lv${v}`}</button>)}</div>
                                 </div>
                                 <div>
                                     <p className="text-[11px] font-black text-black uppercase mb-1.5 flex items-center gap-1">
-                                        <span className="w-4 h-4 rounded-full bg-gray-400 text-white text-[8px] font-black flex items-center justify-center">相</span>相手のEG
+                                        <span className="w-4 h-4 rounded-full bg-gray-400 text-white text-[8px] font-black flex items-center justify-center">{t(lang,'sim_opp_eg').charAt(0)}</span>{t(lang,'sim_opp_eg')}
                                     </p>
-                                    <div className="flex gap-1">{[0,1,2,3].map(v => <button key={v} onClick={() => setOppGear(v)} className={gearBtnClass(v, oppGear)}>{v === 0 ? 'なし' : `Lv${v}`}</button>)}</div>
+                                    <div className="flex gap-1">{[0,1,2,3].map(v => <button key={v} onClick={() => setOppGear(v)} className={gearBtnClass(v, oppGear)}>{v === 0 ? t(lang,'sim_eg_none') : `Lv${v}`}</button>)}</div>
                                 </div>
                             </div>
 
                             {/* 勝敗（選択時は紫で統一） */}
                             <div>
-                                <p className="section-label mb-2">勝敗</p>
+                                <p className="section-label mb-2">{t(lang,'sim_result_label')}</p>
                                 <div className="flex gap-2">
                                     {['win','draw','lose'].map(val => (
                                         <button key={val} onClick={() => setResult(val)} className={resultBtnClass(val)}>
-                                            {val === 'win' ? '勝ち' : val === 'draw' ? '同点' : '負け'}
+                                            {val === 'win' ? t(lang,'sim_win') : val === 'draw' ? t(lang,'sim_draw') : t(lang,'sim_lose')}
                                         </button>
                                     ))}
                                 </div>
@@ -4687,7 +5149,7 @@
                             {/* ★プレビュー */}
                             {result && (
                                 <div className="bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-2.5 flex items-center justify-between text-sm font-black" style={{animation:'fadeIn 0.2s ease'}}>
-                                    <span className="text-gray-500 text-xs">このターンの獲得★</span>
+                                    <span className="text-gray-500 text-xs">{t(lang,'sim_stars_preview')}</span>
                                     <div className="flex gap-4">
                                         {(() => { const { myAdd, oppAdd } = calcStars(myGear, oppGear, result); return (<><span className="text-[#6366f1]">YOU +{myAdd}★</span><span className="text-gray-400">OPP +{oppAdd}★</span></>); })()}
                                     </div>
@@ -4696,7 +5158,7 @@
 
                             {/* 確定ボタン */}
                             <button onClick={handleTurnSubmit} className="w-full py-4 rounded-2xl font-black text-base border-2 border-black transition-all flex items-center justify-center gap-2 bg-[#40916c] text-white shadow-[4px_4px_0px_#1b4332] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
-                                {isLastTurn ? (<><i className="ph-bold ph-flag-checkered"></i> 試合終了</>) : (<><i className="ph-bold ph-arrow-right"></i> 次のターンへ</>)}
+                                {isLastTurn ? (<><i className="ph-bold ph-flag-checkered"></i> {t(lang,'sim_end_match')}</>) : (<><i className="ph-bold ph-arrow-right"></i> {t(lang,'sim_next_turn')}</>)}
                             </button>
                         </div>
 
@@ -4704,7 +5166,7 @@
                         {history.length > 0 && (
                             <div className="mt-3" style={{background:'#484848',border:'3px solid #606060',borderRadius:'16px',padding:'12px',fontFamily:'inherit'}}>
                                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-                                    <span style={{fontSize:'10px',fontWeight:900,color:'#dddddd',textTransform:'uppercase',letterSpacing:'0.1em'}}>入力履歴</span>
+                                    <span style={{fontSize:'10px',fontWeight:900,color:'#dddddd',textTransform:'uppercase',letterSpacing:'0.1em'}}>{t(lang,'sim_history_label')}</span>
                                     <div style={{display:'flex',gap:'6px',fontSize:'9px',fontWeight:900}}>
                                         <span style={{color:'#38bdf8'}}>YOU</span>
                                         <span style={{color:'#888888'}}>vs</span>
@@ -4730,7 +5192,7 @@
                         {/* WIN/LOSE ヘッダー（常時表示） */}
                         <div style={{background:'#484848',border:'4px solid #606060',borderRadius:'20px',overflow:'hidden',marginBottom:'10px',boxShadow:'8px 8px 0px #000'}}>
                             <div style={{background:'linear-gradient(90deg,#585858,#707070)',textAlign:'center',padding:'10px 0',borderBottom:'2px solid #686868'}}>
-                                <span style={{fontSize:'13px',fontWeight:900,letterSpacing:'0.35em',color:'#fbbf24',textTransform:'uppercase',textShadow:'0 0 10px rgba(251,191,36,0.4)'}}>試合終了</span>
+                                <span style={{fontSize:'13px',fontWeight:900,letterSpacing:'0.35em',color:'#fbbf24',textTransform:'uppercase',textShadow:'0 0 10px rgba(251,191,36,0.4)'}}>{t(lang,'sim_end_match')}</span>
                             </div>
                             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 14px',background:'#525252'}}>
                                 <div style={{flex:1}}>
@@ -4783,7 +5245,7 @@
                                 setCurrentSongId(""); setMyGear(0); setOppGear(0); setResult(""); setValidationMsg("");
                                 setPhase("battle");
                             }} className="flex-1 py-3 bg-[#6366f1] text-white font-black rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-sm flex items-center justify-center gap-1">
-                                <i className="ph-bold ph-arrows-counter-clockwise"></i> もう一度
+                                <i className="ph-bold ph-arrows-counter-clockwise"></i> {t(lang,'sim_retry')}
                             </button>
                             <button onClick={handleReset} className="flex-none px-4 py-3 bg-gray-100 border-2 border-black rounded-xl font-black text-sm shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
                                 <i className="ph-bold ph-house"></i>
