@@ -875,7 +875,7 @@
                 "nav_random": `ランダム選曲`,
                 "nav_ranking": `チェイン数ランキング`,
                 "nav_simulation": `シミュレーション`,
-                "nav_bpl": `BPL（S6）課題曲`,
+                "nav_bpl": `BPL課題曲`,
                 "nav_terms": `ガイドライン`,
                 "nav_contact": `お問い合わせ`,
                 "nav_logout": `ログアウト`,
@@ -914,7 +914,9 @@
                 "filter_version": `バージョン`,
                 "filter_difficulty": `難易度`,
                 "filter_bpm": `BPM`,
-                "filter_bpl": `BPL（S6）課題曲`,
+                "filter_bpl": `BPL課題曲`,
+                "filter_bpl5": `BPL（S5）課題曲`,
+                "filter_bpl6": `BPL（S6）課題曲`,
                 "filter_section_n": `区分{n}`,
                 "song_section1": `第1区間`,
                 "song_section2": `第2区間`,
@@ -1033,7 +1035,10 @@
                 "sim_back_to_last": `戻る`,
                 "sim_retry": `もう一度`,
                 "sim_opp_song_history": `相手の選曲`,
-                "bpl_title": `BPL（S6）課題曲`,
+                "bpl_title": `BPL課題曲`,
+                "bpl_season_label": `シーズン`,
+                "bpl_season5": `Season 5`,
+                "bpl_season6": `Season 6`,
                 "bpl_notice": `📋 課題曲が発表され次第対応を行います。`,
                 "contact_title": `お問い合わせ`,
                 "contact_desc": `本サービスに関するご質問、不具合報告、楽曲情報の誤り、または改善のご提案などがございましたら、以下のいずれかの方法でご連絡をお願いいたします。`,
@@ -1065,7 +1070,7 @@
                 "nav_random": `랜덤 선곡`,
                 "nav_ranking": `체인 수 랭킹`,
                 "nav_simulation": `시뮬레이션`,
-                "nav_bpl": `BPL(S6) 과제곡`,
+                "nav_bpl": `BPL 과제곡`,
                 "nav_terms": `가이드라인`,
                 "nav_contact": `문의하기`,
                 "nav_logout": `로그아웃`,
@@ -1104,7 +1109,9 @@
                 "filter_version": `버전`,
                 "filter_difficulty": `난이도`,
                 "filter_bpm": `BPM`,
-                "filter_bpl": `BPL（S6）과제곡`,
+                "filter_bpl": `BPL 과제곡`,
+                "filter_bpl5": `BPL（S5）과제곡`,
+                "filter_bpl6": `BPL（S6）과제곡`,
                 "filter_section_n": `구분{n}`,
                 "song_section1": `제1구간`,
                 "song_section2": `제2구간`,
@@ -1223,7 +1230,10 @@
                 "sim_back_to_last": `돌아가기`,
                 "sim_retry": `다시 하기`,
                 "sim_opp_song_history": `상대방의 선곡`,
-                "bpl_title": `BPL（S6）과제곡`,
+                "bpl_title": `BPL 과제곡`,
+                "bpl_season_label": `시즌`,
+                "bpl_season5": `Season 5`,
+                "bpl_season6": `Season 6`,
                 "bpl_notice": `📋 과제곡이 발표되는 대로 대응할 예정입니다.`,
                 "contact_title": `문의하기`,
                 "contact_desc": `본 서비스에 관한 질문, 오류 신고, 악곡 정보의 오류 또는 개선 제안 등이 있으시면 아래 방법 중 하나로 연락해 주세요.`,
@@ -1913,12 +1923,22 @@
                             <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             <div className="space-y-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                            {/* BPL（S6）課題曲 */}
+                            {/* BPL課題曲 */}
                             <div className="space-y-2 pb-2">
-                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl')}</div>
+                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl5')}</div>
                                 <div className="grid grid-cols-4 gap-2">
                                     {[1,2,3,4,5,6,7].map(n => (
-                                        <button key={n} onClick={() => toggleBplSection(n)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedBplSections.includes(n) ? 'active' : ''}`}>
+                                        <button key={`bpl5-${n}`} onClick={() => toggleBplSection(`5-${n}`)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedBplSections.includes(`5-${n}`) ? 'active' : ''}`}>
+                                            {t(lang,'filter_section_n').replace('{n}',String(n))}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="space-y-2 pb-2">
+                                <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl6')}</div>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[1,2,3,4,5,6,7].map(n => (
+                                        <button key={`bpl6-${n}`} onClick={() => toggleBplSection(`6-${n}`)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedBplSections.includes(`6-${n}`) ? 'active' : ''}`}>
                                             {t(lang,'filter_section_n').replace('{n}',String(n))}
                                         </button>
                                     ))}
@@ -2788,7 +2808,12 @@
                                                 }
                                                 return lvStr === targetLv;
                                             });
-                                            const matchBpl = songModalBpls.length === 0 || songModalBpls.includes(Number(s.bpl));
+                                            const matchBpl = songModalBpls.length === 0 || songModalBpls.some(key => {
+                                                const [season, sec] = key.split('-');
+                                                if (season === '5') return String(s.bpl5) === sec;
+                                                if (season === '6') return String(s.bpl6) === sec;
+                                                return false;
+                                            });
                                             return matchSearch && matchFav && matchMirror && matchDiff && matchVer && matchLv && matchBpl;
                                         }).slice(0, 100);
 
@@ -2988,13 +3013,24 @@
                                         <div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
                                         <div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <button key={lv} onClick={() => setSongModalLevels(prev => prev.includes(lv) ? prev.filter(x=>x!==lv) : [...prev,lv])} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalLevels.includes(lv) ? 'active' : ''}`}>{lv}</button>)}</div>
                                     </div>
-                                    {/* BPL（S6）課題曲 */}
+                                    {/* BPL課題曲 */}
                                     <div className="space-y-2 pb-2">
-                                        <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl')}</div>
+                                        <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl5')}</div>
                                         <div className="grid grid-cols-4 gap-2">
                                             {[1,2,3,4,5,6,7].map(n => (
-                                                <button key={n} onClick={() => setSongModalBpls(prev => prev.includes(n) ? prev.filter(x=>x!==n) : [...prev,n])}
-                                                    className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${songModalBpls.includes(n) ? 'active' : ''}`}>
+                                                <button key={`bpl5-${n}`} onClick={() => setSongModalBpls(prev => prev.includes(`5-${n}`) ? prev.filter(x=>x!==`5-${n}`) : [...prev,`5-${n}`])}
+                                                    className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${songModalBpls.includes(`5-${n}`) ? 'active' : ''}`}>
+                                                    {t(lang,'filter_section_n').replace('{n}',String(n))}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 pb-2">
+                                        <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl6')}</div>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[1,2,3,4,5,6,7].map(n => (
+                                                <button key={`bpl6-${n}`} onClick={() => setSongModalBpls(prev => prev.includes(`6-${n}`) ? prev.filter(x=>x!==`6-${n}`) : [...prev,`6-${n}`])}
+                                                    className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${songModalBpls.includes(`6-${n}`) ? 'active' : ''}`}>
                                                     {t(lang,'filter_section_n').replace('{n}',String(n))}
                                                 </button>
                                             ))}
@@ -3218,6 +3254,10 @@
             const [bpmMax, setBpmMax] = useState("");
             const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
             const [bplSection, setBplSection] = useState(1);
+            const [bplSeason, setBplSeason] = useState(6);
+            const [bplSeasonOpen, setBplSeasonOpen] = useState(false);
+            const [bplSectionOpen, setBplSectionOpen] = useState(false);
+            const [bplLevelOpen, setBplLevelOpen] = useState(false);
             const [bplLevelFilter, setBplLevelFilter] = useState("all");
             const [bplViewMode, setBplViewMode] = useState("list");
             
@@ -3703,7 +3743,12 @@
 
                     const matchesVer = selectedVersions.length === 0 || selectedVersions.includes(String(s.version || ""));
 
-                    const matchesBpl = selectedBplSections.length === 0 || selectedBplSections.includes(Number(s.bpl));
+                    const matchesBpl = selectedBplSections.length === 0 || selectedBplSections.some(key => {
+                        const [season, sec] = key.split('-');
+                        if (season === '5') return String(s.bpl5) === sec;
+                        if (season === '6') return String(s.bpl6) === sec;
+                        return false;
+                    });
                     
                     const songId = getSongId(s);
                     const isFavFilterApplied = currentPage === "main" && showOnlyFavorites;
@@ -4440,12 +4485,14 @@
                                 )}
 
                                 {currentPage === "bpl" && (() => {
-                                    const bplSongs = songs.filter(s => String(s.bpl) === String(bplSection));
+                                    const bplKey = bplSeason === 5 ? 'bpl5' : 'bpl6';
+                                    const bplSongs = songs.filter(s => String(s[bplKey]) === String(bplSection));
                                     const bplFiltered = bplSongs.filter(s => {
                                         if (bplLevelFilter === "all") return true;
                                         const lvStr = String(s.level || "");
                                         if (bplLevelFilter === "17") return lvStr.startsWith("17");
                                         if (bplLevelFilter === "18") return lvStr.startsWith("18");
+                                        if (bplLevelFilter === "19") return lvStr.startsWith("19");
                                         return true;
                                     });
                                     return (
@@ -4455,14 +4502,29 @@
                                                 <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
                                                 <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'bpl_title')}</h2>
                                             </div>
-                                            <div className="flex justify-center mb-4">
-                                                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
-                                                    <span className="text-[11px] font-black text-white/80 tracking-wide">
-                                                        {t(lang,'bpl_notice')}
-                                                    </span>
+                                            <div className="flex justify-end items-center gap-2 mb-3">
+                                                {/* シーズン切り替えプルダウン */}
+                                                <div className="relative">
+                                                    <button
+                                                        onClick={() => setBplSeasonOpen(o => !o)}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-black rounded-xl font-black text-xs shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                                                    >
+                                                        <i className="ph-bold ph-calendar-blank text-sm"></i>
+                                                        {t(lang, bplSeason === 5 ? 'bpl_season5' : 'bpl_season6')}
+                                                        <i className={`ph-bold ph-caret-${bplSeasonOpen ? 'up' : 'down'} text-xs`}></i>
+                                                    </button>
+                                                    {bplSeasonOpen && (
+                                                        <div className="absolute right-0 mt-1 bg-white border-2 border-black rounded-xl shadow-[3px_3px_0px_#000] overflow-hidden z-20" style={{minWidth:'120px'}}>
+                                                            {[6, 5].map(s => (
+                                                                <button key={s} onClick={() => { setBplSeason(s); setBplSection(1); setBplSeasonOpen(false); }}
+                                                                    className={`w-full text-left px-4 py-2.5 text-xs font-black flex items-center gap-2 transition-colors ${bplSeason === s ? 'bg-[#d8f3dc] text-[#1b4332]' : 'hover:bg-gray-50'}`}>
+                                                                    {s === bplSeason && <i className="ph-bold ph-check text-xs"></i>}
+                                                                    {t(lang, s === 5 ? 'bpl_season5' : 'bpl_season6')}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                            <div className="flex justify-end items-center mb-3">
                                                 <div
                                                     className="view-mode-badge"
                                                     onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
@@ -4471,31 +4533,64 @@
                                                     {t(lang,'common_view_toggle')}
                                                 </div>
                                             </div>
-
-                                            {/* 区分タブ */}
-                                            <div className="toggle-btn-group mb-3">
-                                                {[1,2,3,4,5,6,7].map(n => (
-                                                    <button
-                                                        key={n}
-                                                        onClick={() => setBplSection(n)}
-                                                        className={`toggle-btn-small ${bplSection === n ? 'active' : ''}`}
-                                                    >
-                                                        {t(lang,'filter_section_n').replace('{n}',String(n))}
-                                                    </button>
-                                                ))}
+                                            {bplSeason === 6 && (
+                                            <div className="flex justify-center mb-4">
+                                                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
+                                                    <span className="text-[11px] font-black text-white/80 tracking-wide">
+                                                        {t(lang,'bpl_notice')}
+                                                    </span>
+                                                </div>
                                             </div>
+                                            )}
 
-                                            {/* レベルトグル */}
-                                            <div className="toggle-btn-group mb-4">
-                                                {[["all", t(lang,'common_all')],["17","17"],["18","18"]].map(([val, label]) => (
+                                            {/* 区分・レベル プルダウン（横並び） */}
+                                            <div className="flex gap-2 mb-4">
+                                                {/* 区分プルダウン（左） */}
+                                                <div className="relative flex-1">
                                                     <button
-                                                        key={val}
-                                                        onClick={() => setBplLevelFilter(val)}
-                                                        className={`toggle-btn-small ${bplLevelFilter === val ? 'active' : ''}`}
+                                                        onClick={() => { setBplSectionOpen(o => !o); setBplLevelOpen(false); }}
+                                                        className="w-full flex items-center justify-between gap-1.5 px-3 py-2.5 bg-white border-2 border-black rounded-xl font-black text-xs shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
                                                     >
-                                                        {label}
+                                                        <span className="truncate">
+                                                            {t(lang,'filter_section_n').replace('{n}',String(bplSection))}
+                                                        </span>
+                                                        <i className={`ph-bold ph-caret-${bplSectionOpen ? 'up' : 'down'} text-xs flex-shrink-0`}></i>
                                                     </button>
-                                                ))}
+                                                    {bplSectionOpen && (
+                                                        <div className="absolute left-0 mt-1 bg-white border-2 border-black rounded-xl shadow-[3px_3px_0px_#000] overflow-hidden z-20 w-full">
+                                                            {[1,2,3,4,5,6,7].map(v => (
+                                                                <button key={v} onClick={() => { setBplSection(v); setBplSectionOpen(false); }}
+                                                                    className={`w-full text-left px-4 py-2 text-xs font-black flex items-center gap-2 transition-colors ${bplSection === v ? 'bg-[#d8f3dc] text-[#1b4332]' : 'hover:bg-gray-50'}`}>
+                                                                    {bplSection === v && <i className="ph-bold ph-check text-xs"></i>}
+                                                                    {t(lang,'filter_section_n').replace('{n}',String(v))}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {/* レベルプルダウン（右） */}
+                                                <div className="relative flex-1">
+                                                    <button
+                                                        onClick={() => { setBplLevelOpen(o => !o); setBplSectionOpen(false); }}
+                                                        className="w-full flex items-center justify-between gap-1.5 px-3 py-2.5 bg-white border-2 border-black rounded-xl font-black text-xs shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                                                    >
+                                                        <span className="truncate">
+                                                            {bplLevelFilter === "all" ? t(lang,'common_all') : `Lv ${bplLevelFilter}`}
+                                                        </span>
+                                                        <i className={`ph-bold ph-caret-${bplLevelOpen ? 'up' : 'down'} text-xs flex-shrink-0`}></i>
+                                                    </button>
+                                                    {bplLevelOpen && (
+                                                        <div className="absolute right-0 mt-1 bg-white border-2 border-black rounded-xl shadow-[3px_3px_0px_#000] overflow-hidden z-20 w-full">
+                                                            {[["all", t(lang,'common_all')], ["17","Lv 17"], ["18","Lv 18"], ["19","Lv 19"]].map(([val, label]) => (
+                                                                <button key={val} onClick={() => { setBplLevelFilter(val); setBplLevelOpen(false); }}
+                                                                    className={`w-full text-left px-4 py-2 text-xs font-black flex items-center gap-2 transition-colors ${bplLevelFilter === val ? 'bg-[#d8f3dc] text-[#1b4332]' : 'hover:bg-gray-50'}`}>
+                                                                    {bplLevelFilter === val && <i className="ph-bold ph-check text-xs"></i>}
+                                                                    {label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* 楽曲一覧 */}
