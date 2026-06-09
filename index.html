@@ -1826,10 +1826,10 @@
                         {/* コンテンツ */}
                         <div className="overflow-y-auto px-5 py-4 space-y-6 text-black">
                             {/* お気に入り・ミラー（ログイン時のみ） */}
-                            {isLoggedIn && (currentPage === "main" || currentPage === "random") && (
+                            {isLoggedIn && (currentPage === "main" || currentPage === "random" || currentPage === "ranking") && (
                                 <div className="space-y-2">
                                     <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_my_data')}</div>
-                                    {(currentPage === "main" || currentPage === "random") && (
+                                    {(currentPage === "main" || currentPage === "random" || currentPage === "ranking") && (
                                         <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
                                             <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`} style={{color: !showOnlyFavorites ? '#1b4332' : '#374151'}}>{t(lang,'common_all')}</button>
                                             <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`} style={{color: showOnlyFavorites ? '#1b4332' : '#374151'}}>
