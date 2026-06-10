@@ -1297,7 +1297,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-06-08";
+        const MASTER_DATA_UPDATED_AT = "2026-06-04";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -1792,7 +1792,8 @@
             showOnlyFavorites, setShowOnlyFavorites, showOnlyMirrors, setShowOnlyMirrors,
             isFilterActive, LV17_LIST, LV18_LIST, LV19_LIST, LV20_LIST,
             FilterButton, LevelSectionHeader,
-            bpmMin, setBpmMin, bpmMax, setBpmMax
+            bpmMin, setBpmMin, bpmMax, setBpmMax,
+            selectedFutabaSections, toggleFutabaSection, isHiddenUnlocked, FUTABA_FUTURE_FLAG
         }) => {
             if (!isOpen) return null;
             const isLoggedIn = user && !user.isAnonymous;
@@ -1801,6 +1802,7 @@
                 selectedDifficulties.forEach && toggleDifficulty && selectedDifficulties.slice().forEach(d => toggleDifficulty(d));
                 selectedVersions.forEach && toggleVersion && selectedVersions.slice().forEach(v => toggleVersion(v));
                 selectedBplSections.forEach && toggleBplSection && selectedBplSections.slice().forEach(n => toggleBplSection(n));
+                selectedFutabaSections.forEach && toggleFutabaSection && selectedFutabaSections.slice().forEach(s => toggleFutabaSection(s));
                 setShowOnlyFavorites(false);
                 setShowOnlyMirrors(false);
                 setBpmMin("");
@@ -1944,6 +1946,20 @@
                                     ))}
                                 </div>
                             </div>
+                            {/* FUTABA杯（アンロック済み・ランキング/ランダムページのみ） */}
+                            {FUTABA_FUTURE_FLAG && isHiddenUnlocked && (currentPage === "ranking" || currentPage === "random") && (
+                                <div className="space-y-2 pb-2">
+                                    <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">🌱 FUTABA杯</div>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {["A","B"].map(sec => (
+                                            <button key={`futaba-${sec}`} onClick={() => toggleFutabaSection(sec)}
+                                                className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black w-full ${selectedFutabaSections.includes(sec) ? 'active' : ''}`}>
+                                                {t(lang,'filter_section_n').replace('{n}',sec)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="px-5 py-4 border-t-2 border-black flex-shrink-0">
                             <button onClick={onClose} className="w-full bg-[#40916c] text-white font-black py-3 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
@@ -3350,6 +3366,12 @@
             const [futabaSecOpen, setFutabaSecOpen] = useState(false);
             const [futabaLvOpen, setFutabaLvOpen] = useState(false);
             const [futabaLevelFilter, setFutabaLevelFilter] = useState("all");
+            const [selectedFutabaSections, setSelectedFutabaSections] = useState([]);
+            const toggleFutabaSection = (sec) => {
+                setSelectedFutabaSections(prev =>
+                    prev.includes(sec) ? prev.filter(s => s !== sec) : [...prev, sec]
+                );
+            };
             const [bplLevelFilter, setBplLevelFilter] = useState("all");
             const [bplViewMode, setBplViewMode] = useState("list");
             
@@ -3730,9 +3752,10 @@
             };
 
             const isFilterActive = useMemo(() => {
-                const baseActive = selectedLevels.length > 0 || selectedDifficulties.length > 0 || selectedVersions.length > 0 || selectedBplSections.length > 0 || bpmMin !== "" || bpmMax !== "";
+                const baseActive = selectedLevels.length > 0 || selectedDifficulties.length > 0 || selectedVersions.length > 0 || selectedBplSections.length > 0 || selectedFutabaSections.length > 0 || bpmMin !== "" || bpmMax !== "";
                 if (currentPage === "main") return baseActive || showOnlyFavorites || showOnlyMirrors;
                 if (currentPage === "random") return baseActive || showOnlyFavorites;
+                if (currentPage === "ranking") return baseActive || showOnlyFavorites;
                 return baseActive;
             }, [selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, bpmMin, bpmMax, showOnlyFavorites, showOnlyMirrors, currentPage]);
 
@@ -3760,7 +3783,9 @@
 
                     const matchesVer = selectedVersions.length === 0 || selectedVersions.includes(String(s.version || ""));
 
-                    return matchesLv && matchesDiff && matchesVer && matchesBpmFilter(s);
+                    const matchesFutaba = selectedFutabaSections.length === 0 || selectedFutabaSections.includes(String(s.futaba || ""));
+
+                    return matchesLv && matchesDiff && matchesVer && matchesFutaba && matchesBpmFilter(s);
                 });
 
                 if (filtered.length < SETLIST_TRACK_COUNT) {
@@ -3878,8 +3903,10 @@
                         return false;
                     });
                     
+                    const matchesFutaba = selectedFutabaSections.length === 0 || selectedFutabaSections.includes(String(s.futaba || ""));
+
                     const songId = getSongId(s);
-                    const isFavFilterApplied = currentPage === "main" && showOnlyFavorites;
+                    const isFavFilterApplied = (currentPage === "main" || currentPage === "ranking" || currentPage === "random") && showOnlyFavorites;
                     const matchesFav = !isFavFilterApplied || favorites.includes(songId);
 
                     const isMirrorFilterApplied = currentPage === "main" && showOnlyMirrors;
@@ -3890,10 +3917,10 @@
                         const matchesSearch = 
                             String(s.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                             String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
-                        return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesSearch && matchesFav && matchesMirror && matchesBpmFilter(s);
+                        return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesFutaba && matchesSearch && matchesFav && matchesMirror && matchesBpmFilter(s);
                     }
                     
-                    return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesFav && matchesMirror && matchesBpmFilter(s);
+                    return matchesLv && matchesDiff && matchesVer && matchesBpl && matchesFutaba && matchesFav && matchesMirror && matchesBpmFilter(s);
                 });
 
                 if (currentPage === "ranking") {
@@ -3906,7 +3933,7 @@
                 }
 
                 return result;
-            }, [searchTerm, selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, bpmMin, bpmMax, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
+            }, [searchTerm, selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, selectedFutabaSections, bpmMin, bpmMax, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * itemsPerPage;
@@ -4791,7 +4818,7 @@
                                                         onClick={() => { setFutabaSecOpen(o => !o); setFutabaLvOpen(false); }}
                                                         className="w-full flex items-center justify-between gap-1.5 px-3 py-2.5 bg-white border-2 border-black rounded-xl font-black text-xs shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
                                                     >
-                                                        <span className="truncate">区分{futabaSection}</span>
+                                                        <span className="truncate">{t(lang,'filter_section_n').replace('{n}',futabaSection)}</span>
                                                         <i className={`ph-bold ph-caret-${futabaSecOpen ? 'up' : 'down'} text-xs flex-shrink-0`}></i>
                                                     </button>
                                                     {futabaSecOpen && (
@@ -4800,7 +4827,7 @@
                                                                 <button key={sec} onClick={() => { setFutabaSection(sec); setFutabaSecOpen(false); }}
                                                                     className={`w-full text-left px-4 py-2 text-xs font-black flex items-center gap-2 transition-colors ${futabaSection === sec ? 'bg-[#d8f3dc] text-[#1b4332]' : 'hover:bg-gray-50'}`}>
                                                                     {futabaSection === sec && <i className="ph-bold ph-check text-xs"></i>}
-                                                                    区分{sec}
+                                                                    {t(lang,'filter_section_n').replace('{n}',sec)}
                                                                 </button>
                                                             ))}
                                                         </div>
@@ -5014,6 +5041,10 @@
                         setBpmMin={setBpmMin}
                         bpmMax={bpmMax}
                         setBpmMax={setBpmMax}
+                        selectedFutabaSections={selectedFutabaSections}
+                        toggleFutabaSection={toggleFutabaSection}
+                        isHiddenUnlocked={isHiddenUnlocked}
+                        FUTABA_FUTURE_FLAG={FUTABA_FUTURE_FLAG}
                     />
 
                 </div>
