@@ -5096,9 +5096,9 @@
                 if (myG === 0 && oppG === 0) {
                     if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = 1; else { myAdd = 1; oppAdd = 1; }
                 } else if (myG > 0 && oppG === 0) {
-                    if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = 1; else myAdd = bm[myG];
+                    if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = 1; else { myAdd = bm[myG]; oppAdd = 1; }
                 } else if (myG === 0 && oppG > 0) {
-                    if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = bm[oppG]; else oppAdd = bm[oppG];
+                    if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = bm[oppG]; else { myAdd = 1; oppAdd = bm[oppG]; }
                 } else {
                     if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = bm[oppG]; else { myAdd = bm[myG]; oppAdd = bm[oppG]; }
                 }
