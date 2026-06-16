@@ -1297,7 +1297,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-06-16";
+        const MASTER_DATA_UPDATED_AT = "2026-06-04";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -2240,8 +2240,8 @@
                                     </div>
                                 </div>
 
-                                {song.site_link && (
-                                    <div className="mb-4 rounded-xl border-2 border-black" style={{overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', maxHeight: '260px'}} onClick={e => e.stopPropagation()}>
+                                {song.site_link && isOpen && (
+                                    <div className="mb-4 rounded-xl border-2 border-black" style={{overflowX: 'auto', overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', maxHeight: '260px'}} onClick={e => e.stopPropagation()}>
                                         <div style={{width: '826px', height: '245px', position: 'relative', flexShrink: 0}}>
                                             <iframe
                                                 src={song.site_link}
