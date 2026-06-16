@@ -2241,8 +2241,8 @@
                                 </div>
 
                                 {song.site_link && isOpen && (
-                                    <div className="mb-4 rounded-xl border-2 border-black" style={{overflowX: 'auto', overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', maxHeight: '260px'}} onClick={e => e.stopPropagation()}>
-                                        <div style={{width: '826px', height: '245px', position: 'relative', flexShrink: 0}}>
+                                    <div className="mb-4 rounded-xl border-2 border-black" style={{overflowX: 'auto', overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', }} onClick={e => e.stopPropagation()}>
+                                        <div style={{width: '1888px', height: '560px', position: 'relative', flexShrink: 0}}>
                                             <iframe
                                                 src={song.site_link}
                                                 title="譜面プレビュー"
@@ -2253,7 +2253,7 @@
                                                     border: 'none',
                                                     display: 'block',
                                                     transformOrigin: 'top left',
-                                                    transform: 'scale(0.35)',
+                                                    transform: 'scale(0.8)',
                                                     pointerEvents: 'auto',
                                                     touchAction: 'pan-x pan-y'
                                                 }}
