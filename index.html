@@ -923,8 +923,8 @@
                 "song_start_pos": `開始位置`,
                 "song_end_pos": `終了位置`,
                 "song_chain": `チェイン数`,
-                "song_chart_view": `画像で確認`,
-                "song_chart_none": `画像なし`,
+                "song_chart_view": `サイトで確認`,
+                "song_chart_none": `譜面なし`,
                 "song_video_view": `動画で確認`,
                 "song_video_none": `動画なし`,
                 "song_video_modal_title": `動画で確認`,
@@ -1297,7 +1297,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-06-04";
+        const MASTER_DATA_UPDATED_AT = "2026-06-16";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -2239,6 +2239,28 @@
                                         <p className="stat-value">{song.combo2 || "-"}</p>
                                     </div>
                                 </div>
+
+                                {song.site_link && (
+                                    <div className="mb-4 rounded-xl border-2 border-black" style={{overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', maxHeight: '260px'}} onClick={e => e.stopPropagation()}>
+                                        <div style={{width: '826px', height: '245px', position: 'relative', flexShrink: 0}}>
+                                            <iframe
+                                                src={song.site_link}
+                                                title="譜面プレビュー"
+                                                scrolling="yes"
+                                                style={{
+                                                    width: '2360px',
+                                                    height: '700px',
+                                                    border: 'none',
+                                                    display: 'block',
+                                                    transformOrigin: 'top left',
+                                                    transform: 'scale(0.35)',
+                                                    pointerEvents: 'auto',
+                                                    touchAction: 'pan-x pan-y'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-2 gap-3 mb-6">
                                     {song.site_link ? (
@@ -5096,9 +5118,9 @@
                 if (myG === 0 && oppG === 0) {
                     if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = 1; else { myAdd = 1; oppAdd = 1; }
                 } else if (myG > 0 && oppG === 0) {
-                    if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = 1; else { myAdd = bm[myG]; oppAdd = 1; }
+                    if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = 1; else myAdd = bm[myG];
                 } else if (myG === 0 && oppG > 0) {
-                    if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = bm[oppG]; else { myAdd = 1; oppAdd = bm[oppG]; }
+                    if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = bm[oppG]; else oppAdd = bm[oppG];
                 } else {
                     if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = bm[oppG]; else { myAdd = bm[myG]; oppAdd = bm[oppG]; }
                 }
