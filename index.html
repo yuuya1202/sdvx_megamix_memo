@@ -14,10 +14,10 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone@7.26.10/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script>
         Babel.registerPreset('custom', {
             presets: [
@@ -26,7 +26,7 @@
         });
     </script>
     <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web@2.1.2/src/index.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- html2canvas (Element to Image) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -1304,7 +1304,7 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-06-20";
+        const MASTER_DATA_UPDATED_AT = "2026-06-04";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -1335,9 +1335,10 @@
                 case "GRV": return "#d97706";
                 case "HVN": return "#0891b2";
                 case "INF": return "#f472b6"; 
-                case "VVD": return "#ff00ff"; 
+                case "VVD": return "#cc00cc"; 
                 case "XCD": return "#2563eb";
-                case "ULT": return "#ffff00"; 
+                case "NBL": return "#84cc16";
+                case "ULT": return "#e9cf00"; 
                 default: return "#000000";
             }
         };
@@ -1363,7 +1364,7 @@
             const bgMap = {
                 MXM: "#555555", EXH: "#ef4444", GRV: "#d97706",
                 HVN: "#0891b2", INF: "#f472b6", VVD: "#cc00cc",
-                XCD: "#2563eb", ULT: "#d4a000",
+                XCD: "#2563eb", NBL: "#84cc16", ULT: "#e9cf00",
             };
             const bg = bgMap[d] || "#555555";
             const textColor = d === "ULT" ? "#000" : "#fff";
@@ -1877,14 +1878,14 @@
                                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
                                     <div className="text-[10px] font-black text-black uppercase">{t(lang,'filter_difficulty')}</div>
                                     <button onClick={() => {
-                                        const DIFF_LIST = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"];
+                                        const DIFF_LIST = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","NBL","ULT"];
                                         const allSelected = DIFF_LIST.every(d => selectedDifficulties.includes(d));
                                         if (allSelected) { DIFF_LIST.forEach(d => toggleDifficulty(d)); }
                                         else { DIFF_LIST.filter(d => !selectedDifficulties.includes(d)).forEach(d => toggleDifficulty(d)); }
                                     }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                 </div>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(diff => (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {["EXH","MXM","INF","GRV","HVN","VVD","XCD","NBL","ULT"].map(diff => (
                                         <button key={diff} onClick={() => toggleDifficulty(diff)} className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${selectedDifficulties.includes(diff) ? 'active' : ''}`}>{diff}</button>
                                     ))}
                                 </div>
@@ -2994,13 +2995,13 @@
                                         <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
                                             <div className="text-[10px] font-black text-black uppercase">{t(lang,'filter_difficulty')}</div>
                                             <button onClick={() => {
-                                                const DIFFS = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"];
+                                                const DIFFS = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","NBL","ULT"];
                                                 const allSel = DIFFS.every(d => songModalDiffs.includes(d));
                                                 setSongModalDiffs(allSel ? [] : DIFFS);
                                             }} className="batch-btn">{t(lang,'common_select_all')}</button>
                                         </div>
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {["EXH","MXM","INF","GRV","HVN","VVD","XCD","ULT"].map(d => (
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {["EXH","MXM","INF","GRV","HVN","VVD","XCD","NBL","ULT"].map(d => (
                                                 <button key={d} onClick={() => setSongModalDiffs(prev => prev.includes(d) ? prev.filter(x=>x!==d) : [...prev,d])}
                                                     className={`filter-btn px-1 py-1.5 rounded-lg text-[10px] font-black uppercase w-full ${songModalDiffs.includes(d) ? 'active' : ''}`}>{d}</button>
                                             ))}
@@ -3431,7 +3432,7 @@
                 setIsHiddenUnlocked(true);
                 if (!user || user.isAnonymous || !firebase) return;
                 const { doc, setDoc, getDoc } = window.FirebaseSDK;
-                const ref = doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data');
+                const ref = doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'userData', 'main');
                 try {
                     const snap = await getDoc(ref);
                     const existing = snap.exists() ? snap.data() : {};
@@ -3504,7 +3505,6 @@
                             setShowOnlyFavorites(false);
                             setShowOnlyMirrors(false);
                             setRandomPoolFilter("all");
-                            setIsHiddenUnlocked(false);
                         }
                     });
                 };
@@ -3572,7 +3572,7 @@
                             setFavorites(data.favorites || []);
                             setMirrors(data.mirrors || {});
                             setPersonalMemos(data.memos || {});
-                            setIsHiddenUnlocked(!!data.isHiddenUnlocked);
+                            if (data.isHiddenUnlocked) setIsHiddenUnlocked(true);
                         }
                     } catch (err) {
                         console.error("Firestore Profile Fetch Error:", err);
@@ -5126,9 +5126,9 @@
                 if (myG === 0 && oppG === 0) {
                     if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = 1; else { myAdd = 1; oppAdd = 1; }
                 } else if (myG > 0 && oppG === 0) {
-                    if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = 1; else { myAdd = bm[myG]; oppAdd = 1; }
+                    if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = 1; else myAdd = bm[myG];
                 } else if (myG === 0 && oppG > 0) {
-                    if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = bm[oppG]; else { myAdd = 1; oppAdd = bm[oppG]; }
+                    if (res === "win") myAdd = 1; else if (res === "lose") oppAdd = bm[oppG]; else oppAdd = bm[oppG];
                 } else {
                     if (res === "win") myAdd = bm[myG]; else if (res === "lose") oppAdd = bm[oppG]; else { myAdd = bm[myG]; oppAdd = bm[oppG]; }
                 }
