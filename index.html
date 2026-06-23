@@ -1304,7 +1304,6 @@
 
         const CONTACT_FORM_URL = "https://forms.gle/13uM12Cqm5SLPzK48";
         const REPRESENTATIVE_X_URL = "https://x.com/Yuuya1202";
-        const MASTER_DATA_UPDATED_AT = "2026-06-04";
 
         const LV17_LIST = ["17.0", "17.5"];
         const LV18_LIST = Array.from({length: 10}, (_, i) => `18.${i}`);
@@ -3522,22 +3521,8 @@
                 if (!firebase) return;
 
                 const fetchMasterData = async () => {
-                    const CACHE_KEY = `sdvx_songs_${MASTER_DATA_UPDATED_AT}`;
                     try {
-                        // キャッシュ確認：更新日が同じなら再取得しない
-                        const cached = localStorage.getItem(CACHE_KEY);
-                        if (cached) {
-                            setSongs(JSON.parse(cached));
-                            setIsLoading(false);
-                            return;
-                        }
-
-                        // 古いキャッシュを削除
-                        Object.keys(localStorage)
-                            .filter(k => k.startsWith('sdvx_songs_'))
-                            .forEach(k => localStorage.removeItem(k));
-
-                        // Firestoreから取得してキャッシュに保存
+                        // キャッシュを使わず、毎回Firestoreから最新データを取得
                         const { doc, getDoc } = window.FirebaseSDK;
                         const docRef = doc(firebase.db, 'artifacts', APP_ID, 'public', 'data', MASTER_COLLECTION, MASTER_DOCUMENT);
                         const docSnap = await getDoc(docRef);
@@ -3546,7 +3531,6 @@
                             if (data.songs) {
                                 const parsedSongs = JSON.parse(data.songs);
                                 setSongs(parsedSongs);
-                                localStorage.setItem(CACHE_KEY, JSON.stringify(parsedSongs));
                             }
                         }
                     } catch (err) {
