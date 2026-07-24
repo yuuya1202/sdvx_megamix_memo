@@ -3799,7 +3799,14 @@
 
                     const matchesFutaba = selectedFutabaSections.length === 0 || selectedFutabaSections.includes(String(s.futaba || ""));
 
-                    return matchesLv && matchesDiff && matchesVer && matchesFutaba && matchesBpmFilter(s);
+                    const matchesBpl = selectedBplSections.length === 0 || selectedBplSections.some(key => {
+                        const [season, sec] = key.split('-');
+                        if (season === '5') return String(s.bpl5) === sec;
+                        if (season === '6') return String(s.bpl6) === sec;
+                        return false;
+                    });
+
+                    return matchesLv && matchesDiff && matchesVer && matchesFutaba && matchesBpl && matchesBpmFilter(s);
                 });
 
                 if (filtered.length < SETLIST_TRACK_COUNT) {
