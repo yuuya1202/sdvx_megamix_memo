@@ -1384,6 +1384,28 @@
             );
         };
 
+        // ジャケット画像用共通コンポーネント（未設定・読込失敗時は「準備中」スキンを表示）
+        const JacketImage = ({ src, alt = "jacket", className = "", style = {}, textClassName = "text-[10px]" }) => {
+            const [failed, setFailed] = React.useState(false);
+            if (!src || failed) {
+                return (
+                    <div className={`bg-gray-300 flex items-center justify-center text-center px-1 ${className}`} style={style}>
+                        <span className={`font-black text-black leading-tight ${textClassName}`}>準備中</span>
+                    </div>
+                );
+            }
+            return (
+                <img
+                    src={src}
+                    alt={alt}
+                    className={className}
+                    style={style}
+                    crossOrigin="anonymous"
+                    onError={() => setFailed(true)}
+                />
+            );
+        };
+
         // 外部サイト確認用モーダル（主に動画用）
         const LinkConfirmModal = ({ isOpen, onConfirm, onCancel, type, lang = 'ja' }) => {
             if (!isOpen) return null;
@@ -1517,7 +1539,7 @@
                             <div className="max-h-[70vh] overflow-y-auto pr-2 pb-8 custom-scrollbar">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-black flex-shrink-0">
-                                        <img src={song.jacket} className="w-full h-full object-cover" crossOrigin="anonymous" alt="jacket" />
+                                        <JacketImage src={song.jacket} className="w-full h-full object-cover" textClassName="text-[11px]" />
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-baseline gap-1">
@@ -2057,12 +2079,10 @@
             if (viewMode === 'grid') {
                 return (
                     <div onClick={onOpenGridDetail} className="grid-item" style={{ borderColor }}>
-                        <img 
+                        <JacketImage 
                             src={song.jacket} 
-                            alt="jacket" 
                             className="w-full h-full object-cover" 
-                            crossOrigin="anonymous"
-                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
+                            textClassName="text-[11px]"
                         />
                         {isLoggedIn && personalMemo && (
                             <div style={{position:'absolute',top:'0',right:'0',width:'16px',height:'16px',background:'#3b82f6',border:'1.5px solid #fff',borderRadius:'0 0 0 5px',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'1px 1px 0px rgba(0,0,0,0.4)'}}>
@@ -2089,23 +2109,12 @@
                         {renderDangerBadges()}
                         <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-3'}`}>
                             <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : tightMode ? 'w-[46px] h-[46px]' : 'w-[58px] h-[58px]'} relative overflow-hidden rounded-lg`}>
-                                {song.jacket ? (
-                                    <img 
-                                        src={song.jacket} 
-                                        alt="jacket" 
-                                        className="border-[3px] w-full h-full object-cover rounded-lg" 
-                                        style={{ borderColor: borderColor }}
-                                        crossOrigin="anonymous"
-                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
-                                    />
-                                ) : (
-                                    <div 
-                                        className="border-[3px] w-full h-full bg-gray-100 flex items-center justify-center rounded-lg"
-                                        style={{ borderColor: borderColor }}
-                                    >
-                                        <i className={`ph-bold ph-music-note text-gray-400 ${minimalMode ? 'text-lg' : 'text-base'}`}></i>
-                                    </div>
-                                )}
+                                <JacketImage
+                                    src={song.jacket}
+                                    className="border-[3px] w-full h-full object-cover rounded-lg"
+                                    style={{ borderColor: borderColor }}
+                                    textClassName={minimalMode ? "text-[7px]" : "text-[8px]"}
+                                />
                             </div>
                             <div className="flex-grow min-w-0">
                                 <h3 className={`${minimalMode ? 'text-sm' : tightMode ? 'text-[13px]' : 'text-base'} font-black leading-tight mb-0.5 break-words`}>{song.title}</h3>
@@ -2558,12 +2567,11 @@
                                                     const s = songMap[songId];
                                                     return s ? (
                                                         <div key={sIdx} className="flex-1 aspect-square rounded-lg overflow-hidden border-2 relative" style={{borderColor: getBorderColor(s.difficult)}}>
-                                                            <img
+                                                            <JacketImage
                                                                 src={s.jacket}
                                                                 alt={s.title}
                                                                 className="w-full h-full object-cover"
-                                                                crossOrigin="anonymous"
-                                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
+                                                                textClassName="text-[7px]"
                                                             />
                                                         </div>
                                                     ) : (
@@ -2703,12 +2711,11 @@
                                     <div className="flex-grow">
                                     {song ? (
                                         <div onClick={() => openSongModal(idx)} className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
-                                            <img 
+                                            <JacketImage 
                                                 src={song.jacket} 
-                                                className="w-12 h-12 border-2 rounded object-cover" 
+                                                className="w-12 h-12 border-2 rounded object-cover flex-shrink-0" 
                                                 style={{ borderColor: getBorderColor(song.difficult) }}
-                                                crossOrigin="anonymous"
-                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                                textClassName="text-[7px]"
                                             />
                                             <div className="flex-grow min-w-0">
                                                 <div className="text-sm font-black text-black break-words leading-tight">{song.title}</div>
@@ -2876,13 +2883,11 @@
                                             return (
                                                 <div key={i} onClick={() => !isSelected && selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
                                                     <div className="flex-shrink-0 w-12 h-12 relative overflow-hidden rounded-md">
-                                                        <img 
+                                                        <JacketImage 
                                                             src={s.jacket} 
-                                                            alt="jacket" 
                                                             className="border-2 w-full h-full object-cover rounded-md" 
                                                             style={{ borderColor: getBorderColor(s.difficult) }}
-                                                            crossOrigin="anonymous"
-                                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }} 
+                                                            textClassName="text-[7px]"
                                                         />
                                                     </div>
                                                     <div className="flex-grow min-w-0 text-left">
@@ -3863,11 +3868,10 @@
                             <div className="export-jackets-row">
                                 {exportData.songs.map((song, i) => (
                                     <div key={`exp-jack-${i}`} className="export-jacket-box" style={{ borderColor: getBorderColor(song.difficult) }}>
-                                        <img 
+                                        <JacketImage 
                                             className="export-jacket-img" 
                                             src={song.jacket} 
-                                            crossOrigin="anonymous"
-                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.jp/24/cccccc/ffffff/150x150.png?text=NO+JACKET'; }}
+                                            textClassName="text-[13px]"
                                         />
                                     </div>
                                 ))}
@@ -5138,8 +5142,7 @@
                                             return (
                                                 <button key={id} onClick={() => setIntroOutroSongId(id)} style={{aspectRatio:'1/1'}} className="relative">
                                                     <div style={{width:'100%',height:'100%',borderRadius:'8px',overflow:'hidden',border: sel ? '3px solid #6366f1' : '2px solid #000',boxShadow: sel ? '2px 2px 0px #6366f1' : '2px 2px 0px #000',position:'relative'}}>
-                                                        {song.jacket ? <img src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover'}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
-                                                            : <div style={{width:'100%',height:'100%',background:'#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-bold ph-music-note" style={{color:'#9ca3af'}}></i></div>}
+                                                        <JacketImage src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover'}} textClassName="text-[7px]" />
                                                         {sel && <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'20px'}}></i></div>}
                                                     </div>
                                                     <div style={{fontSize:'7px',fontWeight:900,textAlign:'center',marginTop:'2px',color:'#222',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{song.title.length > 8 ? song.title.slice(0,8)+'…' : song.title}</div>
@@ -5231,8 +5234,7 @@
                                             return (
                                                 <button key={id} onClick={() => !used && setCurrentSongId(picked ? "" : id)} disabled={used} style={{aspectRatio:'1/1'}} className="relative">
                                                     <div style={{width:'100%',height:'100%',borderRadius:'8px',overflow:'hidden',border: picked ? '3px solid #6366f1' : used ? '2px solid #ccc' : '2px solid #000',boxShadow: picked ? '2px 2px 0px #6366f1' : used ? 'none' : '2px 2px 0px #000',opacity: used ? 0.35 : 1,cursor: used ? 'not-allowed' : 'pointer',position:'relative',transition:'all 0.1s'}}>
-                                                        {song.jacket ? <img src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover',filter: used ? 'grayscale(100%)' : 'none'}} crossOrigin="anonymous" onError={e=>{e.target.style.display='none';}} />
-                                                            : <div style={{width:'100%',height:'100%',background: used ? '#ddd' : '#e5e7eb',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-bold ph-music-note" style={{color: used ? '#aaa' : '#9ca3af'}}></i></div>}
+                                                        <JacketImage src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover',filter: used ? 'grayscale(100%)' : 'none'}} textClassName="text-[7px]" />
                                                         {picked && <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.25)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'18px'}}></i></div>}
                                                         {used && <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-bold ph-lock" style={{color:'#fff',fontSize:'14px'}}></i></div>}
                                                     </div>
