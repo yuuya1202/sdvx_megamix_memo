@@ -911,6 +911,7 @@
                 "common_list_view": `リスト表示`,
                 "common_grid_view": `グリッド表示`,
                 "common_not_found": `楽曲が見つかりません`,
+                "common_investigating": `調査中`,
                 "common_prev": `前へ`,
                 "common_next": `次へ`,
                 "common_new": `新規`,
@@ -942,6 +943,7 @@
                 "song_chart_close": `閉じる`,
                 "song_already_selected": `選択済`,
                 "main_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
+                "main_newsongs_banner": `新曲はこちらから`,
                 "main_search_placeholder": `曲名・読みで探す...`,
                 "ranking_title": `チェイン数ランキング`,
                 "ranking_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
@@ -1107,6 +1109,7 @@
                 "common_list_view": `리스트 표시`,
                 "common_grid_view": `그리드 표시`,
                 "common_not_found": `악곡을 찾을 수 없습니다`,
+                "common_investigating": `조사중`,
                 "common_prev": `이전`,
                 "common_next": `다음`,
                 "common_new": `신규`,
@@ -1138,6 +1141,7 @@
                 "song_chart_close": `닫기`,
                 "song_already_selected": `선택됨`,
                 "main_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
+                "main_newsongs_banner": `신곡은 여기에서`,
                 "main_search_placeholder": `곡명・읽는 법으로 검색...`,
                 "ranking_title": `체인 수 랭킹`,
                 "ranking_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
@@ -1559,9 +1563,9 @@
                                             )}
                                         </div>
                                         <div className="grid grid-cols-3 gap-2 mt-2">
-                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_start_pos")}</p><p className="stat-value">{song.start_pos || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_end_pos")}</p><p className="stat-value">{song.end_pos || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_chain")}</p><p className="stat-value">{song.combo || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_start_pos")}</p><p className="stat-value">{song.start_pos || t(lang,'common_investigating')}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_end_pos")}</p><p className="stat-value">{song.end_pos || t(lang,'common_investigating')}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,"song_chain")}</p><p className="stat-value">{song.combo || t(lang,'common_investigating')}</p></div>
                                         </div>
                                     </div>
                                     <div>
@@ -1575,9 +1579,9 @@
                                         </div>
                                         <div className="grid grid-cols-3 gap-2 mt-2">
                                             {/* ラベル重複解消 */}
-                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_start_pos')}</p><p className="stat-value">{song.start_pos2 || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_end_pos')}</p><p className="stat-value">{song.end_pos2 || "-"}</p></div>
-                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_chain')}</p><p className="stat-value">{song.combo2 || "-"}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_start_pos')}</p><p className="stat-value">{song.start_pos2 || t(lang,'common_investigating')}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_end_pos')}</p><p className="stat-value">{song.end_pos2 || t(lang,'common_investigating')}</p></div>
+                                            <div className="stat-box"><p className="stat-label">{t(lang,'song_chain')}</p><p className="stat-value">{song.combo2 || t(lang,'common_investigating')}</p></div>
                                         </div>
                                     </div>
 
@@ -2195,15 +2199,15 @@
                                 <div className="grid grid-cols-3 gap-2 mb-6">
                                     <div className="stat-box">
                                         <p className="stat-label">{t(lang,'song_start_pos')}</p>
-                                        <p className="stat-value">{song.start_pos || "-"}</p>
+                                        <p className="stat-value">{song.start_pos || t(lang,'common_investigating')}</p>
                                     </div>
                                     <div className="stat-box">
                                         <p className="stat-label">{t(lang,'song_end_pos')}</p>
-                                        <p className="stat-value">{song.end_pos || "-"}</p>
+                                        <p className="stat-value">{song.end_pos || t(lang,'common_investigating')}</p>
                                     </div>
                                     <div className="stat-box">
                                         <p className="stat-label">{t(lang,'song_chain')}</p>
-                                        <p className="stat-value">{song.combo || "-"}</p>
+                                        <p className="stat-value">{song.combo || t(lang,'common_investigating')}</p>
                                     </div>
                                 </div>
 
@@ -2221,15 +2225,15 @@
                                 <div className="grid grid-cols-3 gap-2 mb-6">
                                     <div className="stat-box">
                                         <p className="stat-label">{t(lang,'song_start_pos')}</p>
-                                        <p className="stat-value">{song.start_pos2 || "-"}</p>
+                                        <p className="stat-value">{song.start_pos2 || t(lang,'common_investigating')}</p>
                                     </div>
                                     <div className="stat-box">
                                         <p className="stat-label">{t(lang,'song_end_pos')}</p>
-                                        <p className="stat-value">{song.end_pos2 || "-"}</p>
+                                        <p className="stat-value">{song.end_pos2 || t(lang,'common_investigating')}</p>
                                     </div>
                                     <div className="stat-box">
                                         <p className="stat-label">{t(lang,'song_chain')}</p>
-                                        <p className="stat-value">{song.combo2 || "-"}</p>
+                                        <p className="stat-value">{song.combo2 || t(lang,'common_investigating')}</p>
                                     </div>
                                 </div>
 
@@ -3921,6 +3925,9 @@
                                     <button onClick={() => setCurrentPage("main")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "main" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-music-notes text-base"></i> {t(lang,'nav_main')}
                                     </button>
+                                    <button onClick={() => setCurrentPage("newsongs")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "newsongs" ? 'active' : ''}`}>
+                                        <i className="ph-bold ph-sparkle text-base"></i> {t(lang,'nav_newsongs')}
+                                    </button>
                                     {user && !user.isAnonymous && (
                                         <button onClick={() => setCurrentPage("setlist")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "setlist" ? 'active' : ''}`}>
                                             <i className="ph-bold ph-list-numbers text-base"></i> {t(lang,'nav_setlist')}
@@ -3944,9 +3951,6 @@
                                     )}
                                     <button onClick={() => setCurrentPage("bpl")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "bpl" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-star text-base"></i> {t(lang,'nav_bpl')}
-                                    </button>
-                                    <button onClick={() => setCurrentPage("newsongs")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "newsongs" ? 'active' : ''}`}>
-                                        <i className="ph-bold ph-sparkle text-base"></i> {t(lang,'nav_newsongs')}
                                     </button>
                                     <div className="border-t-2 border-gray-100 my-1"></div>
                                     <button onClick={() => setCurrentPage("terms")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "terms" ? 'active' : ''}`}>
@@ -4012,6 +4016,22 @@
                                         {t(lang,'main_notice')}
                                     </span>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* 新曲バナー（メインページのみ） */}
+                        {currentPage === "main" && (
+                            <div className="flex justify-center mb-4">
+                                <button
+                                    onClick={() => setCurrentPage("newsongs")}
+                                    className="flex items-center gap-2 bg-[#52b788] border-2 border-black rounded-full px-5 py-2 shadow-[3px_3px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                                >
+                                    <i className="ph-fill ph-sparkle text-white text-base"></i>
+                                    <span className="text-xs font-black text-white tracking-wide">
+                                        {t(lang,'main_newsongs_banner')}
+                                    </span>
+                                    <i className="ph-bold ph-caret-right text-white text-sm"></i>
+                                </button>
                             </div>
                         )}
 
