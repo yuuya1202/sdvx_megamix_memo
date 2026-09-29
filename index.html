@@ -865,6 +865,8 @@
                 "common_reset": `リセット`,
                 "common_filter": `絞り込み`,
                 "sort_btn": `並び替え`,
+                "chart_zoom_in": `拡大`,
+                "chart_zoom_out": `縮小`,
                 "view_grid": `グリッド`,
                 "view_list": `リスト`,
                 "sort_level_asc": `レベル 昇順`,
@@ -1062,6 +1064,8 @@
                 "common_reset": `초기화`,
                 "common_filter": `필터`,
                 "sort_btn": `정렬`,
+                "chart_zoom_in": `확대`,
+                "chart_zoom_out": `축소`,
                 "view_grid": `그리드`,
                 "view_list": `리스트`,
                 "sort_level_asc": `레벨 오름차순`,
@@ -1309,6 +1313,14 @@
             }
         };
 
+        // ===== 譜面パネルの拡大縮小 =====
+        const CHART_ZOOM_MIN = 0.5;
+        const CHART_ZOOM_MAX = 1.2;
+        const CHART_ZOOM_STEP = 0.1;
+        const CHART_ZOOM_DEFAULT = 0.8;
+        const CHART_FRAME_W = 2360; // 譜面倉庫ページの描画幅
+        const CHART_FRAME_H = 700;  // 譜面倉庫ページの描画高さ
+
         // ===== 並び替え =====
         const SORT_OPTIONS = ["level_asc", "level_desc", "kana_asc", "kana_desc"];
         const DIFF_ORDER = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","NBL","ULT"];
@@ -1481,6 +1493,32 @@
         const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel, showMemo, lang = 'ja' }) => {
             const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
             const [localMemo, setLocalMemo] = React.useState(personalMemo || "");
+            const [chartZoom, setChartZoom] = useState(CHART_ZOOM_DEFAULT);
+            const chartScrollRef = useRef(null);
+            const chartCenterRef = useRef(null);
+
+            // 拡大縮小の前に表示中の中心位置（割合）を記録し、変更後に同じ位置へ戻す
+            const changeChartZoom = (delta) => {
+                const next = Math.round(Math.min(CHART_ZOOM_MAX, Math.max(CHART_ZOOM_MIN, chartZoom + delta)) * 10) / 10;
+                if (next === chartZoom) return;
+                const el = chartScrollRef.current;
+                if (el) {
+                    chartCenterRef.current = {
+                        x: (el.scrollLeft + el.clientWidth / 2) / el.scrollWidth,
+                        y: (el.scrollTop + el.clientHeight / 2) / el.scrollHeight,
+                    };
+                }
+                setChartZoom(next);
+            };
+
+            useEffect(() => {
+                const el = chartScrollRef.current;
+                const c = chartCenterRef.current;
+                if (!el || !c) return;
+                el.scrollLeft = c.x * el.scrollWidth - el.clientWidth / 2;
+                el.scrollTop = c.y * el.scrollHeight - el.clientHeight / 2;
+                chartCenterRef.current = null;
+            }, [chartZoom]);
 
             React.useEffect(() => {
                 setLocalMemo(personalMemo || "");
@@ -1587,25 +1625,36 @@
                                         </div>
                                     </div>
 
-                                    {/* 譜面パネル（仮実装：常に表示）。リスト表示の埋め込みと同じ縮小率 */}
+                                    {/* 譜面パネル（仮実装：常に表示）。右上のボタンでパネル内だけ拡大縮小 */}
                                     {song.site_link && (
-                                        <div className="rounded-xl border-2 border-black" style={{height: '320px', overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
-                                            <div style={{width: '1888px', height: '560px', position: 'relative'}}>
-                                                <iframe
-                                                    src={song.site_link}
-                                                    title={t(lang,'song_chart_preview')}
-                                                    loading="lazy"
-                                                    scrolling="yes"
-                                                    style={{
-                                                        width: '2360px',
-                                                        height: '700px',
-                                                        border: 'none',
-                                                        display: 'block',
-                                                        transformOrigin: 'top left',
-                                                        transform: 'scale(0.8)',
-                                                        touchAction: 'pan-x pan-y'
-                                                    }}
-                                                />
+                                        <div className="relative">
+                                            <div ref={chartScrollRef} className="rounded-xl border-2 border-black" style={{height: '400px', overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
+                                                <div style={{width: `${CHART_FRAME_W * chartZoom}px`, height: `${CHART_FRAME_H * chartZoom}px`, position: 'relative'}}>
+                                                    <iframe
+                                                        src={song.site_link}
+                                                        title={t(lang,'song_chart_preview')}
+                                                        loading="lazy"
+                                                        scrolling="yes"
+                                                        style={{
+                                                            width: `${CHART_FRAME_W}px`,
+                                                            height: `${CHART_FRAME_H}px`,
+                                                            border: 'none',
+                                                            display: 'block',
+                                                            transformOrigin: 'top left',
+                                                            transform: `scale(${chartZoom})`,
+                                                            touchAction: 'pan-x pan-y'
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="absolute top-2 right-2 flex items-center gap-1 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_#000] px-1 py-0.5 z-10">
+                                                <button onClick={() => changeChartZoom(-CHART_ZOOM_STEP)} disabled={chartZoom <= CHART_ZOOM_MIN} aria-label={t(lang,'chart_zoom_out')} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 disabled:opacity-30">
+                                                    <i className="ph-bold ph-minus text-sm"></i>
+                                                </button>
+                                                <span className="text-[10px] font-black w-9 text-center tabular-nums">{Math.round(chartZoom * 100)}%</span>
+                                                <button onClick={() => changeChartZoom(CHART_ZOOM_STEP)} disabled={chartZoom >= CHART_ZOOM_MAX} aria-label={t(lang,'chart_zoom_in')} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 disabled:opacity-30">
+                                                    <i className="ph-bold ph-plus text-sm"></i>
+                                                </button>
                                             </div>
                                         </div>
                                     )}
