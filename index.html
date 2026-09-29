@@ -676,7 +676,7 @@
             cursor: pointer;
             width: fit-content;
         }
-        .view-mode-badge.compact { padding: 6px 10px; }
+        .view-mode-badge.compact { padding: 6px 8px; }
         .view-mode-badge:active {
             transform: translate(2px, 2px);
             box-shadow: 1px 1px 0px #000;
@@ -865,6 +865,8 @@
                 "common_reset": `リセット`,
                 "common_filter": `絞り込み`,
                 "sort_btn": `並び替え`,
+                "view_grid": `グリッド`,
+                "view_list": `リスト`,
                 "sort_level_asc": `レベル 昇順`,
                 "sort_level_desc": `レベル 降順`,
                 "sort_kana_asc": `五十音 昇順`,
@@ -1060,6 +1062,8 @@
                 "common_reset": `초기화`,
                 "common_filter": `필터`,
                 "sort_btn": `정렬`,
+                "view_grid": `그리드`,
+                "view_list": `리스트`,
                 "sort_level_asc": `레벨 오름차순`,
                 "sort_level_desc": `레벨 내림차순`,
                 "sort_kana_asc": `이름순 오름차순`,
@@ -1329,25 +1333,26 @@
         };
         const sortSongs = (list, sortKey) => list.slice().sort((a, b) => compareSongs(a, b, sortKey));
 
-        const SortDropdown = ({ sortKey, onChange, lang = 'ja' }) => {
+        // ツールバー用プルダウン（並び替え・表示切替で共通）
+        const BadgeDropdown = ({ label, icon, options, value, onChange }) => {
             const [open, setOpen] = useState(false);
-            const isDesc = sortKey.endsWith("_desc");
             return (
                 <div className="relative">
                     <div className="view-mode-badge compact" onClick={() => setOpen(o => !o)}>
-                        <i className={`ph-bold ${isDesc ? 'ph-sort-descending' : 'ph-sort-ascending'} text-sm`}></i>
-                        {t(lang,'sort_btn')}
+                        <i className={`ph-bold ${icon} text-sm`}></i>
+                        {label}
                         <i className={`ph-bold ph-caret-${open ? 'up' : 'down'} text-[10px]`}></i>
                     </div>
                     {open && (
                         <>
                             <div className="fixed inset-0 z-20" onClick={() => setOpen(false)}></div>
                             <div className="absolute right-0 mt-1 bg-white border-2 border-black rounded-xl shadow-[3px_3px_0px_#000] overflow-hidden z-30 text-black" style={{minWidth:'150px'}}>
-                                {SORT_OPTIONS.map(key => (
-                                    <button key={key} onClick={() => { onChange(key); setOpen(false); }}
-                                        className={`w-full text-left px-4 py-2.5 text-xs font-black flex items-center gap-2 transition-colors ${sortKey === key ? 'bg-[#d8f3dc] text-[#1b4332]' : 'hover:bg-gray-50'}`}>
-                                        <i className={`ph-bold ph-check text-xs ${sortKey === key ? '' : 'invisible'}`}></i>
-                                        {t(lang,`sort_${key}`)}
+                                {options.map(opt => (
+                                    <button key={opt.key} onClick={() => { onChange(opt.key); setOpen(false); }}
+                                        className={`w-full text-left px-4 py-2.5 text-xs font-black flex items-center gap-2 transition-colors ${value === opt.key ? 'bg-[#d8f3dc] text-[#1b4332]' : 'hover:bg-gray-50'}`}>
+                                        <i className={`ph-bold ph-check text-xs ${value === opt.key ? '' : 'invisible'}`}></i>
+                                        {opt.icon && <i className={`ph-bold ${opt.icon} text-sm`}></i>}
+                                        {opt.label}
                                     </button>
                                 ))}
                             </div>
@@ -1356,6 +1361,29 @@
                 </div>
             );
         };
+
+        const SortDropdown = ({ sortKey, onChange, lang = 'ja' }) => (
+            <BadgeDropdown
+                label={t(lang,'sort_btn')}
+                icon={sortKey.endsWith("_desc") ? 'ph-sort-descending' : 'ph-sort-ascending'}
+                options={SORT_OPTIONS.map(key => ({ key, label: t(lang,`sort_${key}`) }))}
+                value={sortKey}
+                onChange={onChange}
+            />
+        );
+
+        const ViewModeDropdown = ({ viewMode, onChange, lang = 'ja' }) => (
+            <BadgeDropdown
+                label={t(lang,'common_view_toggle')}
+                icon={viewMode === 'grid' ? 'ph-squares-four' : 'ph-list'}
+                options={[
+                    { key: 'grid', label: t(lang,'view_grid'), icon: 'ph-squares-four' },
+                    { key: 'list', label: t(lang,'view_list'), icon: 'ph-list' },
+                ]}
+                value={viewMode}
+                onChange={onChange}
+            />
+        );
 
         const CATEGORY_LABELS = {
             "1": "縦連", "2": "両手トリル", "3": "片手トリルBT",
@@ -4100,11 +4128,8 @@
                                 <div className="px-1 flex flex-col gap-3">
                                     {(currentPage === "main" || currentPage === "newsongs") && (
                                         <div className="flex flex-col gap-3">
-                                            <div className="flex justify-end mb-1 gap-2">
-                                                <div className="view-mode-badge compact" onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}>
-                                                    <i className={`ph-bold ${viewMode === 'list' ? 'ph-squares-four' : 'ph-list'}`}></i>
-                                                    {t(lang,'common_view_toggle')}
-                                                </div>
+                                            <div className="flex flex-wrap justify-end mb-1 gap-2">
+                                                <ViewModeDropdown viewMode={viewMode} onChange={setViewMode} lang={lang} />
                                                 <SortDropdown sortKey={listSortKey} onChange={setListSortKey} lang={lang} />
                                                 {(currentPage === "main" || currentPage === "newsongs") && (
                                                     <div
@@ -4495,7 +4520,7 @@
                                                 <i className="ph-fill ph-star text-3xl text-yellow-400"></i>
                                                 <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'bpl_title')}</h2>
                                             </div>
-                                            <div className="flex justify-end items-center gap-2 mb-3">
+                                            <div className="flex flex-wrap justify-end items-center gap-2 mb-3">
                                                 {/* シーズン切り替えプルダウン */}
                                                 <div className="relative">
                                                     <button
@@ -4518,13 +4543,7 @@
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div
-                                                    className="view-mode-badge compact"
-                                                    onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
-                                                >
-                                                    <i className={`ph-bold ${bplViewMode === "list" ? "ph-squares-four" : "ph-list"} text-sm`}></i>
-                                                    {t(lang,'common_view_toggle')}
-                                                </div>
+                                                <ViewModeDropdown viewMode={bplViewMode} onChange={setBplViewMode} lang={lang} />
                                                 <SortDropdown sortKey={listSortKey} onChange={setListSortKey} lang={lang} />
                                             </div>
                                             {bplSeason === 6 && (
