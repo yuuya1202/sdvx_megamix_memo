@@ -1587,6 +1587,29 @@
                                         </div>
                                     </div>
 
+                                    {/* 譜面パネル（仮実装：常に表示）。リスト表示の埋め込みと同じ縮小率 */}
+                                    {song.site_link && (
+                                        <div className="rounded-xl border-2 border-black" style={{height: '320px', overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
+                                            <div style={{width: '1888px', height: '560px', position: 'relative'}}>
+                                                <iframe
+                                                    src={song.site_link}
+                                                    title={t(lang,'song_chart_preview')}
+                                                    loading="lazy"
+                                                    scrolling="yes"
+                                                    style={{
+                                                        width: '2360px',
+                                                        height: '700px',
+                                                        border: 'none',
+                                                        display: 'block',
+                                                        transformOrigin: 'top left',
+                                                        transform: 'scale(0.8)',
+                                                        touchAction: 'pan-x pan-y'
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-2 gap-3 mb-6">
                                         {song.site_link ? (
                                             <button className="link-button chart" onClick={(e) => handleChartClick(e, song.site_link)}>
