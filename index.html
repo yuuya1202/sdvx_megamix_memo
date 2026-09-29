@@ -676,6 +676,7 @@
             cursor: pointer;
             width: fit-content;
         }
+        .view-mode-badge.compact { padding: 6px 10px; }
         .view-mode-badge:active {
             transform: translate(2px, 2px);
             box-shadow: 1px 1px 0px #000;
@@ -845,7 +846,7 @@
                 "nav_ranking": `チェイン数ランキング`,
                 "nav_simulation": `シミュレーション`,
                 "nav_bpl": `BPL課題曲`,
-                "nav_newsongs": `新曲`,
+                "nav_newsongs": `新曲（9/3）追加分`,
                 "nav_terms": `ガイドライン`,
                 "nav_contact": `お問い合わせ`,
                 "nav_logout": `ログアウト`,
@@ -863,6 +864,11 @@
                 "common_confirm": `確認`,
                 "common_reset": `リセット`,
                 "common_filter": `絞り込み`,
+                "sort_btn": `並び替え`,
+                "sort_level_asc": `レベル 昇順`,
+                "sort_level_desc": `レベル 降順`,
+                "sort_kana_asc": `五十音 昇順`,
+                "sort_kana_desc": `五十音 降順`,
                 "common_filter_apply": `この条件で絞り込む`,
                 "common_all": `すべて`,
                 "common_back_to_main": `メインページに戻る`,
@@ -899,7 +905,7 @@
                 "song_already_selected": `選択済`,
                 "main_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
                 "main_newsongs_banner": `新曲はこちらから`,
-                "newsongs_title": `新曲`,
+                "newsongs_title": `新曲（9/3）追加分`,
                 "main_search_placeholder": `曲名・読みで探す...`,
                 "ranking_title": `チェイン数ランキング`,
                 "ranking_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
@@ -1035,7 +1041,7 @@
                 "nav_ranking": `체인 수 랭킹`,
                 "nav_simulation": `시뮬레이션`,
                 "nav_bpl": `BPL 과제곡`,
-                "nav_newsongs": `신곡`,
+                "nav_newsongs": `신곡 (9/3) 추가분`,
                 "nav_terms": `가이드라인`,
                 "nav_contact": `문의하기`,
                 "nav_logout": `로그아웃`,
@@ -1053,6 +1059,11 @@
                 "common_confirm": `확인`,
                 "common_reset": `초기화`,
                 "common_filter": `필터`,
+                "sort_btn": `정렬`,
+                "sort_level_asc": `레벨 오름차순`,
+                "sort_level_desc": `레벨 내림차순`,
+                "sort_kana_asc": `이름순 오름차순`,
+                "sort_kana_desc": `이름순 내림차순`,
                 "common_filter_apply": `이 조건으로 필터링`,
                 "common_all": `전체`,
                 "common_back_to_main": `메인 페이지로 돌아가기`,
@@ -1089,7 +1100,7 @@
                 "song_already_selected": `선택됨`,
                 "main_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
                 "main_newsongs_banner": `신곡은 여기에서`,
-                "newsongs_title": `신곡`,
+                "newsongs_title": `신곡 (9/3) 추가분`,
                 "main_search_placeholder": `곡명・읽는 법으로 검색...`,
                 "ranking_title": `체인 수 랭킹`,
                 "ranking_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
@@ -1292,6 +1303,58 @@
                 case "ULT": return "#e9cf00"; 
                 default: return "#000000";
             }
+        };
+
+        // ===== 並び替え =====
+        const SORT_OPTIONS = ["level_asc", "level_desc", "kana_asc", "kana_desc"];
+        const DIFF_ORDER = ["EXH","MXM","INF","GRV","HVN","VVD","XCD","NBL","ULT"];
+        const diffRank = (d) => {
+            const i = DIFF_ORDER.indexOf(String(d || "").toUpperCase());
+            return i === -1 ? DIFF_ORDER.length : i;
+        };
+        const readingOf = (s) => String(s.reading || s.title || "");
+        // レベル順：同レベル内は五十音昇順 → 難易度順
+        // 五十音順：同じ読みはレベル昇順 → 難易度順
+        const compareSongs = (a, b, sortKey) => {
+            const lvDiff = (parseFloat(a.level) || 0) - (parseFloat(b.level) || 0);
+            const kanaDiff = readingOf(a).localeCompare(readingOf(b), 'ja');
+            const dfDiff = diffRank(a.difficult) - diffRank(b.difficult);
+            switch (sortKey) {
+                case "level_desc": return -lvDiff || kanaDiff || dfDiff;
+                case "kana_asc":   return kanaDiff || lvDiff || dfDiff;
+                case "kana_desc":  return -kanaDiff || lvDiff || dfDiff;
+                case "level_asc":
+                default:           return lvDiff || kanaDiff || dfDiff;
+            }
+        };
+        const sortSongs = (list, sortKey) => list.slice().sort((a, b) => compareSongs(a, b, sortKey));
+
+        const SortDropdown = ({ sortKey, onChange, lang = 'ja' }) => {
+            const [open, setOpen] = useState(false);
+            const isDesc = sortKey.endsWith("_desc");
+            return (
+                <div className="relative">
+                    <div className="view-mode-badge compact" onClick={() => setOpen(o => !o)}>
+                        <i className={`ph-bold ${isDesc ? 'ph-sort-descending' : 'ph-sort-ascending'} text-sm`}></i>
+                        {t(lang,'sort_btn')}
+                        <i className={`ph-bold ph-caret-${open ? 'up' : 'down'} text-[10px]`}></i>
+                    </div>
+                    {open && (
+                        <>
+                            <div className="fixed inset-0 z-20" onClick={() => setOpen(false)}></div>
+                            <div className="absolute right-0 mt-1 bg-white border-2 border-black rounded-xl shadow-[3px_3px_0px_#000] overflow-hidden z-30 text-black" style={{minWidth:'150px'}}>
+                                {SORT_OPTIONS.map(key => (
+                                    <button key={key} onClick={() => { onChange(key); setOpen(false); }}
+                                        className={`w-full text-left px-4 py-2.5 text-xs font-black flex items-center gap-2 transition-colors ${sortKey === key ? 'bg-[#d8f3dc] text-[#1b4332]' : 'hover:bg-gray-50'}`}>
+                                        <i className={`ph-bold ph-check text-xs ${sortKey === key ? '' : 'invisible'}`}></i>
+                                        {t(lang,`sort_${key}`)}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
         };
 
         const CATEGORY_LABELS = {
@@ -1743,10 +1806,10 @@
                         {/* コンテンツ */}
                         <div className="overflow-y-auto px-5 py-4 space-y-6 text-black">
                             {/* お気に入り・ミラー（ログイン時のみ） */}
-                            {isLoggedIn && (currentPage === "main" || currentPage === "random" || currentPage === "ranking") && (
+                            {isLoggedIn && (currentPage === "main" || currentPage === "newsongs" || currentPage === "random" || currentPage === "ranking") && (
                                 <div className="space-y-2">
                                     <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_my_data')}</div>
-                                    {(currentPage === "main" || currentPage === "random" || currentPage === "ranking") && (
+                                    {(currentPage === "main" || currentPage === "newsongs" || currentPage === "random" || currentPage === "ranking") && (
                                         <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
                                             <button onClick={() => setShowOnlyFavorites(false)} className={`toggle-btn-small ${!showOnlyFavorites ? 'active' : ''}`} style={{color: !showOnlyFavorites ? '#1b4332' : '#374151'}}>{t(lang,'common_all')}</button>
                                             <button onClick={() => setShowOnlyFavorites(true)} className={`toggle-btn-small ${showOnlyFavorites ? 'active' : ''}`} style={{color: showOnlyFavorites ? '#1b4332' : '#374151'}}>
@@ -1754,7 +1817,7 @@
                                             </button>
                                         </div>
                                     )}
-                                    {currentPage === "main" && (
+                                    {(currentPage === "main" || currentPage === "newsongs") && (
                                         <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
                                             <button onClick={() => setShowOnlyMirrors(false)} className={`toggle-btn-small ${!showOnlyMirrors ? 'active' : ''}`} style={{color: !showOnlyMirrors ? '#1b4332' : '#374151'}}>{t(lang,'common_all')}</button>
                                             <button onClick={() => setShowOnlyMirrors(true)} className={`toggle-btn-small ${showOnlyMirrors ? 'active' : ''}`} style={{color: showOnlyMirrors ? '#1b4332' : '#374151'}}>
@@ -1764,7 +1827,8 @@
                                     )}
                                 </div>
                             )}
-                            {/* バージョン */}
+                            {/* バージョン（新曲ページでは非表示） */}
+                            {currentPage !== "newsongs" && (
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
                                     <div className="text-[10px] font-black text-black uppercase">{t(lang,'filter_version')}</div>
@@ -1780,6 +1844,7 @@
                                     ))}
                                 </div>
                             </div>
+                            )}
                             {/* 難易度 */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-1 mb-2">
@@ -1840,7 +1905,8 @@
                             <div className="space-y-2"><LevelSectionHeader title="18" list={LV18_LIST} /><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV18_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             <div className="space-y-2"><LevelSectionHeader title="19" list={LV19_LIST} /><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV19_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
                             <div className="space-y-2"><LevelSectionHeader title="20" list={LV20_LIST} /><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(0,5).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div><div className="grid grid-cols-5 gap-2">{LV20_LIST.slice(5,10).map(lv => <FilterButton key={lv} lv={lv} label={lv} />)}</div></div>
-                            {/* BPL課題曲 */}
+                            {/* BPL課題曲（新曲ページでは非表示） */}
+                            {currentPage !== "newsongs" && (<>
                             <div className="space-y-2 pb-2">
                                 <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'filter_bpl5')}</div>
                                 <div className="grid grid-cols-4 gap-2">
@@ -1861,6 +1927,7 @@
                                     ))}
                                 </div>
                             </div>
+                            </>)}
                         </div>
                         <div className="px-5 py-4 border-t-2 border-black flex-shrink-0">
                             <button onClick={onClose} className="w-full bg-[#40916c] text-white font-black py-3 rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all">
@@ -3089,6 +3156,7 @@
             const [selectedDifficulties, setSelectedDifficulties] = useState([]);
             const [selectedVersions, setSelectedVersions] = useState([]);
             const [sortOrder, setSortOrder] = useState("desc");
+            const [listSortKey, setListSortKey] = useState("level_asc"); // メイン・新曲・BPLの並び順
             const [rankSection, setRankSection] = useState("section1"); 
             const [currentPage, setCurrentPage] = useState("main"); 
             const [termsTab, setTermsTab] = useState("terms"); 
@@ -3138,7 +3206,7 @@
             const [bplLevelOpen, setBplLevelOpen] = useState(false);
 
             const [bplLevelFilter, setBplLevelFilter] = useState("all");
-            const [bplViewMode, setBplViewMode] = useState("list");
+            const [bplViewMode, setBplViewMode] = useState("grid");
             
             const [firebase, setFirebase] = useState(null);
 
@@ -3301,12 +3369,16 @@
                 setPageIndex(1);
                 setShowOnlyFavorites(false);
                 setShowOnlyMirrors(false);
+                // 表示形式は画面を開くたびにグリッドから始める
+                setViewMode("grid");
+                setBplViewMode("grid");
+                setListSortKey("level_asc");
                 if (currentPage !== "terms") setTermsTab("terms");
             }, [currentPage]);
 
             useEffect(() => {
                 setPageIndex(1);
-            }, [rankSection, searchTerm, selectedLevels, selectedDifficulties, selectedVersions, sortOrder, showOnlyFavorites, showOnlyMirrors, viewMode]);
+            }, [rankSection, searchTerm, selectedLevels, selectedDifficulties, selectedVersions, sortOrder, listSortKey, showOnlyFavorites, showOnlyMirrors, viewMode]);
 
             const login = async () => {
                 if (!firebase || isAuthLoading) return;
@@ -3481,7 +3553,7 @@
 
             const isFilterActive = useMemo(() => {
                 const baseActive = selectedLevels.length > 0 || selectedDifficulties.length > 0 || selectedVersions.length > 0 || selectedBplSections.length > 0 || bpmMin !== "" || bpmMax !== "";
-                if (currentPage === "main") return baseActive || showOnlyFavorites || showOnlyMirrors;
+                if (currentPage === "main" || currentPage === "newsongs") return baseActive || showOnlyFavorites || showOnlyMirrors;
                 if (currentPage === "random") return baseActive || showOnlyFavorites;
                 if (currentPage === "ranking") return baseActive || showOnlyFavorites;
                 return baseActive;
@@ -3640,10 +3712,10 @@
                     });
 
                     const songId = getSongId(s);
-                    const isFavFilterApplied = (currentPage === "main" || currentPage === "ranking" || currentPage === "random") && showOnlyFavorites;
+                    const isFavFilterApplied = (currentPage === "main" || currentPage === "newsongs" || currentPage === "ranking" || currentPage === "random") && showOnlyFavorites;
                     const matchesFav = !isFavFilterApplied || favorites.includes(songId);
 
-                    const isMirrorFilterApplied = currentPage === "main" && showOnlyMirrors;
+                    const isMirrorFilterApplied = (currentPage === "main" || currentPage === "newsongs") && showOnlyMirrors;
                     const mirrorData = mirrors[songId];
                     const matchesMirror = !isMirrorFilterApplied || (mirrorData && (mirrorData.first || mirrorData.second));
 
@@ -3666,14 +3738,9 @@
                     });
                 }
 
-                // デフォルトの表示順：定数（レベル）順、同定数内は五十音順
-                return result.slice().sort((a, b) => {
-                    const lvA = parseFloat(a.level) || 0;
-                    const lvB = parseFloat(b.level) || 0;
-                    if (lvA !== lvB) return lvA - lvB;
-                    return String(a.reading || a.title || "").localeCompare(String(b.reading || b.title || ""), 'ja');
-                });
-            }, [searchTerm, selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, bpmMin, bpmMax, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
+                // 表示順：並び替えボタンの選択に従う（既定はレベル昇順）
+                return sortSongs(result, listSortKey);
+            }, [listSortKey, searchTerm, selectedLevels, selectedDifficulties, selectedVersions, selectedBplSections, bpmMin, bpmMax, processedSongs, currentPage, sortOrder, rankSection, showOnlyFavorites, showOnlyMirrors, favorites, mirrors, dangerFilter]);
 
             const paginatedSongs = useMemo(() => {
                 const start = (pageIndex - 1) * itemsPerPage;
@@ -4034,13 +4101,14 @@
                                     {(currentPage === "main" || currentPage === "newsongs") && (
                                         <div className="flex flex-col gap-3">
                                             <div className="flex justify-end mb-1 gap-2">
-                                                <div className="view-mode-badge" onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}>
+                                                <div className="view-mode-badge compact" onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}>
                                                     <i className={`ph-bold ${viewMode === 'list' ? 'ph-squares-four' : 'ph-list'}`}></i>
                                                     {t(lang,'common_view_toggle')}
                                                 </div>
-                                                {currentPage === "main" && (
+                                                <SortDropdown sortKey={listSortKey} onChange={setListSortKey} lang={lang} />
+                                                {(currentPage === "main" || currentPage === "newsongs") && (
                                                     <div
-                                                        className={`view-mode-badge ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
+                                                        className={`view-mode-badge compact ${isFilterActive ? 'bg-[#d8f3dc] border-[#52b788] text-[#1b4332]' : ''}`}
                                                         onClick={() => setIsFilterModalOpen(true)}
                                                         style={isFilterActive ? {boxShadow:'3px 3px 0px #52b788'} : {}}
                                                     >
@@ -4419,6 +4487,7 @@
                                         if (bplLevelFilter === "19") return lvStr.startsWith("19");
                                         return true;
                                     });
+                                    const bplSorted = sortSongs(bplFiltered, listSortKey);
                                     return (
                                         <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
                                             {/* ヘッダー */}
@@ -4450,12 +4519,13 @@
                                                     )}
                                                 </div>
                                                 <div
-                                                    className="view-mode-badge"
+                                                    className="view-mode-badge compact"
                                                     onClick={() => setBplViewMode(bplViewMode === "list" ? "grid" : "list")}
                                                 >
                                                     <i className={`ph-bold ${bplViewMode === "list" ? "ph-squares-four" : "ph-list"} text-sm`}></i>
                                                     {t(lang,'common_view_toggle')}
                                                 </div>
+                                                <SortDropdown sortKey={listSortKey} onChange={setListSortKey} lang={lang} />
                                             </div>
                                             {bplSeason === 6 && (
                                             <div className="flex justify-center mb-4">
@@ -4525,7 +4595,7 @@
                                                 </div>
                                             ) : (
                                                 <div className={bplViewMode === 'grid' ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
-                                                    {bplFiltered.map(song => {
+                                                    {bplSorted.map(song => {
                                                         const songId = getSongId(song);
                                                         return (
                                                             <SongCard
