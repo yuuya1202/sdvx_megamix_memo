@@ -1317,9 +1317,11 @@
         const CHART_ZOOM_MIN = 0.5;
         const CHART_ZOOM_MAX = 1.2;
         const CHART_ZOOM_STEP = 0.1;
-        const CHART_ZOOM_DEFAULT = 0.8;
+        const CHART_ZOOM_DEFAULT = 0.5;
         const CHART_FRAME_W = 2360; // 譜面倉庫ページの描画幅
-        const CHART_FRAME_H = 700;  // 譜面倉庫ページの描画高さ
+        const CHART_FRAME_H = 700;  // 譜面倉庫ページの描画高さ（最小値）
+        const CHART_PANEL_H = 400;  // 譜面パネルの高さ
+        const CHART_PANEL_BORDER = 4; // パネル枠線（上下合計）
 
         // ===== 並び替え =====
         const SORT_OPTIONS = ["level_asc", "level_desc", "kana_asc", "kana_desc"];
@@ -1496,6 +1498,8 @@
             const [chartZoom, setChartZoom] = useState(CHART_ZOOM_DEFAULT);
             const chartScrollRef = useRef(null);
             const chartCenterRef = useRef(null);
+            // 倍率が低いとき、縮小後の高さがパネルに届くよう描画高さを伸ばす
+            const chartFrameH = Math.max(CHART_FRAME_H, Math.ceil((CHART_PANEL_H - CHART_PANEL_BORDER) / chartZoom));
 
             // 拡大縮小の前に表示中の中心位置（割合）を記録し、変更後に同じ位置へ戻す
             const changeChartZoom = (delta) => {
@@ -1628,8 +1632,8 @@
                                     {/* 譜面パネル（仮実装：常に表示）。右上のボタンでパネル内だけ拡大縮小 */}
                                     {song.site_link && (
                                         <div className="relative">
-                                            <div ref={chartScrollRef} className="rounded-xl border-2 border-black" style={{height: '400px', overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
-                                                <div style={{width: `${CHART_FRAME_W * chartZoom}px`, height: `${CHART_FRAME_H * chartZoom}px`, position: 'relative', overflow: 'hidden'}}>
+                                            <div ref={chartScrollRef} className="rounded-xl border-2 border-black" style={{height: `${CHART_PANEL_H}px`, overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
+                                                <div style={{width: `${CHART_FRAME_W * chartZoom}px`, height: `${chartFrameH * chartZoom}px`, position: 'relative', overflow: 'hidden'}}>
                                                     <iframe
                                                         src={song.site_link}
                                                         title={t(lang,'song_chart_preview')}
@@ -1637,7 +1641,7 @@
                                                         scrolling="yes"
                                                         style={{
                                                             width: `${CHART_FRAME_W}px`,
-                                                            height: `${CHART_FRAME_H}px`,
+                                                            height: `${chartFrameH}px`,
                                                             border: 'none',
                                                             display: 'block',
                                                             transformOrigin: 'top left',
