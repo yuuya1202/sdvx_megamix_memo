@@ -1629,7 +1629,7 @@
                                     {song.site_link && (
                                         <div className="relative">
                                             <div ref={chartScrollRef} className="rounded-xl border-2 border-black" style={{height: '400px', overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
-                                                <div style={{width: `${CHART_FRAME_W * chartZoom}px`, height: `${CHART_FRAME_H * chartZoom}px`, position: 'relative'}}>
+                                                <div style={{width: `${CHART_FRAME_W * chartZoom}px`, height: `${CHART_FRAME_H * chartZoom}px`, position: 'relative', overflow: 'hidden'}}>
                                                     <iframe
                                                         src={song.site_link}
                                                         title={t(lang,'song_chart_preview')}
@@ -2270,7 +2270,7 @@
 
                                 {song.site_link && isOpen && (
                                     <div className="mb-4 rounded-xl border-2 border-black" style={{overflowX: 'auto', overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', }} onClick={e => e.stopPropagation()}>
-                                        <div style={{width: '1888px', height: '560px', position: 'relative', flexShrink: 0}}>
+                                        <div style={{width: '1888px', height: '560px', position: 'relative', flexShrink: 0, overflow: 'hidden'}}>
                                             <iframe
                                                 src={song.site_link}
                                                 title={t(lang,'song_chart_preview')}
