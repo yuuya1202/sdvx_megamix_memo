@@ -458,44 +458,6 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* --- 譜面プレビュー用モーダル --- */
-        .preview-modal-content {
-            background: white;
-            border: 4px solid #000;
-            box-shadow: 8px 8px 0px #000;
-            border-radius: 20px;
-            width: 100%;
-            height: 90vh;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            overflow: visible;
-            touch-action: pan-x pan-y pinch-zoom;
-            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .preview-header {
-            padding: 12px 16px;
-            border-bottom: 3px solid #000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f8fafc;
-        }
-        .preview-iframe-container {
-            flex-grow: 1;
-            position: relative;
-            background: #eee;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-            touch-action: pan-x pan-y pinch-zoom;
-        }
-        .preview-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            touch-action: pan-x pan-y pinch-zoom;
-        }
-
         .hit-counter {
             background: #6b7280; 
             color: white;
@@ -908,13 +870,10 @@
                 "common_external_confirm": `外部サイトへ移動してもよろしいですか？`,
                 "common_select_all": `全選択/解除`,
                 "common_view_toggle": `表示切替`,
-                "common_list_view": `リスト表示`,
-                "common_grid_view": `グリッド表示`,
                 "common_not_found": `楽曲が見つかりません`,
                 "common_investigating": `調査中`,
                 "common_prev": `前へ`,
                 "common_next": `次へ`,
-                "common_new": `新規`,
                 "common_chart_count": `{n} 譜面`,
                 "filter_title": `絞り込み`,
                 "filter_my_data": `マイデータ`,
@@ -922,8 +881,6 @@
                 "filter_mirror_only": `ミラーのみ`,
                 "filter_version": `バージョン`,
                 "filter_difficulty": `難易度`,
-                "filter_bpm": `BPM`,
-                "filter_bpl": `BPL課題曲`,
                 "filter_bpl5": `BPL（S5）課題曲`,
                 "filter_bpl6": `BPL（S6）課題曲`,
                 "filter_section_n": `区分{n}`,
@@ -939,11 +896,10 @@
                 "song_video_modal_title": `動画で確認`,
                 "song_my_memo": `自分用メモ`,
                 "song_favorite": `お気に入り`,
-                "song_chart_tab_alt": `別タブ`,
-                "song_chart_close": `閉じる`,
                 "song_already_selected": `選択済`,
                 "main_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
                 "main_newsongs_banner": `新曲はこちらから`,
+                "newsongs_title": `新曲`,
                 "main_search_placeholder": `曲名・読みで探す...`,
                 "ranking_title": `チェイン数ランキング`,
                 "ranking_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
@@ -963,14 +919,10 @@
                 "setlist_empty": `作成されたセトリがありません`,
                 "setlist_draft_badge": `下書き`,
                 "setlist_continue_edit": `続きを編集`,
-                "setlist_my_memo": `自分用メモ`,
                 "setlist_edit_title": `セトリ作成`,
                 "setlist_name_label": `セトリ名`,
-                "setlist_tracks_label": `TRACKS`,
                 "setlist_song_select": `曲を選択する`,
-                "setlist_save": `保存する`,
                 "setlist_edit_btn": `編集する`,
-                "setlist_delete_btn": `削除する`,
                 "song_modal_title": `曲を選択`,
                 "song_modal_search": `曲名・読みで検索...`,
                 "song_modal_search_hint": `曲名を入力 or 絞り込みで検索`,
@@ -990,7 +942,6 @@
                 "modal_image_save_pc": `PC：画像を右クリック ＞ 名前を付けて保存`,
                 "modal_image_save_sp": `スマホ：画像を長押し ＞ 画像を保存`,
                 "modal_filter_title": `絞り込み`,
-                "modal_view_select_title": `表示形式を選択`,
                 "inapp_title": `ブラウザアプリで開いてください`,
                 "inapp_body": `アプリ内ブラウザではGoogleログインが使えません。下のボタンでURLをコピーして、Safari / Chrome などのブラウザに貼り付けて開いてください。`,
                 "inapp_copy_btn": `URLをコピーする`,
@@ -1041,12 +992,10 @@
                 "sim_history_label": `入力履歴`,
                 "sim_validation_missing": `未入力項目があります：{items}`,
                 "sim_validation_song": `使用曲`,
-                "sim_validation_result": `勝敗`,
                 "sim_back_to_last": `戻る`,
                 "sim_retry": `もう一度`,
                 "sim_opp_song_history": `相手の選曲`,
                 "bpl_title": `BPL課題曲`,
-                "bpl_season_label": `シーズン`,
                 "bpl_season5": `Season 5`,
                 "bpl_season6": `Season 6`,
                 "bpl_notice": `📋 課題曲が発表され次第対応を行います。`,
@@ -1063,16 +1012,21 @@
                 "terms_tab_terms": `利用規約`,
                 "terms_tab_privacy": `プライバシーポリシー`,
                 "terms_tab_credits": `クレジット`,
-                "terms_unofficial_body": `本サイトは非公式のファンサイトであり、株式会社コナミアミューズメント、および株式会社コナミデジタルエンタテインメントとは一切関係がありません。`,
-                "terms_ip_body": `本サービス内で使用しているジャケット画像等の知的財産権は、すべて各権利所有者に帰属します。権利者様からの申し立てがあった場合、速やかに削除等の対応を行います。`,
-                "terms_accuracy_body": `提供する情報の正確性には細心の注意を払っていますが、手動入力による誤りが含まれる可能性があります。情報の利用はユーザー自身の判断で行ってください。`,
-                "privacy_title": `プライバシーポリシー`,
-                "credits_title": `クレジット`,
                 "terms_footer_note": `※記載内容は予告なく更新される場合があります。`,
-                "lang_modal_title": `言語を選択`,
                 "lang_ja": `日本語`,
                 "lang_ko": `한국어`,
                 "common_page_info": `{start}〜{end}件 / 全{total}件`,
+                "common_tap_to_close": `[タップで閉じる]`,
+                "jacket_preparing": `準備中`,
+                "song_chart_preview": `譜面プレビュー`,
+                "sim_history_setting_song": `（設定曲）`,
+                "sim_history_unselected": `（未選択）`,
+                "sim_total": `計`,
+                "cat_1": `縦連`, "cat_2": `両手トリル`, "cat_3": `片手トリルBT`,
+                "cat_4": `片手トリルFX`, "cat_5": `縦トリル`, "cat_6": `片手3鍵`,
+                "cat_7": `ハントリ`, "cat_8": `つまみ`, "cat_9": `壁`,
+                "cat_10": `二重鍵盤`, "cat_11": `回転`, "cat_12": `６鍵階段`,
+                "cat_13": `ロング`, "cat_14": `リズム難`, "cat_15": `女神特有`,
             },
             ko: {
                 "nav_main": `메인 페이지`,
@@ -1106,13 +1060,10 @@
                 "common_external_confirm": `외부 사이트로 이동하시겠습니까?`,
                 "common_select_all": `전체 선택/해제`,
                 "common_view_toggle": `보기 전환`,
-                "common_list_view": `리스트 표시`,
-                "common_grid_view": `그리드 표시`,
                 "common_not_found": `악곡을 찾을 수 없습니다`,
                 "common_investigating": `조사중`,
                 "common_prev": `이전`,
                 "common_next": `다음`,
-                "common_new": `신규`,
                 "common_chart_count": `{n} 채보`,
                 "filter_title": `필터링`,
                 "filter_my_data": `내 데이터`,
@@ -1120,8 +1071,6 @@
                 "filter_mirror_only": `미러만`,
                 "filter_version": `버전`,
                 "filter_difficulty": `난이도`,
-                "filter_bpm": `BPM`,
-                "filter_bpl": `BPL 과제곡`,
                 "filter_bpl5": `BPL（S5）과제곡`,
                 "filter_bpl6": `BPL（S6）과제곡`,
                 "filter_section_n": `구분{n}`,
@@ -1137,11 +1086,10 @@
                 "song_video_modal_title": `영상으로 확인`,
                 "song_my_memo": `개인 메모`,
                 "song_favorite": `애정곡`,
-                "song_chart_tab_alt": `새 탭`,
-                "song_chart_close": `닫기`,
                 "song_already_selected": `선택됨`,
                 "main_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
                 "main_newsongs_banner": `신곡은 여기에서`,
+                "newsongs_title": `신곡`,
                 "main_search_placeholder": `곡명・읽는 법으로 검색...`,
                 "ranking_title": `체인 수 랭킹`,
                 "ranking_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
@@ -1161,14 +1109,10 @@
                 "setlist_empty": `작성된 세트리스트가 없습니다`,
                 "setlist_draft_badge": `초안`,
                 "setlist_continue_edit": `이어서 편집`,
-                "setlist_my_memo": `개인 메모`,
                 "setlist_edit_title": `세트리스트 작성`,
                 "setlist_name_label": `세트리스트 이름`,
-                "setlist_tracks_label": `TRACKS`,
                 "setlist_song_select": `곡을 선택하기`,
-                "setlist_save": `저장하기`,
                 "setlist_edit_btn": `편집하기`,
-                "setlist_delete_btn": `삭제하기`,
                 "song_modal_title": `곡 선택`,
                 "song_modal_search": `곡명・읽는 법으로 검색...`,
                 "song_modal_search_hint": `곡명을 입력하거나 필터로 검색`,
@@ -1188,7 +1132,6 @@
                 "modal_image_save_pc": `PC: 이미지 우클릭 ＞ 다른 이름으로 저장`,
                 "modal_image_save_sp": `스마트폰: 이미지 길게 누르기 ＞ 이미지 저장`,
                 "modal_filter_title": `필터링`,
-                "modal_view_select_title": `표시 형식 선택`,
                 "inapp_title": `브라우저 앱에서 열어 주세요`,
                 "inapp_body": `앱 내 브라우저에서는 Google 로그인을 사용할 수 없습니다.아래 버튼으로 URL을 복사한 후 Safari나 Chrome 같은 브라우저에 붙여넣어 열어 주세요.`,
                 "inapp_copy_btn": `URL 복사하기`,
@@ -1239,12 +1182,10 @@
                 "sim_history_label": `입력 기록`,
                 "sim_validation_missing": `입력되지 않은 항목이 있습니다: {items}`,
                 "sim_validation_song": `사용 곡`,
-                "sim_validation_result": `승패`,
                 "sim_back_to_last": `돌아가기`,
                 "sim_retry": `다시 하기`,
                 "sim_opp_song_history": `상대방의 선곡`,
                 "bpl_title": `BPL 과제곡`,
-                "bpl_season_label": `시즌`,
                 "bpl_season5": `Season 5`,
                 "bpl_season6": `Season 6`,
                 "bpl_notice": `📋 과제곡이 발표되는 대로 대응할 예정입니다.`,
@@ -1261,16 +1202,21 @@
                 "terms_tab_terms": `이용약관`,
                 "terms_tab_privacy": `개인정보처리방침`,
                 "terms_tab_credits": `크레딧`,
-                "terms_unofficial_body": `본 사이트는 비공식 팬 사이트이며, 주식회사 코나미 어뮤즈먼트 및 주식회사 코나미 디지털 엔터테인먼트와는 일절 관계가 없습니다.`,
-                "terms_ip_body": `본 서비스 내에서 사용하고 있는 재킷 이미지 등의 지식재산권은 모두 각 권리자에게 귀속됩니다. 권리자로부터 이의 제기가 있을 경우, 신속히 삭제 등의 조치를 취하겠습니다.`,
-                "terms_accuracy_body": `제공하는 정보의 정확성에는 세심한 주의를 기울이고 있으나, 수동 입력으로 인한 오류가 포함될 가능성이 있습니다. 정보 이용은 사용자 본인의 판단에 따라 진행해 주세요.`,
-                "privacy_title": `개인정보처리방침`,
-                "credits_title": `크레딧`,
                 "terms_footer_note": `※ 기재 내용은 예고 없이 업데이트될 수 있습니다.`,
-                "lang_modal_title": `언어 선택`,
                 "lang_ja": `日本語`,
                 "lang_ko": `한국어`,
                 "common_page_info": `{start}〜{end}건 / 전체 {total}건`,
+                "common_tap_to_close": `[탭하여 닫기]`,
+                "jacket_preparing": `준비 중`,
+                "song_chart_preview": `채보 미리보기`,
+                "sim_history_setting_song": `(설정곡)`,
+                "sim_history_unselected": `(미선택)`,
+                "sim_total": `합계`,
+                "cat_1": `세로연타`, "cat_2": `양손 트릴`, "cat_3": `한손 트릴 BT`,
+                "cat_4": `한손 트릴 FX`, "cat_5": `세로 트릴`, "cat_6": `한손 3키`,
+                "cat_7": `한트리`, "cat_8": `노브`, "cat_9": `벽`,
+                "cat_10": `이중 건반`, "cat_11": `회전`, "cat_12": `6키 계단`,
+                "cat_13": `롱노트`, "cat_14": `리듬 난`, "cat_15": `여신 특유`,
             },
         };
         const t = (lang, key, vars) => {
@@ -1385,12 +1331,12 @@
         };
 
         // ジャケット画像用共通コンポーネント（未設定・読込失敗時は「準備中」スキンを表示）
-        const JacketImage = ({ src, alt = "jacket", className = "", style = {}, textClassName = "text-[10px]" }) => {
+        const JacketImage = ({ src, alt = "jacket", className = "", style = {}, textClassName = "text-[10px]", lang = 'ja' }) => {
             const [failed, setFailed] = React.useState(false);
             if (!src || failed) {
                 return (
                     <div className={`bg-gray-300 flex items-center justify-center text-center px-1 ${className}`} style={style}>
-                        <span className={`font-black text-black leading-tight ${textClassName}`}>準備中</span>
+                        <span className={`font-black text-black leading-tight ${textClassName}`}>{t(lang,'jacket_preparing')}</span>
                     </div>
                 );
             }
@@ -1440,65 +1386,8 @@
             );
         };
 
-        // 譜面プレビュー用（全画面オーバーレイ）
-        const ChartPreviewModal = ({ isOpen, url, title, onCancel, lang = 'ja' }) => {
-            if (!isOpen) return null;
-            return ReactDOM.createPortal(
-                <div style={{
-                    position: 'fixed', inset: 0, zIndex: 9999,
-                    display: 'flex', flexDirection: 'column',
-                    background: '#000', touchAction: 'auto'
-                }}>
-                    {/* 上部バー */}
-                    <div style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '8px 12px', background: '#1a1a1a',
-                        borderBottom: '2px solid #333', flexShrink: 0
-                    }}>
-                        <div style={{display:'flex', alignItems:'center', gap:'8px', overflow:'hidden'}}>
-                            <i className="ph-bold ph-file-text" style={{color:'white', fontSize:'16px', flexShrink:0}}></i>
-                            <span style={{color:'white', fontSize:'12px', fontWeight:900, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'220px'}}>{title}</span>
-                        </div>
-                        <div style={{display:'flex', alignItems:'center', gap:'8px', flexShrink:0}}>
-                            <button
-                                onClick={() => window.open(url, '_blank')}
-                                style={{background:'#333', border:'none', borderRadius:'8px', padding:'6px 10px', color:'white', fontSize:'11px', fontWeight:900, display:'flex', alignItems:'center', gap:'4px'}}
-                            >
-                                <i className="ph-bold ph-arrow-square-out"></i> {t(lang,'song_chart_tab_alt')}
-                            </button>
-                            <button
-                                onClick={onCancel}
-                                style={{background:'#e11d48', border:'none', borderRadius:'8px', padding:'6px 12px', color:'white', fontSize:'11px', fontWeight:900, display:'flex', alignItems:'center', gap:'4px'}}
-                            >
-                                <i className="ph-bold ph-x"></i> {t(lang,'common_close')}
-                            </button>
-                        </div>
-                    </div>
-                    {/* iframe全画面 */}
-                    <div style={{flex:1, overflow:'auto', WebkitOverflowScrolling:'touch', touchAction:'pan-x pan-y pinch-zoom'}}>
-                        <iframe
-                            src={url}
-                            title="Chart Preview"
-                            allowFullScreen
-                            scrolling="yes"
-                            style={{
-                                width: '1024px',
-                                minWidth: '1024px',
-                                height: '100%',
-                                minHeight: '100vh',
-                                border: 'none',
-                                display: 'block'
-                            }}
-                        ></iframe>
-                    </div>
-                </div>,
-                document.body
-            );
-        };
-
         // 楽曲詳細モーダル（グリッドモード用）
         const SongDetailModal = ({ isOpen, song, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onCancel, showMemo, lang = 'ja' }) => {
-            const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
             const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
             const [localMemo, setLocalMemo] = React.useState(personalMemo || "");
 
@@ -1539,7 +1428,7 @@
                             <div className="max-h-[70vh] overflow-y-auto pr-2 pb-8 custom-scrollbar">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-black flex-shrink-0">
-                                        <JacketImage src={song.jacket} className="w-full h-full object-cover" textClassName="text-[11px]" />
+                                        <JacketImage lang={lang} src={song.jacket} className="w-full h-full object-cover" textClassName="text-[11px]" />
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-baseline gap-1">
@@ -1569,7 +1458,7 @@
                                             <div className="flex flex-wrap gap-1">
                                                 {tags.map(code => (
                                                     <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
-                                                        {CATEGORY_LABELS[code]}
+                                                        {t(lang,`cat_${code}`)}
                                                     </span>
                                                 ))}
                                             </div>
@@ -1671,13 +1560,6 @@
                         </div>
                     )}
 
-                    <ChartPreviewModal 
-                        isOpen={chartModal.isOpen}
-                        url={chartModal.url}
-                        title={song.title}
-                        onCancel={() => setChartModal({ ...chartModal, isOpen: false })}
-                        lang={lang}
-                    />
                 </>
             );
         };
@@ -1990,35 +1872,8 @@
             );
         };
 
-        const ViewModeSelectModal = ({ isOpen, viewMode, onSelect, onCancel, lang = 'ja' }) => {
-            if (!isOpen) return null;
-            return (
-                <div className="modal-overlay" onClick={onCancel}>
-                    <div className="modal-content" style={{ maxWidth: '320px' }} onClick={e => e.stopPropagation()}>
-                        <h2 className="text-lg font-black mb-3">{t(lang,"modal_view_select_title")}</h2>
-                        <div className="flex flex-col gap-4">
-                            <button 
-                                onClick={() => { onSelect('list'); onCancel(); }}
-                                className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'list' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
-                            >
-                                <i className="ph-bold ph-list text-2xl"></i> {t(lang,'common_list_view')}
-                            </button>
-                            <button 
-                                onClick={() => { onSelect('grid'); onCancel(); }}
-                                className={`w-full py-3 rounded-2xl border-4 border-black flex items-center justify-center gap-3 font-black transition-all shadow-[4px_4px_0px_#000] active:translate-y-1 active:shadow-none ${viewMode === 'grid' ? 'bg-[#52b788] text-white' : 'bg-white text-black'}`}
-                            >
-                                <i className="ph-bold ph-squares-four text-2xl"></i> {t(lang,'common_grid_view')}
-                            </button>
-                        </div>
-                        <button onClick={onCancel} className="mt-8 text-gray-400 font-bold text-sm uppercase">{t(lang,'common_close')}</button>
-                    </div>
-                </div>
-            );
-        };
-
         const SongCard = ({ song, viewMode = 'list', showDangerBadge, showTips, showMemo, isLoggedIn, isFavorite, onToggleFavorite, mirrorData, onToggleMirror, personalMemo, onSavePersonalMemo, onOpenGridDetail, tightMode = false, minimalMode = false, lang = 'ja' }) => {
             const [isOpen, setIsOpen] = useState(false);
-            const [chartModal, setChartModal] = useState({ isOpen: false, url: '' });
             const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
             const [localMemo, setLocalMemo] = useState(personalMemo || "");
             
@@ -2029,7 +1884,7 @@
             const displayLevel = useMemo(() => formatLevel(song.level), [song.level]);
             const borderColor = useMemo(() => getBorderColor(song.difficult) || "#000000", [song.difficult]);
 
-            // 画像で確認（譜面）クリック時：サイト内プレビューを開く
+            // サイトで確認（譜面）クリック時：別タブで開く
             const handleChartClick = (e, url) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -2079,7 +1934,7 @@
             if (viewMode === 'grid') {
                 return (
                     <div onClick={onOpenGridDetail} className="grid-item" style={{ borderColor }}>
-                        <JacketImage 
+                        <JacketImage lang={lang} 
                             src={song.jacket} 
                             className="w-full h-full object-cover" 
                             textClassName="text-[11px]"
@@ -2109,7 +1964,7 @@
                         {renderDangerBadges()}
                         <div className={`flex items-center ${minimalMode ? 'gap-2' : 'gap-3'}`}>
                             <div className={`flex-shrink-0 ${minimalMode ? 'w-12 h-12' : tightMode ? 'w-[46px] h-[46px]' : 'w-[58px] h-[58px]'} relative overflow-hidden rounded-lg`}>
-                                <JacketImage
+                                <JacketImage lang={lang}
                                     src={song.jacket}
                                     className="border-[3px] w-full h-full object-cover rounded-lg"
                                     style={{ borderColor: borderColor }}
@@ -2176,7 +2031,7 @@
                                             <div className="flex flex-wrap gap-1 mb-3">
                                                 {tags.map(code => (
                                                     <span key={code} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black border-2 border-black bg-[#e9edc9] text-black" style={{boxShadow: '1px 1px 0px #000'}}>
-                                                        {CATEGORY_LABELS[code]}
+                                                        {t(lang,`cat_${code}`)}
                                                     </span>
                                                 ))}
                                             </div>
@@ -2251,7 +2106,7 @@
                                         <div style={{width: '1888px', height: '560px', position: 'relative', flexShrink: 0}}>
                                             <iframe
                                                 src={song.site_link}
-                                                title="譜面プレビュー"
+                                                title={t(lang,'song_chart_preview')}
                                                 scrolling="yes"
                                                 style={{
                                                     width: '2360px',
@@ -2378,7 +2233,6 @@
             const [view, setView] = useState("list");
             const [editingSetlist, setEditingSetlist] = useState(null);
             const [selectingSlot, setSelectingSlot] = useState(null);
-            const [selectedDetailSong, setSelectedDetailSong] = useState(null);
             
             const [isSongModalOpen, setIsSongModalOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState("");
@@ -2567,7 +2421,7 @@
                                                     const s = songMap[songId];
                                                     return s ? (
                                                         <div key={sIdx} className="flex-1 aspect-square rounded-lg overflow-hidden border-2 relative" style={{borderColor: getBorderColor(s.difficult)}}>
-                                                            <JacketImage
+                                                            <JacketImage lang={lang}
                                                                 src={s.jacket}
                                                                 alt={s.title}
                                                                 className="w-full h-full object-cover"
@@ -2663,21 +2517,6 @@
                             }}
                         />
 
-                        {selectedDetailSong && (
-                            <SongDetailModal
-                                isOpen={!!selectedDetailSong}
-                                song={selectedDetailSong}
-                                isLoggedIn={isLoggedIn}
-                                isFavorite={isLoggedIn && favorites.includes(getSongId(selectedDetailSong))}
-                                onToggleFavorite={() => toggleFavorite && toggleFavorite(getSongId(selectedDetailSong))}
-                                mirrorData={mirrors[getSongId(selectedDetailSong)]}
-                                onToggleMirror={(section) => toggleMirror && toggleMirror(getSongId(selectedDetailSong), section)}
-                                personalMemo={personalMemos && personalMemos[getSongId(selectedDetailSong)]}
-                                onSavePersonalMemo={(memo) => onSavePersonalMemo && onSavePersonalMemo(getSongId(selectedDetailSong), memo)}
-                                onCancel={() => setSelectedDetailSong(null)}
-                                showMemo={true}
-                            />
-                        )}
                     </div>
                 );
             }
@@ -2711,7 +2550,7 @@
                                     <div className="flex-grow">
                                     {song ? (
                                         <div onClick={() => openSongModal(idx)} className="border-2 border-black rounded-xl p-2 flex items-center bg-white cursor-pointer hover:bg-gray-50 active:translate-y-0.5 transition-transform gap-3">
-                                            <JacketImage 
+                                            <JacketImage lang={lang} 
                                                 src={song.jacket} 
                                                 className="w-12 h-12 border-2 rounded object-cover flex-shrink-0" 
                                                 style={{ borderColor: getBorderColor(song.difficult) }}
@@ -2883,7 +2722,7 @@
                                             return (
                                                 <div key={i} onClick={() => !isSelected && selectSong(id)} className={`flex items-center gap-3 border-2 rounded-xl p-2 transition-all ${isSelected ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-black bg-white cursor-pointer active:translate-y-0.5'}`}>
                                                     <div className="flex-shrink-0 w-12 h-12 relative overflow-hidden rounded-md">
-                                                        <JacketImage 
+                                                        <JacketImage lang={lang} 
                                                             src={s.jacket} 
                                                             className="border-2 w-full h-full object-cover rounded-md" 
                                                             style={{ borderColor: getBorderColor(s.difficult) }}
@@ -3092,7 +2931,7 @@
                                     <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 border-4 border-black bg-yellow-100">
                                         <i className="ph-bold ph-floppy-disk text-3xl text-yellow-600"></i>
                                     </div>
-                                    <h2 className="text-xl font-black mb-2">確認</h2>
+                                    <h2 className="text-xl font-black mb-2">{t(lang,'modal_draft_title')}</h2>
                                     <p className="text-sm font-bold text-gray-600 leading-relaxed px-2">
                                         {t(lang,'modal_draft_body')}
                                     </p>
@@ -3184,8 +3023,7 @@
                             </div>
                             <h2 className="text-lg font-black mb-3 leading-snug">{t(lang,"inapp_title")}</h2>
                             <p className="text-sm font-bold text-gray-600 leading-relaxed">
-                                アプリ内ブラウザではGoogleログインが使えません。<br/><br/>
-                                下のボタンでURLをコピーして、<span className="font-black text-black">Safari / Chrome</span> などのブラウザに貼り付けて開いてください。
+                                {t(lang,"inapp_body")}
                             </p>
                         </div>
 
@@ -3252,7 +3090,6 @@
             const [selectedVersions, setSelectedVersions] = useState([]);
             const [sortOrder, setSortOrder] = useState("desc");
             const [rankSection, setRankSection] = useState("section1"); 
-            const [isFilterOpen, setIsFilterOpen] = useState(false);
             const [currentPage, setCurrentPage] = useState("main"); 
             const [termsTab, setTermsTab] = useState("terms"); 
             const [isNavOpen, setIsNavOpen] = useState(false);
@@ -3314,15 +3151,17 @@
                 return /Twitter for (iPhone|Android|iPad)/i.test(ua) || /Line\//i.test(ua);
             };
 
+            // 読み込み中にユーザーが言語を切り替えた場合、保存値で上書きしないためのフラグ
+            const langChangedByUserRef = useRef(false);
+
             const saveLang = async (newLang) => {
+                langChangedByUserRef.current = true;
                 setLang(newLang);
                 if (!user || user.isAnonymous || !firebase) return;
-                const { doc, setDoc, getDoc } = window.FirebaseSDK;
+                const { doc, setDoc } = window.FirebaseSDK;
                 const ref = doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'userData', 'main');
                 try {
-                    const snap = await getDoc(ref);
-                    const existing = snap.exists() ? snap.data() : {};
-                    await setDoc(ref, { ...existing, lang: newLang });
+                    await setDoc(ref, { lang: newLang }, { merge: true });
                 } catch(e) { console.error("lang save error", e); }
             };
 
@@ -3413,6 +3252,19 @@
 
                 const fetchUserData = async () => {
                     const { doc, getDoc } = window.FirebaseSDK;
+                    langChangedByUserRef.current = false;
+                    try {
+                        const langSnap = await getDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'userData', 'main'));
+                        if (langSnap.exists()) {
+                            const savedLang = langSnap.data().lang;
+                            if (TRANSLATIONS[savedLang] && !langChangedByUserRef.current) {
+                                setLang(savedLang);
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Firestore Lang Fetch Error:", err);
+                    }
+
                     try {
                         const profileSnap = await getDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'profile', 'data'));
                         if (profileSnap.exists()) {
@@ -3445,7 +3297,6 @@
                 setSelectedBplSections([]);
                 setBpmMin("");
                 setBpmMax("");
-                setIsFilterOpen(false);
                 setIsFilterModalOpen(false);
                 setPageIndex(1);
                 setShowOnlyFavorites(false);
@@ -3477,7 +3328,7 @@
                     await signInWithPopup(firebase.auth, provider);
                 } catch (error) {
                     console.error("Google Login Error:", error);
-                    setAuthError("ログインに失敗しました.");
+                    setAuthError(t(lang,"auth_login_error"));
                     setIsAuthLoading(false);
                 }
             };
@@ -3550,7 +3401,7 @@
                     });
                 } catch (err) {
                     console.error("Firestore Setlist Write Error:", err);
-                    setSaveError("保存に失敗しました。時間をおいて再度お試しください。");
+                    setSaveError(t(lang,"auth_save_error"));
                 }
             };
 
@@ -3565,7 +3416,7 @@
                     });
                 } catch (err) {
                     console.error("Firestore Setlist Delete Error:", err);
-                    setSaveError("保存に失敗しました。時間をおいて再度お試しください。");
+                    setSaveError(t(lang,"auth_save_error"));
                 }
             };
 
@@ -3639,7 +3490,6 @@
             const generateRandomSongs = () => {
                 setIsGenerating(true);
                 setHasGeneratedRandom(true);
-                setIsFilterOpen(false);
                 setRandomVisibleCount(0);
                 setIsRandomComplete(false);
                 const filtered = songs.filter(s => {
@@ -3868,7 +3718,7 @@
                             <div className="export-jackets-row">
                                 {exportData.songs.map((song, i) => (
                                     <div key={`exp-jack-${i}`} className="export-jacket-box" style={{ borderColor: getBorderColor(song.difficult) }}>
-                                        <JacketImage 
+                                        <JacketImage lang={lang} 
                                             className="export-jacket-img" 
                                             src={song.jacket} 
                                             textClassName="text-[13px]"
@@ -3903,7 +3753,7 @@
                             <div className="flex flex-col items-center gap-2">
                                 <i className="ph-bold ph-warning-circle text-2xl"></i>
                                 <p>{authError}</p>
-                                <span className="text-[10px] opacity-70 mt-1">[タップで閉じる]</span>
+                                <span className="text-[10px] opacity-70 mt-1">{t(lang,'common_tap_to_close')}</span>
                             </div>
                         </div>
                     )}
@@ -3913,7 +3763,7 @@
                             <div className="flex flex-col items-center gap-2">
                                 <i className="ph-bold ph-cloud-slash text-2xl"></i>
                                 <p>{saveError}</p>
-                                <span className="text-[10px] opacity-70 mt-1">[タップで閉じる]</span>
+                                <span className="text-[10px] opacity-70 mt-1">{t(lang,'common_tap_to_close')}</span>
                             </div>
                         </div>
                     )}
@@ -3965,7 +3815,7 @@
                                     </button>
                                     <div className="border-t-2 border-gray-100 my-1"></div>
                                     <button onClick={() => { setIsNavOpen(false); setIsLangModalOpen(true); }} className="dropdown-item hover:bg-gray-50">
-                                        <i className="ph-bold ph-globe text-base"></i> {lang === 'ja' ? '日本語' : '한국어'}
+                                        <i className="ph-bold ph-globe text-base"></i> {t(lang,`lang_${lang}`)}
                                     </button>
                                     {user && !user.isAnonymous && (
                                         <button onClick={() => setIsLogoutModalOpen(true)} className="dropdown-item hover:bg-red-50 text-red-600">
@@ -4039,7 +3889,7 @@
                             </div>
                         )}
 
-                        <div className={["ranking","random"].includes(currentPage) ? "" : "space-y-6"}>
+                        <div className={["ranking","random","newsongs"].includes(currentPage) ? "" : "space-y-6"}>
                             {currentPage === "ranking" && (
                                 <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-2">
                                     <div className="flex items-center gap-2 mb-2">
@@ -4117,6 +3967,15 @@
                                                 </button>
                                             </div>
                                         </div>
+                                </div>
+                            )}
+
+                            {currentPage === "newsongs" && (
+                                <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <i className="ph-fill ph-sparkle text-3xl text-[#a5b4fc]"></i>
+                                        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'newsongs_title')}</h2>
+                                    </div>
                                 </div>
                             )}
 
@@ -4921,10 +4780,10 @@
                 let songTitle, songForHistory;
                 if (myIntroOutro) {
                     songForHistory = songMap[introOutroSongId];
-                    songTitle = songForHistory ? songForHistory.title : "（設定曲）";
+                    songTitle = songForHistory ? songForHistory.title : t(lang,"sim_history_setting_song");
                 } else if (mySelect) {
                     songForHistory = songMap[currentSongId];
-                    songTitle = songForHistory ? songForHistory.title : "（未選択）";
+                    songTitle = songForHistory ? songForHistory.title : t(lang,"sim_history_unselected");
                 } else {
                     songForHistory = null; songTitle = t(lang,"sim_opp_song_history");
                 }
@@ -5037,7 +4896,7 @@
                                 {/* +0★は非表示 */}
                                 {h.myAdd > 0 && <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.myAdd}★</span>}
                             </div>
-                            <div style={{color:'#dddddd',fontSize:'8px',fontWeight:700}}>計 {h.myTotal}★</div>
+                            <div style={{color:'#dddddd',fontSize:'8px',fontWeight:700}}>{t(lang,'sim_total')} {h.myTotal}★</div>
                         </div>
                         {/* 結果バッジ */}
                         <div style={{width:'26px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',borderLeft:'1px solid #686868',borderRight:'1px solid #686868',background:'#484848'}}>
@@ -5050,7 +4909,7 @@
                                 {h.oppAdd > 0 && <span style={{color:'#fbbf24',fontSize:'11px',fontWeight:900,lineHeight:1}}>+{h.oppAdd}★</span>}
                                 {h.oppGear > 0 && <span style={{background:'#dc2626',color:'#fff',fontSize:'7px',fontWeight:900,padding:'1px 3px',borderRadius:'3px'}}>EG{h.oppGear}</span>}
                             </div>
-                            <div style={{color:'#dddddd',fontSize:'8px',fontWeight:700,textAlign:'right'}}>計 {h.oppTotal}★</div>
+                            <div style={{color:'#dddddd',fontSize:'8px',fontWeight:700,textAlign:'right'}}>{t(lang,'sim_total')} {h.oppTotal}★</div>
                         </div>
                     </div>
                 );
@@ -5142,7 +5001,7 @@
                                             return (
                                                 <button key={id} onClick={() => setIntroOutroSongId(id)} style={{aspectRatio:'1/1'}} className="relative">
                                                     <div style={{width:'100%',height:'100%',borderRadius:'8px',overflow:'hidden',border: sel ? '3px solid #6366f1' : '2px solid #000',boxShadow: sel ? '2px 2px 0px #6366f1' : '2px 2px 0px #000',position:'relative'}}>
-                                                        <JacketImage src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover'}} textClassName="text-[7px]" />
+                                                        <JacketImage lang={lang} src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover'}} textClassName="text-[7px]" />
                                                         {sel && <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'20px'}}></i></div>}
                                                     </div>
                                                     <div style={{fontSize:'7px',fontWeight:900,textAlign:'center',marginTop:'2px',color:'#222',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{song.title.length > 8 ? song.title.slice(0,8)+'…' : song.title}</div>
@@ -5234,7 +5093,7 @@
                                             return (
                                                 <button key={id} onClick={() => !used && setCurrentSongId(picked ? "" : id)} disabled={used} style={{aspectRatio:'1/1'}} className="relative">
                                                     <div style={{width:'100%',height:'100%',borderRadius:'8px',overflow:'hidden',border: picked ? '3px solid #6366f1' : used ? '2px solid #ccc' : '2px solid #000',boxShadow: picked ? '2px 2px 0px #6366f1' : used ? 'none' : '2px 2px 0px #000',opacity: used ? 0.35 : 1,cursor: used ? 'not-allowed' : 'pointer',position:'relative',transition:'all 0.1s'}}>
-                                                        <JacketImage src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover',filter: used ? 'grayscale(100%)' : 'none'}} textClassName="text-[7px]" />
+                                                        <JacketImage lang={lang} src={song.jacket} style={{width:'100%',height:'100%',objectFit:'cover',filter: used ? 'grayscale(100%)' : 'none'}} textClassName="text-[7px]" />
                                                         {picked && <div style={{position:'absolute',inset:0,background:'rgba(99,102,241,0.25)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-fill ph-check-circle" style={{color:'#fff',fontSize:'18px'}}></i></div>}
                                                         {used && <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.3)',display:'flex',alignItems:'center',justifyContent:'center'}}><i className="ph-bold ph-lock" style={{color:'#fff',fontSize:'14px'}}></i></div>}
                                                     </div>
@@ -5398,7 +5257,7 @@
                         {/* ボタン群 */}
                         <div className="flex gap-2">
                             <button onClick={handleBackToLastTurn} className="flex-none px-3 py-3 bg-white border-2 border-black rounded-xl font-black text-xs shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1 text-black">
-                                <i className="ph-bold ph-arrow-counter-clockwise"></i> 戻る
+                                <i className="ph-bold ph-arrow-counter-clockwise"></i> {t(lang,'sim_back_to_last')}
                             </button>
                             <button onClick={() => {
                                 setTurn(1); setMyStars(0); setOpponentStars(0);
