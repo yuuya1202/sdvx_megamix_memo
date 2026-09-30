@@ -907,12 +907,11 @@
                 "song_my_memo": `自分用メモ`,
                 "song_favorite": `お気に入り`,
                 "song_already_selected": `選択済`,
-                "main_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
                 "main_newsongs_banner": `新曲はこちらから`,
                 "newsongs_title": `新曲（9/3）追加分`,
                 "main_search_placeholder": `曲名・読みで探す...`,
                 "ranking_title": `チェイン数ランキング`,
-                "ranking_notice": `📋 現在 Lv17~18 まで対応済み。19・20 は順次対応予定です。`,
+                "ranking_notice": `📋 Lv20はチェイン数調査中のためランクインしていません。予めご了承ください。`,
                 "ranking_section1": `第1区間`,
                 "ranking_section2": `第2区間`,
                 "ranking_desc": `多い順`,
@@ -1106,12 +1105,11 @@
                 "song_my_memo": `개인 메모`,
                 "song_favorite": `애정곡`,
                 "song_already_selected": `선택됨`,
-                "main_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
                 "main_newsongs_banner": `신곡은 여기에서`,
                 "newsongs_title": `신곡 (9/3) 추가분`,
                 "main_search_placeholder": `곡명・읽는 법으로 검색...`,
                 "ranking_title": `체인 수 랭킹`,
-                "ranking_notice": `📋 현재 Lv17~18까지 지원 중입니다. 19・20은 순차적으로 지원할 예정입니다.`,
+                "ranking_notice": `📋 Lv20은 체인 수 조사 중이므로 랭킹에 포함되어 있지 않습니다. 양해 부탁드립니다.`,
                 "ranking_section1": `제1구간`,
                 "ranking_section2": `제2구간`,
                 "ranking_desc": `많은 순`,
@@ -4033,17 +4031,6 @@
                             MEGAMIX<span className="text-[#52b788]">.</span>MEMO
                         </h1>
 
-                        {/* お知らせバー（メインページのみ） */}
-                        {currentPage === "main" && (
-                            <div className="flex justify-center mb-2">
-                                <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
-                                    <span className="text-[11px] font-black text-white/80 tracking-wide">
-                                        {t(lang,'main_notice')}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-
                         {/* 新曲バナー（メインページのみ） */}
                         {currentPage === "main" && (
                             <div className="flex justify-center mb-4">
@@ -4068,8 +4055,8 @@
                                         <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'ranking_title')}</h2>
                                     </div>
                                     <div className="flex justify-center mb-2">
-                                        <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
-                                            <span className="text-[11px] font-black text-white/80 tracking-wide">
+                                        <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl px-4 py-1.5">
+                                            <span className="text-[11px] font-black text-white/80 tracking-wide text-center">
                                                 {t(lang,'ranking_notice')}
                                             </span>
                                         </div>
