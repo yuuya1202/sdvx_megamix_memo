@@ -900,7 +900,6 @@
                 "song_end_pos": `終了位置`,
                 "song_chain": `チェイン数`,
                 "song_chart_view": `サイトで確認`,
-                "chart_embed_unsupported": `この譜面は埋め込み表示に対応していません。\n「サイトで確認」から開いてください。`,
                 "song_chart_none": `譜面なし`,
                 "song_video_view": `動画で確認`,
                 "song_video_none": `動画なし`,
@@ -1099,7 +1098,6 @@
                 "song_end_pos": `종료 위치`,
                 "song_chain": `체인 수`,
                 "song_chart_view": `사이트에서 확인`,
-                "chart_embed_unsupported": `이 채보는 임베드 표시를 지원하지 않습니다.\n「사이트에서 확인」에서 열어 주세요.`,
                 "song_chart_none": `악보 없음`,
                 "song_video_view": `영상으로 확인`,
                 "song_video_none": `영상 없음`,
@@ -1326,13 +1324,6 @@
         // 譜面倉庫の新ビューア形式（/_/viewer/ 配下）は、埋め込み時に譜面描画用の
         // プログラムがサーバーから返されず表示できないため、埋め込み対象外とする
         const isEmbeddableChart = (url) => !!url && !String(url).includes('/_/viewer/');
-
-        const ChartEmbedNotice = ({ lang = 'ja', className = '' }) => (
-            <div className={`rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-5 flex items-center gap-3 text-gray-500 ${className}`}>
-                <i className="ph-bold ph-info text-xl shrink-0"></i>
-                <p className="text-[11px] font-black leading-relaxed whitespace-pre-line">{t(lang,'chart_embed_unsupported')}</p>
-            </div>
-        );
 
         // ===== 並び替え =====
         const SORT_OPTIONS = ["level_asc", "level_desc", "kana_asc", "kana_desc"];
@@ -1641,9 +1632,6 @@
                                     </div>
 
                                     {/* 譜面パネル（仮実装：常に表示）。右上のボタンでパネル内だけ拡大縮小 */}
-                                    {song.site_link && !isEmbeddableChart(song.site_link) && (
-                                        <ChartEmbedNotice lang={lang} />
-                                    )}
                                     {isEmbeddableChart(song.site_link) && (
                                         <div className="relative">
                                             <div ref={chartScrollRef} className="rounded-xl border-2 border-black" style={{height: `${CHART_PANEL_H}px`, overflowX: 'auto', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
@@ -2286,9 +2274,6 @@
                                     </div>
                                 </div>
 
-                                {song.site_link && isOpen && !isEmbeddableChart(song.site_link) && (
-                                    <ChartEmbedNotice lang={lang} className="mb-4" />
-                                )}
                                 {isEmbeddableChart(song.site_link) && isOpen && (
                                     <div className="mb-4 rounded-xl border-2 border-black" style={{overflowX: 'auto', overflowY: 'scroll', scrollbarWidth: 'thin', scrollbarColor: '#888 #222', }} onClick={e => e.stopPropagation()}>
                                         <div style={{width: '1888px', height: '560px', position: 'relative', flexShrink: 0, overflow: 'hidden'}}>
