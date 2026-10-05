@@ -313,6 +313,14 @@
             border-radius: 16px;
             margin-bottom: 10px;
         }
+        .ranking-row.clickable {
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .ranking-row.clickable:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
+        }
         .rank-number {
             width: 64px; 
             font-size: 20px;
@@ -4485,7 +4493,7 @@
                                             }
                                             const isTopThree = currentRank <= 3;
                                             return (
-                                                <div key={idx} className="ranking-row">
+                                                <div key={idx} className="ranking-row clickable" onClick={() => setSelectedGridSong(song)}>
                                                     <div className={`rank-number ${isTopThree ? `rank-${currentRank}` : ''}`}>#{currentRank}</div>
                                                     <div className="flex-grow min-w-0 px-2">
                                                         <p className="text-sm font-black leading-tight break-words">{song.title}</p>
