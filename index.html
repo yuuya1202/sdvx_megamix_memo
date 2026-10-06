@@ -461,6 +461,30 @@
             text-align: center;
             animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        /* --- BPM変化まとめ：パスワードモーダル --- */
+        .unlock-pin {
+            width: 52px; height: 60px;
+            border: 3px solid #000; border-radius: 12px; background: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: #000; box-shadow: 3px 3px 0 #000;
+            transition: border-color .15s, background .15s;
+        }
+        .unlock-pin.cur { border-color: #52b788; }
+        .unlock-pin.err { border-color: #ef4444; background: #fef2f2; }
+        .unlock-pin.ok  { border-color: #52b788; background: #d8f3dc; }
+        .unlock-key {
+            height: 52px; border: 2px solid #000; border-radius: 14px; background: #fff;
+            color: #000; font-size: 22px; font-weight: 900; box-shadow: 3px 3px 0 #000;
+            display: flex; align-items: center; justify-content: center;
+            user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+        .unlock-key:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+        .unlock-key.sub { font-size: 12px; background: #f3f4f6; }
+        @keyframes unlockShake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-8px); } 40%,80% { transform: translateX(8px); } }
+        .unlock-shake { animation: unlockShake .4s; }
+        @keyframes unlockPop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .unlock-pop { animation: unlockPop .4s; }
+
         @keyframes modalPop {
             from { transform: scale(0.8); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
@@ -872,6 +896,19 @@
                 "common_confirm": `確認`,
                 "common_reset": `リセット`,
                 "common_filter": `絞り込み`,
+                "bpm_title": `BPM変化まとめ`,
+                "bpm_section_intro": `イントロ`,
+                "bpm_section_outro": `アウトロ`,
+                "bpm_status_unchecked": `未確認`,
+                "bpm_status_yes": `変化あり`,
+                "bpm_status_no": `変化なし`,
+                "bpm_change_label": `この区間のBPM変化`,
+                "bpm_pos_hint": `小節数を登録してください（任意）`,
+                "bpm_unlock_title": `パスワードを入力`,
+                "bpm_unlock_desc": `4桁の数字を入力してください`,
+                "bpm_unlock_error": `パスワードが違います`,
+                "bpm_unlock_success": `BPM変化まとめを解放しました`,
+                "bpm_unlock_backspace": `1文字消す`,
                 "sort_btn": `並び替え`,
                 "chart_zoom_in": `拡大`,
                 "chart_zoom_out": `縮小`,
@@ -1070,6 +1107,19 @@
                 "common_confirm": `확인`,
                 "common_reset": `초기화`,
                 "common_filter": `필터`,
+                "bpm_title": `BPM 변화 정리`,
+                "bpm_section_intro": `인트로`,
+                "bpm_section_outro": `아웃트로`,
+                "bpm_status_unchecked": `미확인`,
+                "bpm_status_yes": `변화 있음`,
+                "bpm_status_no": `변화 없음`,
+                "bpm_change_label": `이 구간의 BPM 변화`,
+                "bpm_pos_hint": `마디 수를 등록해 주세요 (선택)`,
+                "bpm_unlock_title": `비밀번호 입력`,
+                "bpm_unlock_desc": `4자리 숫자를 입력해 주세요`,
+                "bpm_unlock_error": `비밀번호가 올바르지 않습니다`,
+                "bpm_unlock_success": `BPM 변화 정리를 해제했습니다`,
+                "bpm_unlock_backspace": `한 글자 지우기`,
                 "sort_btn": `정렬`,
                 "chart_zoom_in": `확대`,
                 "chart_zoom_out": `축소`,
@@ -1332,6 +1382,282 @@
         // 譜面倉庫の新ビューア形式（/_/viewer/ 配下）は、埋め込み時に譜面描画用の
         // プログラムがサーバーから返されず表示できないため、埋め込み対象外とする
         const isEmbeddableChart = (url) => !!url && !String(url).includes('/_/viewer/');
+
+        // ===== BPM変化まとめ（隠し機能） =====
+        const BPM_UNLOCK_WORD = "AtoK";   // メインページ検索欄の合言葉（大文字小文字を区別）
+        const BPM_UNLOCK_PW = "1221";     // 4桁パスワード
+        const BPM_SECTIONS = ["intro", "s1", "s2", "outro"];
+        const BPM_STATUSES = ["unchecked", "yes", "no"];
+        const bpmSectionLabel = (lang, sec) => ({
+            intro: t(lang,'bpm_section_intro'),
+            s1: t(lang,'song_section1'),
+            s2: t(lang,'song_section2'),
+            outro: t(lang,'bpm_section_outro'),
+        })[sec];
+        // BPM表記が範囲（例：100-200）で、前後の数値が異なれば確認候補
+        const isBpmVariable = (bpm) => {
+            const m = String(bpm || "").match(/(\d+(?:\.\d+)?)\s*[-‐‑‒–—－~～〜]\s*(\d+(?:\.\d+)?)/);
+            return !!m && parseFloat(m[1]) !== parseFloat(m[2]);
+        };
+        const getBpmStatus = (entry, sec) => {
+            const v = entry && entry[sec];
+            return v === "yes" || v === "no" ? v : "unchecked";
+        };
+        const BPM_STATUS_STYLE = {
+            unchecked: { bg: '#e5e7eb', fg: '#4b5563', icon: 'ph-question' },
+            yes:       { bg: '#3b82f6', fg: '#ffffff', icon: 'ph-circle' },
+            no:        { bg: '#ef4444', fg: '#ffffff', icon: 'ph-x' },
+        };
+
+        const BpmStatusChip = ({ status, lang = 'ja', compact = false }) => {
+            const st = BPM_STATUS_STYLE[status];
+            if (compact) {
+                return (
+                    <div style={{position:'absolute',top:'3px',left:'3px',width:'20px',height:'20px',borderRadius:'9999px',background:st.bg,color:st.fg,border:'1.5px solid #000',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'1px 1px 0px #000'}}>
+                        <i className={`ph-bold ${st.icon}`} style={{fontSize:'11px'}}></i>
+                    </div>
+                );
+            }
+            return (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-black border-2 border-black whitespace-nowrap" style={{background:st.bg,color:st.fg,boxShadow:'1px 1px 0px #000'}}>
+                    <i className={`ph-bold ${st.icon} text-xs`}></i>{t(lang,`bpm_status_${status}`)}
+                </span>
+            );
+        };
+
+        // パスワード入力モーダル（画面内テンキー。スマホのキーボードは使わない）
+        const BpmUnlockModal = ({ isOpen, onSuccess, onCancel, lang = 'ja' }) => {
+            const [pw, setPw] = useState("");
+            const [state, setState] = useState("input"); // input | err | ok
+            const [anim, setAnim] = useState(0);         // 演出の再生用カウンタ
+            const timerRef = useRef(null);
+
+            useEffect(() => {
+                if (isOpen) { setPw(""); setState("input"); }
+                return () => clearTimeout(timerRef.current);
+            }, [isOpen]);
+
+            const press = (k) => {
+                if (state !== "input") return;
+                if (k === "back") { setPw(p => p.slice(0, -1)); return; }
+                if (pw.length >= 4) return;
+                const next = pw + k;
+                setPw(next);
+                if (next.length === 4) {
+                    timerRef.current = setTimeout(() => {
+                        setAnim(a => a + 1);
+                        if (next === BPM_UNLOCK_PW) {
+                            setState("ok");
+                            timerRef.current = setTimeout(onSuccess, 800);
+                        } else {
+                            setState("err");
+                            timerRef.current = setTimeout(() => { setPw(""); setState("input"); }, 600);
+                        }
+                    }, 150);
+                }
+            };
+
+            // PCではキーボードの数字キー・BackSpace・Escでも操作できる
+            useEffect(() => {
+                if (!isOpen) return;
+                const onKey = (e) => {
+                    if (/^[0-9]$/.test(e.key)) { e.preventDefault(); press(e.key); }
+                    else if (e.key === "Backspace") { e.preventDefault(); press("back"); }
+                    else if (e.key === "Escape") { onCancel(); }
+                };
+                window.addEventListener("keydown", onKey);
+                return () => window.removeEventListener("keydown", onKey);
+            });
+
+            if (!isOpen) return null;
+            const isOk = state === "ok";
+            const msgColor = state === "err" ? '#ef4444' : isOk ? '#2d6a4f' : '#6b7280';
+            const msgText = state === "err" ? t(lang,'bpm_unlock_error') : isOk ? t(lang,'bpm_unlock_success') : t(lang,'bpm_unlock_desc');
+
+            return (
+                <div className="modal-overlay" onClick={onCancel}>
+                    <div className="modal-content !p-0 !max-w-[320px] overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="text-center px-5 pt-6 pb-5" style={{ background: isOk ? '#2d6a4f' : '#132a13', transition: 'background .3s' }}>
+                            <div key={`lock-${anim}`} className={`w-16 h-16 mx-auto mb-3 rounded-full bg-white border-[3px] border-black flex items-center justify-center shadow-[3px_3px_0_#000] ${isOk ? 'unlock-pop' : ''}`}>
+                                <i className={`ph-bold ${isOk ? 'ph-lock-open' : 'ph-lock'} text-3xl`} style={{ color: isOk ? '#2d6a4f' : '#000' }}></i>
+                            </div>
+                            <div className="inline-block text-[10px] font-black tracking-[0.2em] text-[#d8f3dc] border border-[#d8f3dc]/40 rounded-full px-3 py-0.5 mb-1.5">SECRET MODE</div>
+                            <h2 className="text-xl font-black italic text-white">{isOk ? 'UNLOCKED' : t(lang,'bpm_unlock_title')}</h2>
+                        </div>
+                        <div className="px-5 pt-5 pb-6">
+                            <div key={`pins-${anim}`} className={`flex justify-center gap-2.5 ${state === 'err' ? 'unlock-shake' : ''}`}>
+                                {[0,1,2,3].map(i => (
+                                    <div key={i} className={`unlock-pin ${state === 'err' ? 'err' : isOk ? 'ok' : (i === pw.length ? 'cur' : '')}`}>
+                                        {i < pw.length ? '●' : ''}
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-center text-xs font-black h-4 mt-3 mb-4" style={{ color: msgColor }}>{msgText}</p>
+                            <div className="grid grid-cols-3 gap-2.5">
+                                {["1","2","3","4","5","6","7","8","9"].map(k => (
+                                    <button key={k} className="unlock-key" onClick={() => press(k)}>{k}</button>
+                                ))}
+                                <button className="unlock-key sub" onClick={onCancel}>{t(lang,'common_cancel')}</button>
+                                <button className="unlock-key" onClick={() => press("0")}>0</button>
+                                <button className="unlock-key sub" onClick={() => press("back")} aria-label={t(lang,'bpm_unlock_backspace')}>
+                                    <i className="ph-bold ph-backspace text-2xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // BPM変化まとめ専用の曲詳細モーダル（開いたセクションの情報だけを表示）
+        const BpmSectionModal = ({ song, section, entry, onChangeStatus, onChangePos, onClose, lang = 'ja' }) => {
+            const [videoUrl, setVideoUrl] = useState("");
+            const isManual = section === "intro" || section === "outro";
+            const startKey = `${section}Start`;
+            const endKey = `${section}End`;
+            const [startVal, setStartVal] = useState("");
+            const [endVal, setEndVal] = useState("");
+            useEffect(() => {
+                setStartVal(entry && entry[startKey] != null ? String(entry[startKey]) : "");
+                setEndVal(entry && entry[endKey] != null ? String(entry[endKey]) : "");
+            }, [song, section]);
+            if (!song) return null;
+
+            const masterStart = section === "s1" ? song.start_pos : song.start_pos2;
+            const masterEnd = section === "s1" ? song.end_pos : song.end_pos2;
+            const status = getBpmStatus(entry, section);
+            const commit = (key, val) => {
+                const cleaned = String(val).replace(/\D/g, "").slice(0, 4);
+                onChangePos(key, cleaned === "" ? null : Number(cleaned));
+            };
+            const posInputClass = "w-full text-center stat-value bg-transparent focus:outline-none placeholder:text-gray-300";
+
+            return (
+                <>
+                    <div className="modal-overlay" onClick={onClose}>
+                        <div className="modal-content !max-w-[380px] !text-left" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between items-start mb-4">
+                                <h2 className="text-xl font-black leading-tight pr-4">{song.title}</h2>
+                                <button onClick={onClose} className="text-gray-400 hover:text-black">
+                                    <i className="ph-bold ph-x text-2xl"></i>
+                                </button>
+                            </div>
+                            <div className="max-h-[70vh] overflow-y-auto pr-2 pb-8 custom-scrollbar">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-black flex-shrink-0">
+                                        <JacketImage lang={lang} src={song.jacket} className="w-full h-full object-cover" textClassName="text-[11px]" />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-[10px] font-black">Lv</span>
+                                            <span className="text-lg font-black italic">{formatLevel(song.level)}</span>
+                                            <DiffBadge diff={song.difficult} />
+                                        </div>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-[10px] font-black">BPM</span>
+                                            <span className="text-lg font-black">{song.bpm || "???"}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <div className="mb-2">
+                                            <span className="section-label">{bpmSectionLabel(lang, section)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="stat-box">
+                                                <p className="stat-label">{t(lang,'song_start_pos')}</p>
+                                                {isManual ? (
+                                                    <input type="text" inputMode="numeric" className={posInputClass}
+                                                        value={startVal}
+                                                        onChange={e => setStartVal(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                                                        onBlur={() => commit(startKey, startVal)} />
+                                                ) : (
+                                                    <p className="stat-value">{masterStart || t(lang,'common_investigating')}</p>
+                                                )}
+                                            </div>
+                                            <div className="stat-box">
+                                                <p className="stat-label">{t(lang,'song_end_pos')}</p>
+                                                {isManual ? (
+                                                    <input type="text" inputMode="numeric" className={posInputClass}
+                                                        value={endVal}
+                                                        onChange={e => setEndVal(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                                                        onBlur={() => commit(endKey, endVal)} />
+                                                ) : (
+                                                    <p className="stat-value">{masterEnd || t(lang,'common_investigating')}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {isManual && (
+                                            <p className="text-[10px] font-bold text-gray-500 mt-2">{t(lang,'bpm_pos_hint')}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase mb-2">{t(lang,'bpm_change_label')}</p>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {BPM_STATUSES.map(st => {
+                                                const active = status === st;
+                                                const style = BPM_STATUS_STYLE[st];
+                                                return (
+                                                    <button key={st} onClick={() => onChangeStatus(st)}
+                                                        className="flex flex-col items-center justify-center gap-1 py-3 rounded-xl border-2 border-black font-black text-xs transition-all"
+                                                        style={active
+                                                            ? { background: style.bg, color: style.fg, boxShadow: '1px 1px 0px #000', transform: 'translate(2px, 2px)' }
+                                                            : { background: '#fff', color: '#000', boxShadow: '3px 3px 0px #000' }}>
+                                                        <i className={`ph-bold ${style.icon} text-lg`}></i>
+                                                        {t(lang,`bpm_status_${st}`)}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {song.site_link ? (
+                                            <button className="link-button chart" onClick={() => window.open(song.site_link, '_blank')}>
+                                                <i className="ph-bold ph-file-text text-lg"></i>{t(lang,"song_chart_view")}
+                                            </button>
+                                        ) : (
+                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-file-text text-lg"></i>{t(lang,"song_chart_none")}</div>
+                                        )}
+                                        {song.movie_link ? (
+                                            <button className="link-button video" onClick={() => setVideoUrl(song.movie_link)}>
+                                                <i className="ph-bold ph-youtube-logo text-lg"></i>{t(lang,"song_video_view")}
+                                            </button>
+                                        ) : (
+                                            <div className="link-button opacity-30 grayscale"><i className="ph-bold ph-youtube-logo text-lg"></i>{t(lang,"song_video_none")}</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {videoUrl && (
+                        <div className="modal-overlay" onClick={() => setVideoUrl("")}>
+                            <div className="modal-content !p-3 !max-w-[400px]" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-black">{t(lang,"song_video_modal_title")}</span>
+                                    <button onClick={() => setVideoUrl("")} className="text-gray-400 hover:text-black">
+                                        <i className="ph-bold ph-x text-xl"></i>
+                                    </button>
+                                </div>
+                                <div className="relative w-full" style={{paddingTop: videoUrl.includes('youtube.com/shorts/') ? '177.78%' : '56.25%'}}>
+                                    <iframe
+                                        src={getYoutubeEmbedUrl(videoUrl)}
+                                        className="absolute inset-0 w-full h-full rounded-xl border-4 border-black"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        };
 
         // ===== 並び替え =====
         const SORT_OPTIONS = ["level_asc", "level_desc", "kana_asc", "kana_desc"];
@@ -3271,6 +3597,17 @@
             const [selectedVersions, setSelectedVersions] = useState([]);
             const [sortOrder, setSortOrder] = useState("desc");
             const [listSortKey, setListSortKey] = useState("level_asc"); // メイン・新曲・BPLの並び順
+            // BPM変化まとめ（隠し機能）
+            const [bpmUnlocked, setBpmUnlocked] = useState(false);
+            const [bpmEntries, setBpmEntries] = useState({}); // { [songId]: { intro, s1, s2, outro, introStart, introEnd, outroStart, outroEnd } }
+            const [isBpmUnlockOpen, setIsBpmUnlockOpen] = useState(false);
+            const [bpmSection, setBpmSection] = useState("intro");
+            const [bpmStatusFilter, setBpmStatusFilter] = useState("all");
+            const [bpmViewMode, setBpmViewMode] = useState("grid");
+            const [selectedBpmSong, setSelectedBpmSong] = useState(null);
+            const [bpmSearch, setBpmSearch] = useState("");
+            const bpmStateRef = useRef({ unlocked: false, entries: {} });
+            bpmStateRef.current = { unlocked: bpmUnlocked, entries: bpmEntries };
             const [rankSection, setRankSection] = useState("section1"); 
             const [currentPage, setCurrentPage] = useState("main"); 
             const [termsTab, setTermsTab] = useState("terms"); 
@@ -3437,11 +3774,24 @@
                     langChangedByUserRef.current = false;
                     try {
                         const langSnap = await getDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'userData', 'main'));
-                        if (langSnap.exists()) {
-                            const savedLang = langSnap.data().lang;
-                            if (TRANSLATIONS[savedLang] && !langChangedByUserRef.current) {
-                                setLang(savedLang);
-                            }
+                        const mainData = langSnap.exists() ? langSnap.data() : {};
+                        const savedLang = mainData.lang;
+                        if (TRANSLATIONS[savedLang] && !langChangedByUserRef.current) {
+                            setLang(savedLang);
+                        }
+                        // BPM変化まとめ：ゲスト中に解放・登録した内容があればアカウント側へ引き継ぐ
+                        const guest = bpmStateRef.current;
+                        const savedEntries = mainData.bpmEntries || {};
+                        const mergedEntries = { ...guest.entries, ...savedEntries };
+                        const unlocked = !!mainData.bpmUnlocked || guest.unlocked;
+                        setBpmUnlocked(unlocked);
+                        setBpmEntries(mergedEntries);
+                        const needsUpload = (unlocked && !mainData.bpmUnlocked) ||
+                            Object.keys(guest.entries).some(id => !(id in savedEntries));
+                        if (needsUpload) {
+                            const { setDoc } = window.FirebaseSDK;
+                            await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'userData', 'main'),
+                                { bpmUnlocked: unlocked, bpmEntries: mergedEntries }, { merge: true });
                         }
                     } catch (err) {
                         console.error("Firestore Lang Fetch Error:", err);
@@ -3487,6 +3837,10 @@
                 setViewMode("grid");
                 setBplViewMode("grid");
                 setListSortKey("level_asc");
+                setBpmStatusFilter("all");
+                setBpmViewMode("grid");
+                setSelectedBpmSong(null);
+                setBpmSearch("");
                 if (currentPage !== "terms") setTermsTab("terms");
             }, [currentPage]);
 
@@ -3528,10 +3882,53 @@
                     await signInAnonymously(firebase.auth);
                     setShowOnlyFavorites(false);
                     setShowOnlyMirrors(false);
+                    setBpmUnlocked(false);
+                    setBpmEntries({});
                     setCurrentPage("main");
                 } catch (error) {
                     console.error("Logout Error:", error);
                 }
+            };
+
+            // ----- BPM変化まとめ -----
+            const saveBpmToCloud = async (data) => {
+                if (!user || user.isAnonymous || !firebase) return; // ゲストは端末上の一時保存のみ
+                const { doc, setDoc } = window.FirebaseSDK;
+                try {
+                    await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'userData', 'main'), data, { merge: true });
+                } catch (e) { console.error("bpm save error", e); }
+            };
+
+            // キーボードを閉じてからページ先頭へ（スマホでキーボードが閉じる際にスクロール位置がずれるため）
+            const goToBpmPage = () => {
+                if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+                setCurrentPage("bpm");
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'auto' }), 350);
+            };
+
+            const unlockBpm = () => {
+                setBpmUnlocked(true);
+                setIsBpmUnlockOpen(false);
+                saveBpmToCloud({ bpmUnlocked: true });
+                goToBpmPage();
+            };
+
+            const updateBpmEntry = (songId, patch) => {
+                const nextEntry = { ...(bpmEntries[songId] || {}), ...patch };
+                setBpmEntries(prev => ({ ...prev, [songId]: { ...(prev[songId] || {}), ...patch } }));
+                saveBpmToCloud({ bpmEntries: { [songId]: nextEntry } });
+            };
+
+            // メインページの検索欄で合言葉を検知
+            const handleSearchChange = (value) => {
+                if (currentPage === "main" && value === BPM_UNLOCK_WORD) {
+                    setSearchTerm("");
+                    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+                    if (bpmUnlocked) goToBpmPage();
+                    else setIsBpmUnlockOpen(true);
+                    return;
+                }
+                setSearchTerm(value);
             };
 
             const updateFirestoreProfile = async (newFavs, newMemos, newMirrors) => {
@@ -3974,6 +4371,11 @@
                                     <button onClick={() => setCurrentPage("ranking")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "ranking" ? 'active' : ''}`}>
                                         <i className="ph-bold ph-trophy text-base"></i> {t(lang,'nav_ranking')}
                                     </button>
+                                    {bpmUnlocked && (
+                                        <button onClick={() => setCurrentPage("bpm")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "bpm" ? 'active' : ''}`}>
+                                            <i className="ph-bold ph-gauge text-base"></i> {t(lang,'bpm_title')}
+                                        </button>
+                                    )}
                                     {FEATURE_DANGER_PAGE && (
                                         <button onClick={() => setCurrentPage("danger")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "danger" ? 'active' : ''}`}>
                                             <i className="ph-bold ph-warning-octagon text-base"></i> 要注意楽曲リスト
@@ -4224,7 +4626,7 @@
                                                     placeholder={t(lang,"main_search_placeholder")}
                                                     className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 text-sm font-bold focus:outline-none shadow-[4px_4px_0px_#000]"
                                                     value={searchTerm}
-                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                    onChange={(e) => handleSearchChange(e.target.value)}
                                                 />
                                                 {searchTerm ? (
                                                     <button
@@ -4718,7 +5120,105 @@
                                 })()}
 
 
-                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && (
+                                {currentPage === "bpm" && bpmUnlocked && (() => {
+                                    const q = bpmSearch.toLowerCase();
+                                    const candidates = sortSongs(songs.filter(s => isBpmVariable(s.bpm) && (q === "" ||
+                                        String(s.title || "").toLowerCase().includes(q) ||
+                                        String(s.reading || "").toLowerCase().includes(q))), listSortKey);
+                                    const statusOf = (s) => getBpmStatus(bpmEntries[getSongId(s)], bpmSection);
+                                    const counts = { all: candidates.length, unchecked: 0, yes: 0, no: 0 };
+                                    candidates.forEach(s => { counts[statusOf(s)]++; });
+                                    const list = bpmStatusFilter === "all" ? candidates : candidates.filter(s => statusOf(s) === bpmStatusFilter);
+                                    return (
+                                        <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <i className="ph-fill ph-gauge text-3xl text-[#fdba74]"></i>
+                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'bpm_title')}</h2>
+                                            </div>
+                                            <div className="flex flex-wrap justify-end items-center gap-2 mb-3">
+                                                <ViewModeDropdown viewMode={bpmViewMode} onChange={setBpmViewMode} lang={lang} />
+                                                <SortDropdown sortKey={listSortKey} onChange={setListSortKey} lang={lang} />
+                                            </div>
+
+                                            {/* 検索 */}
+                                            <div className="relative mb-3">
+                                                <input
+                                                    type="text"
+                                                    placeholder={t(lang,"main_search_placeholder")}
+                                                    className="w-full bg-white border-4 border-black rounded-xl py-4 px-5 text-sm font-bold focus:outline-none shadow-[4px_4px_0px_#000]"
+                                                    value={bpmSearch}
+                                                    onChange={(e) => setBpmSearch(e.target.value)}
+                                                />
+                                                {bpmSearch ? (
+                                                    <button onClick={() => setBpmSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors">
+                                                        <i className="ph-bold ph-x-circle text-xl"></i>
+                                                    </button>
+                                                ) : (
+                                                    <i className="ph-bold ph-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-400"></i>
+                                                )}
+                                            </div>
+
+                                            {/* セクション切り替え */}
+                                            <div className="grid grid-cols-4 gap-2 mb-3">
+                                                {BPM_SECTIONS.map(sec => (
+                                                    <button key={sec} onClick={() => setBpmSection(sec)}
+                                                        className={`py-2 rounded-xl border-2 border-black font-black text-[11px] transition-all ${bpmSection === sec ? 'bg-[#d8f3dc] text-[#1b4332] translate-x-0.5 translate-y-0.5 shadow-none' : 'bg-white text-black shadow-[2px_2px_0px_#000]'}`}>
+                                                        {bpmSectionLabel(lang, sec)}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {/* 状態で絞り込み */}
+                                            <div className="flex flex-wrap gap-1.5 mb-3">
+                                                {["all", ...BPM_STATUSES].map(st => (
+                                                    <button key={st} onClick={() => setBpmStatusFilter(st)}
+                                                        className={`px-3 py-1 rounded-full border-2 font-black text-[10px] transition-colors ${bpmStatusFilter === st ? 'bg-white text-black border-white' : 'bg-transparent text-white/80 border-white/30'}`}>
+                                                        {st === "all" ? t(lang,'common_all') : t(lang,`bpm_status_${st}`)} {counts[st]}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {list.length === 0 ? (
+                                                <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
+                                                    <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
+                                                    <p className="font-black text-gray-400 text-sm">{t(lang,'common_not_found')}</p>
+                                                </div>
+                                            ) : bpmViewMode === "grid" ? (
+                                                <div className="grid grid-cols-4 gap-2 animate-in fade-in duration-300">
+                                                    {list.map(song => (
+                                                        <div key={getSongId(song)} onClick={() => setSelectedBpmSong(song)} className="grid-item cursor-pointer" style={{ borderColor: getBorderColor(song.difficult) }}>
+                                                            <JacketImage lang={lang} src={song.jacket} className="w-full h-full object-cover" textClassName="text-[11px]" />
+                                                            <BpmStatusChip status={statusOf(song)} compact />
+                                                            <div className="grid-title-badge">{song.title}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="animate-in fade-in duration-300">
+                                                    {list.map(song => (
+                                                        <div key={getSongId(song)} onClick={() => setSelectedBpmSong(song)} className="pop-card rounded-2xl p-2 mb-3 cursor-pointer flex items-center gap-3">
+                                                            <div className="flex-shrink-0 w-[58px] h-[58px] relative overflow-hidden rounded-lg">
+                                                                <JacketImage lang={lang} src={song.jacket} className="border-[3px] w-full h-full object-cover rounded-lg" style={{ borderColor: getBorderColor(song.difficult) }} textClassName="text-[8px]" />
+                                                            </div>
+                                                            <div className="flex-grow min-w-0">
+                                                                <p className="text-sm font-black leading-tight break-words">{song.title}</p>
+                                                                <p className="text-[10px] font-bold text-black mt-1 flex items-center gap-1">
+                                                                    <DiffBadge diff={song.difficult} /> Lv {formatLevel(song.level)}
+                                                                    <span className="ml-1">BPM {song.bpm}</span>
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex-shrink-0">
+                                                                <BpmStatusChip status={statusOf(song)} lang={lang} />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+
+                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && (
                                     <div className={viewMode === 'grid' && (currentPage === 'main' || currentPage === 'newsongs') ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
                                         {paginatedSongs.map((song, idx) => {
                                             const songId = getSongId(song);
@@ -4745,14 +5245,14 @@
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && paginatedSongs.length === 0 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
                                         <p className="font-black text-gray-400 text-sm">{t(lang,'common_not_found')}</p>
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && totalPages > 1 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
                                             <i className="ph-bold ph-caret-left"></i> {t(lang,'common_prev')}
@@ -4784,6 +5284,23 @@
 
 
                     {/* --- グリッドモード用楽曲詳細 --- */}
+                    <BpmUnlockModal
+                        isOpen={isBpmUnlockOpen}
+                        onSuccess={unlockBpm}
+                        onCancel={() => setIsBpmUnlockOpen(false)}
+                        lang={lang}
+                    />
+                    {selectedBpmSong && (
+                        <BpmSectionModal
+                            song={selectedBpmSong}
+                            section={bpmSection}
+                            entry={bpmEntries[getSongId(selectedBpmSong)]}
+                            onChangeStatus={(st) => updateBpmEntry(getSongId(selectedBpmSong), { [bpmSection]: st })}
+                            onChangePos={(key, val) => updateBpmEntry(getSongId(selectedBpmSong), { [key]: val })}
+                            onClose={() => setSelectedBpmSong(null)}
+                            lang={lang}
+                        />
+                    )}
                     {selectedGridSong && (
                         <SongDetailModal 
                             isOpen={!!selectedGridSong}
