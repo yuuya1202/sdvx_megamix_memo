@@ -523,8 +523,9 @@
         @keyframes sealBreakL { to { transform: translate(-60px, -20px) rotate(-14deg); opacity: 0; } }
         @keyframes sealBreakR { to { transform: translate(60px, 20px) rotate(14deg); opacity: 0; } }
         @keyframes sealFadeRing { to { opacity: 0; transform: scale(1.35); } }
-        @keyframes sealGem { to { background: #a855f7; border-color: #000; } }
-        @keyframes sealGemIcon { to { color: #ffffff; } }
+        @keyframes sealLight { 0% { opacity: 0; transform: scale(.4); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes sealFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes sealShine { 0% { opacity: 0; } 40% { opacity: .9; } 100% { opacity: 0; } }
         @keyframes sealRipple { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(2.4); opacity: 0; } }
         @keyframes sealChar { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -1585,6 +1586,19 @@
                 x2: 150 + Math.cos(a) * 132, y2: 150 + Math.sin(a) * 132,
             };
         });
+        // 宝石（ブリリアントカット風）の面：[座標, 輝いたときの色]
+        const SEAL_GEM_FACETS = [
+            ["30,22 50,8 70,22", "#d8b4fe"], ["30,22 70,22 50,30", "#c084fc"],
+            ["8,22 30,22 22,8", "#a855f7"], ["22,8 30,22 50,8", "#e9d5ff"], ["50,8 70,22 78,8", "#d8b4fe"], ["70,22 92,22 78,8", "#9333ea"],
+            ["8,22 30,22 50,96", "#7e22ce"], ["30,22 50,30 50,96", "#a855f7"], ["50,30 70,22 50,96", "#9333ea"], ["70,22 92,22 50,96", "#6b21a8"],
+        ];
+        const SealGem = ({ bright }) => (
+            <svg viewBox="0 0 100 100" width="96" height="96" style={{ overflow: 'visible' }}>
+                {SEAL_GEM_FACETS.map(([pts, color], i) => (
+                    <polygon key={i} points={pts} fill={bright ? color : '#2a1a3d'} stroke={bright ? '#f3e8ff' : '#5b4a73'} strokeWidth="0.8" strokeLinejoin="round" />
+                ))}
+            </svg>
+        );
         const SEAL_DURATION_MS = 4600; // 演出の長さ（文言が出そろってから遷移）
 
         const AmethystUnlockModal = ({ isOpen, onSuccess, onCancel, lang = 'ja' }) => {
@@ -1642,10 +1656,10 @@
             const isSeal = state === "seal";
             const text = t(lang,'amethyst_unlock_success');
 
-            // 正解時：画面全体を覆って封印解除の演出を再生（タップでスキップ）
+            // 正解時：画面全体を覆って封印解除の演出を再生（スキップ不可。最後まで再生してから遷移）
             if (isSeal) {
                 return (
-                    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center cursor-pointer overflow-hidden" style={{ background: '#140a24', animation: 'sealIn .5s ease-out both' }} onClick={finish}>
+                    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden select-none" style={{ background: '#140a24', animation: 'sealIn .5s ease-out both', touchAction: 'none' }}>
                         <div className="scale-110 sm:scale-[1.35]">
                             <div className="relative" style={{ width: '300px', height: '300px', animation: 'sealIn .8s ease-out both' }}>
                                 <div className="absolute inset-0" style={{ animation: 'sealFadeRing .9s 1.5s ease-in forwards' }}>
@@ -1662,13 +1676,21 @@
                                         <polygon points="150,242 70,104 230,104" strokeDasharray="480" style={{ '--len': 480, animation: 'sealDraw 1.2s .35s ease-out both' }} />
                                     </svg>
                                 </div>
-                                <div className="absolute rounded-full border-2 border-[#e9d5ff]" style={{ left: '50%', top: '50%', width: '84px', height: '84px', margin: '-42px 0 0 -42px', opacity: 0, animation: 'sealRipple 1.4s 1.9s ease-out forwards' }}></div>
-                                <div className="absolute rounded-full border-2 border-[#c084fc]" style={{ left: '50%', top: '50%', width: '84px', height: '84px', margin: '-42px 0 0 -42px', opacity: 0, animation: 'sealRipple 1.6s 2.2s ease-out forwards' }}></div>
-                                <div className="absolute flex items-center justify-center" style={{ left: '50%', top: '50%', width: '84px', height: '84px', margin: '-42px 0 0 -42px', borderRadius: '18px', transform: 'rotate(45deg)', border: '4px solid #4c3a66', background: '#3b2a52', boxShadow: '4px 4px 0 #000', animation: 'sealGem 1s 1.8s ease-out forwards' }}>
-                                    <i className="ph-fill ph-diamond" style={{ fontSize: '38px', transform: 'rotate(-45deg)', color: '#6b5a85', animation: 'sealGemIcon 1s 1.8s ease-out forwards' }}></i>
+                                <div className="absolute rounded-full" style={{ border: '1.5px solid #e9d5ff', left: '50%', top: '50%', width: '84px', height: '84px', margin: '-42px 0 0 -42px', opacity: 0, animation: 'sealRipple 1.4s 1.9s ease-out forwards' }}></div>
+                                <div className="absolute rounded-full" style={{ border: '1.5px solid #c084fc', left: '50%', top: '50%', width: '84px', height: '84px', margin: '-42px 0 0 -42px', opacity: 0, animation: 'sealRipple 1.6s 2.2s ease-out forwards' }}></div>
+                                {/* 宝石：暗い状態から輝く状態へ。背後に柔らかい光、最後にきらめき、その後ゆっくり浮遊 */}
+                                <div className="absolute rounded-full" style={{ left: '50%', top: '50%', width: '200px', height: '200px', margin: '-100px 0 0 -100px', background: 'radial-gradient(circle, rgba(192,132,252,.45) 0%, rgba(168,85,247,.15) 40%, transparent 70%)', opacity: 0, animation: 'sealLight 1.4s 1.8s ease-out forwards' }}></div>
+                                <div className="absolute" style={{ left: '50%', top: '50%', width: '96px', height: '96px', margin: '-50px 0 0 -48px', animation: 'sealFloat 4s 2.8s ease-in-out infinite' }}>
+                                    <div className="absolute inset-0"><SealGem bright={false} /></div>
+                                    <div className="absolute inset-0" style={{ opacity: 0, animation: 'sealIn 1.2s 1.8s ease-out forwards' }}><SealGem bright={true} /></div>
+                                    <svg viewBox="0 0 100 100" width="96" height="96" className="absolute inset-0" style={{ overflow: 'visible', opacity: 0, animation: 'sealShine 1.6s 2.6s ease-out forwards' }}>
+                                        <polygon points="22,8 30,22 50,8" fill="#ffffff" />
+                                        <line x1="50" y1="-6" x2="50" y2="2" stroke="#fff" strokeWidth="1" />
+                                        <line x1="46" y1="-2" x2="54" y2="-2" stroke="#fff" strokeWidth="1" />
+                                    </svg>
                                 </div>
-                                <div className="absolute border-2 border-black" style={{ left: '30px', top: '146px', width: '120px', height: '8px', background: '#7e22ce', transformOrigin: 'right center', animation: 'sealBreakL .7s 1.35s ease-in forwards' }}></div>
-                                <div className="absolute border-2 border-black" style={{ left: '150px', top: '146px', width: '120px', height: '8px', background: '#7e22ce', transformOrigin: 'left center', animation: 'sealBreakR .7s 1.35s ease-in forwards' }}></div>
+                                <div className="absolute" style={{ left: '30px', top: '147px', width: '120px', height: '6px', background: '#7e22ce', border: '1px solid #c084fc', transformOrigin: 'right center', animation: 'sealBreakL .7s 1.35s ease-in forwards' }}></div>
+                                <div className="absolute" style={{ left: '150px', top: '147px', width: '120px', height: '6px', background: '#7e22ce', border: '1px solid #c084fc', transformOrigin: 'left center', animation: 'sealBreakR .7s 1.35s ease-in forwards' }}></div>
                             </div>
                         </div>
                         {/* 文言：1文字ずつ浮かび上がる */}
