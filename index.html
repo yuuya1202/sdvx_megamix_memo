@@ -485,6 +485,38 @@
         @keyframes unlockPop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .unlock-pop { animation: unlockPop .4s; }
 
+        /* --- あめじすと杯：パスワードモーダル・封印解除演出 --- */
+        .am-pin {
+            width: 52px; height: 60px;
+            border: 3px solid #000; border-radius: 12px; background: #fff;
+            display: flex; align-items: center; justify-content: center;
+            color: #581c87; box-shadow: 3px 3px 0 #000;
+            transition: border-color .15s, background .15s;
+        }
+        .am-pin.cur { border-color: #a855f7; background: #faf5ff; }
+        .am-pin.err { border-color: #ef4444; background: #fef2f2; }
+        .am-key {
+            height: 50px; border: 2px solid #000; border-radius: 14px; background: #fff;
+            color: #000; font-size: 22px; font-weight: 900; box-shadow: 3px 3px 0 #000;
+            display: flex; align-items: center; justify-content: center;
+            user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+        .am-key:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+        .am-key.sub { font-size: 12px; background: #f3e8ff; color: #581c87; }
+        .am-stripes { position: absolute; inset: 0; opacity: .18; background: repeating-linear-gradient(135deg, #c084fc 0 2px, transparent 2px 18px); pointer-events: none; }
+        .am-font-serif { font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Noto Serif KR", serif; }
+        @keyframes sealIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes sealRot { to { transform: rotate(360deg); } }
+        @keyframes sealRotR { to { transform: rotate(-360deg); } }
+        @keyframes sealDraw { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
+        @keyframes sealBreakL { to { transform: translate(-60px, -20px) rotate(-14deg); opacity: 0; } }
+        @keyframes sealBreakR { to { transform: translate(60px, 20px) rotate(14deg); opacity: 0; } }
+        @keyframes sealFadeRing { to { opacity: 0; transform: scale(1.35); } }
+        @keyframes sealGem { to { background: #a855f7; border-color: #000; } }
+        @keyframes sealGemIcon { to { color: #ffffff; } }
+        @keyframes sealRipple { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(2.4); opacity: 0; } }
+        @keyframes sealChar { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
         @keyframes modalPop {
             from { transform: scale(0.8); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
@@ -897,9 +929,10 @@
                 "common_reset": `リセット`,
                 "common_filter": `絞り込み`,
                 "amethyst_title": `あめじすと杯`,
-                "amethyst_division": `区分{d}`,
+                "amethyst_group": `グループ`,
+                "amethyst_subtitle": `大会課題曲一覧`,
                 "amethyst_level_label": `レベル`,
-                "amethyst_unlock_success": `あめじすと杯を解放しました`,
+                "amethyst_unlock_success": `専用ページが解禁されました`,
                 "bpm_title": `BPM変化まとめ`,
                 "bpm_section_intro": `イントロ`,
                 "bpm_section_outro": `アウトロ`,
@@ -1112,9 +1145,10 @@
                 "common_reset": `초기화`,
                 "common_filter": `필터`,
                 "amethyst_title": `아메지스트배`,
-                "amethyst_division": `구분 {d}`,
+                "amethyst_group": `그룹`,
+                "amethyst_subtitle": `대회 과제곡 목록`,
                 "amethyst_level_label": `레벨`,
-                "amethyst_unlock_success": `아메지스트배를 해제했습니다`,
+                "amethyst_unlock_success": `전용 페이지가 해제되었습니다`,
                 "bpm_title": `BPM 변화 정리`,
                 "bpm_section_intro": `인트로`,
                 "bpm_section_outro": `아웃트로`,
@@ -1392,8 +1426,8 @@
         const isEmbeddableChart = (url) => !!url && !String(url).includes('/_/viewer/');
 
         // ===== あめじすと杯（隠し機能） =====
-        const AMETHYST_UNLOCK_WORD = "Amethyst"; // メインページ検索欄の合言葉（大文字小文字を区別）
-        const AMETHYST_UNLOCK_PW = "1111";       // 4桁パスワード
+        const AMETHYST_UNLOCK_WORD = "あめじすと杯"; // メインページ検索欄の合言葉
+        const AMETHYST_UNLOCK_PW = "0430";       // 4桁パスワード
         const AMETHYST_DIVISIONS = ["A", "B", "C"];
         const TOURNAMENT_ONLY_MAX_LEVEL = 17;    // この値未満のレベルは大会ページ専用（他の画面では存在しない扱い）
         const isTournamentOnlySong = (song) => {
@@ -1527,6 +1561,149 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // あめじすと杯のパスワード入力モーダル（正解時は封印が解かれる演出を再生してから遷移）
+        const SEAL_TICKS = Array.from({ length: 48 }, (_, i) => {
+            const a = i / 48 * Math.PI * 2;
+            return {
+                x1: 150 + Math.cos(a) * 140, y1: 150 + Math.sin(a) * 140,
+                x2: 150 + Math.cos(a) * 132, y2: 150 + Math.sin(a) * 132,
+            };
+        });
+        const SEAL_DURATION_MS = 4600; // 演出の長さ（文言が出そろってから遷移）
+
+        const AmethystUnlockModal = ({ isOpen, onSuccess, onCancel, lang = 'ja' }) => {
+            const [pw, setPw] = useState("");
+            const [state, setState] = useState("input"); // input | err | seal
+            const [shakeKey, setShakeKey] = useState(0);
+            const timerRef = useRef(null);
+            const doneRef = useRef(false);
+
+            useEffect(() => {
+                if (isOpen) { setPw(""); setState("input"); doneRef.current = false; }
+                return () => clearTimeout(timerRef.current);
+            }, [isOpen]);
+
+            const finish = () => {
+                if (doneRef.current) return;
+                doneRef.current = true;
+                clearTimeout(timerRef.current);
+                onSuccess();
+            };
+
+            const press = (k) => {
+                if (state !== "input") return;
+                if (k === "back") { setPw(p => p.slice(0, -1)); return; }
+                if (pw.length >= 4) return;
+                const next = pw + k;
+                setPw(next);
+                if (next.length === 4) {
+                    timerRef.current = setTimeout(() => {
+                        if (next === AMETHYST_UNLOCK_PW) {
+                            setState("seal");
+                            timerRef.current = setTimeout(finish, SEAL_DURATION_MS);
+                        } else {
+                            setState("err");
+                            setShakeKey(n => n + 1);
+                            timerRef.current = setTimeout(() => { setPw(""); setState("input"); }, 600);
+                        }
+                    }, 150);
+                }
+            };
+
+            useEffect(() => {
+                if (!isOpen) return;
+                const onKey = (e) => {
+                    if (state === "seal") return;
+                    if (/^[0-9]$/.test(e.key)) { e.preventDefault(); press(e.key); }
+                    else if (e.key === "Backspace") { e.preventDefault(); press("back"); }
+                    else if (e.key === "Escape") { onCancel(); }
+                };
+                window.addEventListener("keydown", onKey);
+                return () => window.removeEventListener("keydown", onKey);
+            });
+
+            if (!isOpen) return null;
+            const isSeal = state === "seal";
+            const text = t(lang,'amethyst_unlock_success');
+
+            return (
+                <div className="modal-overlay" style={{ background: 'rgba(10,0,20,0.8)' }} onClick={isSeal ? finish : onCancel}>
+                    <div className="modal-content !p-0 !max-w-[320px] overflow-hidden" onClick={e => { e.stopPropagation(); if (isSeal) finish(); }}>
+                        {!isSeal ? (
+                            <>
+                                <div className="text-center px-5 pt-6 pb-5 relative overflow-hidden" style={{ background: '#2e1065' }}>
+                                    <div className="am-stripes"></div>
+                                    <div className="relative w-[60px] h-[60px] mx-auto mb-3 rounded-[14px] bg-[#a855f7] border-[3px] border-black flex items-center justify-center shadow-[3px_3px_0_#000]" style={{ transform: 'rotate(45deg)' }}>
+                                        <i className="ph-bold ph-lock text-[26px] text-white" style={{ transform: 'rotate(-45deg)' }}></i>
+                                    </div>
+                                    <div className="relative inline-block text-[10px] font-black tracking-[0.2em] text-[#e9d5ff] border border-[#e9d5ff]/45 rounded-full px-3 py-0.5 mb-1.5">AMETHYST CUP</div>
+                                    <h2 className="relative text-xl font-black italic text-white">{t(lang,'bpm_unlock_title')}</h2>
+                                </div>
+                                <div className="px-5 pt-5 pb-6">
+                                    <div key={shakeKey} className={`flex justify-center gap-2.5 ${state === 'err' ? 'unlock-shake' : ''}`}>
+                                        {[0,1,2,3].map(i => (
+                                            <div key={i} className={`am-pin ${state === 'err' ? 'err' : (i === pw.length ? 'cur' : '')}`}>
+                                                {i < pw.length && <i className="ph-fill ph-diamond text-xl"></i>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-center text-xs font-black h-4 mt-3 mb-4" style={{ color: state === 'err' ? '#ef4444' : '#6b7280' }}>
+                                        {state === 'err' ? t(lang,'bpm_unlock_error') : t(lang,'bpm_unlock_desc')}
+                                    </p>
+                                    <div className="grid grid-cols-3 gap-2.5">
+                                        {["1","2","3","4","5","6","7","8","9"].map(k => (
+                                            <button key={k} className="am-key" onClick={() => press(k)}>{k}</button>
+                                        ))}
+                                        <button className="am-key sub" onClick={onCancel}>{t(lang,'common_cancel')}</button>
+                                        <button className="am-key" onClick={() => press("0")}>0</button>
+                                        <button className="am-key sub" onClick={() => press("back")} aria-label={t(lang,'bpm_unlock_backspace')}>
+                                            <i className="ph-bold ph-backspace text-2xl"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="relative overflow-hidden text-center cursor-pointer" style={{ background: '#140a24', height: '530px' }}>
+                                {/* 魔法陣・封印・宝石 */}
+                                <div className="absolute" style={{ left: '50%', top: '205px', width: '300px', height: '300px', margin: '-150px 0 0 -150px', animation: 'sealIn .8s ease-out both' }}>
+                                    <div className="absolute inset-0" style={{ animation: 'sealFadeRing .9s 1.5s ease-in forwards' }}>
+                                        <svg viewBox="0 0 300 300" width="300" height="300" className="absolute inset-0" style={{ animation: 'sealRot 14s linear infinite' }} fill="none" stroke="#c084fc" strokeWidth="1.5">
+                                            <circle cx="150" cy="150" r="140" strokeDasharray="880" style={{ '--len': 880, animation: 'sealDraw 1.1s ease-out both' }} />
+                                            <circle cx="150" cy="150" r="128" strokeOpacity=".5" />
+                                            <g strokeOpacity=".8">
+                                                {SEAL_TICKS.map((tk, i) => <line key={i} x1={tk.x1} y1={tk.y1} x2={tk.x2} y2={tk.y2} />)}
+                                            </g>
+                                        </svg>
+                                        <svg viewBox="0 0 300 300" width="300" height="300" className="absolute inset-0" style={{ animation: 'sealRotR 20s linear infinite' }} fill="none" stroke="#e9d5ff" strokeWidth="1.2" strokeOpacity=".7">
+                                            <circle cx="150" cy="150" r="104" strokeDasharray="4 7" />
+                                            <polygon points="150,58 230,196 70,196" strokeDasharray="480" style={{ '--len': 480, animation: 'sealDraw 1.2s .2s ease-out both' }} />
+                                            <polygon points="150,242 70,104 230,104" strokeDasharray="480" style={{ '--len': 480, animation: 'sealDraw 1.2s .35s ease-out both' }} />
+                                        </svg>
+                                    </div>
+                                    <div className="absolute rounded-full border-2 border-[#e9d5ff]" style={{ left: '50%', top: '50%', width: '84px', height: '84px', margin: '-42px 0 0 -42px', opacity: 0, animation: 'sealRipple 1.4s 1.9s ease-out forwards' }}></div>
+                                    <div className="absolute rounded-full border-2 border-[#c084fc]" style={{ left: '50%', top: '50%', width: '84px', height: '84px', margin: '-42px 0 0 -42px', opacity: 0, animation: 'sealRipple 1.6s 2.2s ease-out forwards' }}></div>
+                                    <div className="absolute flex items-center justify-center" style={{ left: '50%', top: '50%', width: '84px', height: '84px', margin: '-42px 0 0 -42px', borderRadius: '18px', transform: 'rotate(45deg)', border: '4px solid #4c3a66', background: '#3b2a52', boxShadow: '4px 4px 0 #000', animation: 'sealGem 1s 1.8s ease-out forwards' }}>
+                                        <i className="ph-fill ph-diamond" style={{ fontSize: '38px', transform: 'rotate(-45deg)', color: '#6b5a85', animation: 'sealGemIcon 1s 1.8s ease-out forwards' }}></i>
+                                    </div>
+                                    <div className="absolute border-2 border-black" style={{ left: '30px', top: '146px', width: '120px', height: '8px', background: '#7e22ce', transformOrigin: 'right center', animation: 'sealBreakL .7s 1.35s ease-in forwards' }}></div>
+                                    <div className="absolute border-2 border-black" style={{ left: '150px', top: '146px', width: '120px', height: '8px', background: '#7e22ce', transformOrigin: 'left center', animation: 'sealBreakR .7s 1.35s ease-in forwards' }}></div>
+                                </div>
+                                {/* 文言：1文字ずつ浮かび上がる */}
+                                <div className="absolute left-0 right-0 px-3" style={{ top: '398px' }}>
+                                    <div className="am-font-serif" style={{ fontSize: '19px', color: '#f3e8ff', letterSpacing: '0.12em' }}>
+                                        {[...text].map((c, i) => (
+                                            <span key={i} style={{ display: 'inline-block', opacity: 0, animation: `sealChar .7s ${2.3 + i * 0.1}s ease-out forwards` }}>{c}</span>
+                                        ))}
+                                    </div>
+                                    <div style={{ marginTop: '14px', fontSize: '11px', letterSpacing: '0.4em', color: '#a78bca', opacity: 0, animation: 'sealIn 1s 3.5s ease-out forwards' }}>AMETHYST CUP</div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -4508,7 +4685,7 @@
                         )}
                     </div>
 
-                    <header className={`text-center pt-8 ${currentPage === 'ranking' ? 'mb-0' : ['random','main','setlist','simulation','bpl','newsongs'].includes(currentPage) ? 'mb-4' : 'mb-10'}`}>
+                    <header className={`text-center pt-8 ${currentPage === 'ranking' ? 'mb-0' : ['random','main','setlist','simulation','bpl','newsongs','bpm','amethyst'].includes(currentPage) ? 'mb-4' : 'mb-10'}`}>
                         <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-2 transform -rotate-1 shadow-sm">
                             SOUND VOLTEX
                         </div>
@@ -5198,19 +5375,31 @@
                                     const levelOptions = [{ key: "all", label: t(lang,'common_all') }, ...levelInts.map(n => ({ key: String(n), label: `Lv${n}` }))];
                                     return (
                                         <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <i className="ph-fill ph-diamond text-3xl text-[#c084fc]"></i>
-                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'amethyst_title')}</h2>
+                                            {/* ヒーローバナー */}
+                                            <div className="relative overflow-hidden rounded-[20px] border-4 border-black shadow-[6px_6px_0px_#000] px-[18px] pt-[18px] pb-4 mb-[18px]" style={{ background: '#581c87' }}>
+                                                <div className="am-stripes" style={{ opacity: .16 }}></div>
+                                                <div className="absolute border-4 border-black rounded-[24px]" style={{ right: '-18px', top: '-18px', width: '110px', height: '110px', transform: 'rotate(45deg)', background: '#a855f7', opacity: .9 }}></div>
+                                                <i className="ph-fill ph-diamond absolute text-white" style={{ right: '22px', top: '20px', fontSize: '38px' }}></i>
+                                                <div className="relative">
+                                                    <div className="inline-block text-[10px] font-black tracking-[0.2em] text-[#e9d5ff] border border-[#e9d5ff]/50 rounded-full px-3 py-0.5 mb-2">AMETHYST CUP</div>
+                                                    <h2 className="text-[28px] leading-tight font-black italic text-white">{t(lang,'amethyst_title')}</h2>
+                                                    <p className="text-xs font-bold text-[#e9d5ff] mt-1.5">{t(lang,'amethyst_subtitle')}</p>
+                                                </div>
                                             </div>
 
-                                            {/* 区分切り替え */}
-                                            <div className="grid grid-cols-3 gap-2 mb-3">
-                                                {AMETHYST_DIVISIONS.map(d => (
-                                                    <button key={d} onClick={() => { setAmethystDivision(d); setAmethystLevel("all"); }}
-                                                        className={`py-2.5 rounded-xl border-2 border-black font-black text-sm transition-all ${amethystDivision === d ? 'bg-[#e9d5ff] text-[#581c87] translate-x-0.5 translate-y-0.5 shadow-none' : 'bg-white text-black shadow-[2px_2px_0px_#000]'}`}>
-                                                        {t(lang,'amethyst_division',{d})}
-                                                    </button>
-                                                ))}
+                                            {/* グループ切り替え */}
+                                            <div className="grid grid-cols-3 gap-2.5 mb-3.5">
+                                                {AMETHYST_DIVISIONS.map(d => {
+                                                    const on = amethystDivision === d;
+                                                    return (
+                                                        <button key={d} onClick={() => { setAmethystDivision(d); setAmethystLevel("all"); }}
+                                                            className={`border-[3px] border-black rounded-2xl pt-2 pb-2.5 text-center transition-all ${on ? 'translate-x-0.5 translate-y-0.5 shadow-[1px_1px_0_#000]' : 'shadow-[3px_3px_0_#000]'}`}
+                                                            style={{ background: on ? '#a855f7' : '#fff' }}>
+                                                            <div className="text-[28px] leading-none font-black italic" style={{ color: on ? '#fff' : '#000' }}>{d}</div>
+                                                            <div className="text-[10px] font-black tracking-[0.15em] mt-1" style={{ color: on ? '#f3e8ff' : '#6b7280' }}>{t(lang,'amethyst_group')}</div>
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
 
                                             <div className="flex flex-wrap justify-end items-center gap-2 mb-3">
@@ -5225,7 +5414,7 @@
                                                 <SortDropdown sortKey={listSortKey} onChange={setListSortKey} lang={lang} />
                                             </div>
 
-                                            <div className="flex justify-end mb-2">
+                                            <div className="flex justify-center mb-2">
                                                 <div className="hit-counter">{t(lang,'common_chart_count',{n: list.length})}</div>
                                             </div>
 
@@ -5437,10 +5626,8 @@
                         onCancel={() => setIsBpmUnlockOpen(false)}
                         lang={lang}
                     />
-                    <SecretUnlockModal
+                    <AmethystUnlockModal
                         isOpen={isAmethystUnlockOpen}
-                        password={AMETHYST_UNLOCK_PW}
-                        successText={t(lang,'amethyst_unlock_success')}
                         onSuccess={unlockAmethyst}
                         onCancel={() => setIsAmethystUnlockOpen(false)}
                         lang={lang}
