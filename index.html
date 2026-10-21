@@ -896,6 +896,10 @@
                 "common_confirm": `確認`,
                 "common_reset": `リセット`,
                 "common_filter": `絞り込み`,
+                "amethyst_title": `あめじすと杯`,
+                "amethyst_division": `区分{d}`,
+                "amethyst_level_label": `レベル`,
+                "amethyst_unlock_success": `あめじすと杯を解放しました`,
                 "bpm_title": `BPM変化まとめ`,
                 "bpm_section_intro": `イントロ`,
                 "bpm_section_outro": `アウトロ`,
@@ -1107,6 +1111,10 @@
                 "common_confirm": `확인`,
                 "common_reset": `초기화`,
                 "common_filter": `필터`,
+                "amethyst_title": `아메지스트배`,
+                "amethyst_division": `구분 {d}`,
+                "amethyst_level_label": `레벨`,
+                "amethyst_unlock_success": `아메지스트배를 해제했습니다`,
                 "bpm_title": `BPM 변화 정리`,
                 "bpm_section_intro": `인트로`,
                 "bpm_section_outro": `아웃트로`,
@@ -1383,6 +1391,21 @@
         // プログラムがサーバーから返されず表示できないため、埋め込み対象外とする
         const isEmbeddableChart = (url) => !!url && !String(url).includes('/_/viewer/');
 
+        // ===== あめじすと杯（隠し機能） =====
+        const AMETHYST_UNLOCK_WORD = "Amethyst"; // メインページ検索欄の合言葉（大文字小文字を区別）
+        const AMETHYST_UNLOCK_PW = "1111";       // 4桁パスワード
+        const AMETHYST_DIVISIONS = ["A", "B", "C"];
+        const TOURNAMENT_ONLY_MAX_LEVEL = 17;    // この値未満のレベルは大会ページ専用（他の画面では存在しない扱い）
+        const isTournamentOnlySong = (song) => {
+            const lv = parseFloat(song && song.level);
+            return !isNaN(lv) && lv < TOURNAMENT_ONLY_MAX_LEVEL; // レベル空欄は通常曲扱い
+        };
+        // amethyst 列の "A,B" などを ["A","B"] に分解（全角カンマ・読点・空白にも対応）
+        const parseAmethystDivisions = (v) => String(v || "")
+            .split(/[,，、\s]+/)
+            .map(x => x.trim().toUpperCase())
+            .filter(x => AMETHYST_DIVISIONS.includes(x));
+
         // ===== BPM変化まとめ（隠し機能） =====
         const BPM_UNLOCK_WORD = "AtoK";   // メインページ検索欄の合言葉（大文字小文字を区別）
         const BPM_UNLOCK_PW = "1221";     // 4桁パスワード
@@ -1426,7 +1449,7 @@
         };
 
         // パスワード入力モーダル（画面内テンキー。スマホのキーボードは使わない）
-        const BpmUnlockModal = ({ isOpen, onSuccess, onCancel, lang = 'ja' }) => {
+        const SecretUnlockModal = ({ isOpen, password, successText, onSuccess, onCancel, lang = 'ja' }) => {
             const [pw, setPw] = useState("");
             const [state, setState] = useState("input"); // input | err | ok
             const [anim, setAnim] = useState(0);         // 演出の再生用カウンタ
@@ -1446,7 +1469,7 @@
                 if (next.length === 4) {
                     timerRef.current = setTimeout(() => {
                         setAnim(a => a + 1);
-                        if (next === BPM_UNLOCK_PW) {
+                        if (next === password) {
                             setState("ok");
                             timerRef.current = setTimeout(onSuccess, 800);
                         } else {
@@ -1472,7 +1495,7 @@
             if (!isOpen) return null;
             const isOk = state === "ok";
             const msgColor = state === "err" ? '#ef4444' : isOk ? '#2d6a4f' : '#6b7280';
-            const msgText = state === "err" ? t(lang,'bpm_unlock_error') : isOk ? t(lang,'bpm_unlock_success') : t(lang,'bpm_unlock_desc');
+            const msgText = state === "err" ? t(lang,'bpm_unlock_error') : isOk ? successText : t(lang,'bpm_unlock_desc');
 
             return (
                 <div className="modal-overlay" onClick={onCancel}>
@@ -3589,7 +3612,11 @@
         const App = () => {
             const [lang, setLang] = useState('ja');
             const [isLangModalOpen, setIsLangModalOpen] = useState(false);
-            const [songs, setSongs] = useState([]);
+            const [allSongs, setAllSongs] = useState([]); // マスタの全曲（大会専用曲を含む）
+            // 通常の画面で使う曲：大会専用（Lv17未満）を除外。既存の画面はすべてこれを参照する
+            const songs = useMemo(() => allSongs.filter(s => !isTournamentOnlySong(s)), [allSongs]);
+            // あめじすと杯の対象曲（amethyst 列に区分があるもの。大会専用曲を含む）
+            const amethystSongs = useMemo(() => allSongs.filter(s => parseAmethystDivisions(s.amethyst).length > 0), [allSongs]);
             const [isLoading, setIsLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState("");
             const [selectedLevels, setSelectedLevels] = useState([]); 
@@ -3606,6 +3633,14 @@
             const [bpmViewMode, setBpmViewMode] = useState("grid");
             const [selectedBpmSong, setSelectedBpmSong] = useState(null);
             const [bpmSearch, setBpmSearch] = useState("");
+            // あめじすと杯（隠し機能）
+            const [amethystUnlocked, setAmethystUnlocked] = useState(false);
+            const [isAmethystUnlockOpen, setIsAmethystUnlockOpen] = useState(false);
+            const [amethystDivision, setAmethystDivision] = useState("A");
+            const [amethystLevel, setAmethystLevel] = useState("all");
+            const [amethystViewMode, setAmethystViewMode] = useState("grid");
+            const amethystUnlockedRef = useRef(false);
+            amethystUnlockedRef.current = amethystUnlocked;
             const bpmStateRef = useRef({ unlocked: false, entries: {} });
             bpmStateRef.current = { unlocked: bpmUnlocked, entries: bpmEntries };
             const [rankSection, setRankSection] = useState("section1"); 
@@ -3752,7 +3787,7 @@
                             const data = docSnap.data();
                             if (data.songs) {
                                 const parsedSongs = JSON.parse(data.songs);
-                                setSongs(parsedSongs);
+                                setAllSongs(parsedSongs);
                             }
                         }
                     } catch (err) {
@@ -3786,6 +3821,14 @@
                         const unlocked = !!mainData.bpmUnlocked || guest.unlocked;
                         setBpmUnlocked(unlocked);
                         setBpmEntries(mergedEntries);
+                        // あめじすと杯：ゲスト中に解放していればアカウント側へ引き継ぐ
+                        const amethystOn = !!mainData.amethystUnlocked || amethystUnlockedRef.current;
+                        setAmethystUnlocked(amethystOn);
+                        if (amethystOn && !mainData.amethystUnlocked) {
+                            const { setDoc } = window.FirebaseSDK;
+                            await setDoc(doc(firebase.db, 'artifacts', APP_ID, 'users', user.uid, 'userData', 'main'),
+                                { amethystUnlocked: true }, { merge: true });
+                        }
                         const needsUpload = (unlocked && !mainData.bpmUnlocked) ||
                             Object.keys(guest.entries).some(id => !(id in savedEntries));
                         if (needsUpload) {
@@ -3841,6 +3884,8 @@
                 setBpmViewMode("grid");
                 setSelectedBpmSong(null);
                 setBpmSearch("");
+                setAmethystLevel("all");
+                setAmethystViewMode("grid");
                 if (currentPage !== "terms") setTermsTab("terms");
             }, [currentPage]);
 
@@ -3884,6 +3929,7 @@
                     setShowOnlyMirrors(false);
                     setBpmUnlocked(false);
                     setBpmEntries({});
+                    setAmethystUnlocked(false);
                     setCurrentPage("main");
                 } catch (error) {
                     console.error("Logout Error:", error);
@@ -3913,6 +3959,19 @@
                 goToBpmPage();
             };
 
+            const goToAmethystPage = () => {
+                if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+                setCurrentPage("amethyst");
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'auto' }), 350);
+            };
+
+            const unlockAmethyst = () => {
+                setAmethystUnlocked(true);
+                setIsAmethystUnlockOpen(false);
+                saveBpmToCloud({ amethystUnlocked: true });
+                goToAmethystPage();
+            };
+
             const updateBpmEntry = (songId, patch) => {
                 const nextEntry = { ...(bpmEntries[songId] || {}), ...patch };
                 setBpmEntries(prev => ({ ...prev, [songId]: { ...(prev[songId] || {}), ...patch } }));
@@ -3921,6 +3980,13 @@
 
             // メインページの検索欄で合言葉を検知
             const handleSearchChange = (value) => {
+                if (currentPage === "main" && value === AMETHYST_UNLOCK_WORD) {
+                    setSearchTerm("");
+                    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+                    if (amethystUnlocked) goToAmethystPage();
+                    else setIsAmethystUnlockOpen(true);
+                    return;
+                }
                 if (currentPage === "main" && value === BPM_UNLOCK_WORD) {
                     setSearchTerm("");
                     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -4374,6 +4440,11 @@
                                     {bpmUnlocked && (
                                         <button onClick={() => setCurrentPage("bpm")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "bpm" ? 'active' : ''}`}>
                                             <i className="ph-bold ph-gauge text-base"></i> {t(lang,'bpm_title')}
+                                        </button>
+                                    )}
+                                    {amethystUnlocked && (
+                                        <button onClick={() => setCurrentPage("amethyst")} className={`dropdown-item hover:bg-gray-50 ${currentPage === "amethyst" ? 'active' : ''}`}>
+                                            <i className="ph-bold ph-diamond text-base"></i> {t(lang,'amethyst_title')}
                                         </button>
                                     )}
                                     {FEATURE_DANGER_PAGE && (
@@ -5120,6 +5191,80 @@
                                 })()}
 
 
+                                {currentPage === "amethyst" && amethystUnlocked && (() => {
+                                    const inDivision = amethystSongs.filter(s => parseAmethystDivisions(s.amethyst).includes(amethystDivision));
+                                    const levelInts = [...new Set(inDivision.map(s => Math.floor(parseFloat(s.level))).filter(n => !isNaN(n)))].sort((a, b) => a - b);
+                                    const list = sortSongs(inDivision.filter(s => amethystLevel === "all" || Math.floor(parseFloat(s.level)) === Number(amethystLevel)), listSortKey);
+                                    const levelOptions = [{ key: "all", label: t(lang,'common_all') }, ...levelInts.map(n => ({ key: String(n), label: `Lv${n}` }))];
+                                    return (
+                                        <div className="animate-in fade-in slide-in-from-top-4 duration-500 text-left px-1 mb-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <i className="ph-fill ph-diamond text-3xl text-[#c084fc]"></i>
+                                                <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter">{t(lang,'amethyst_title')}</h2>
+                                            </div>
+
+                                            {/* 区分切り替え */}
+                                            <div className="grid grid-cols-3 gap-2 mb-3">
+                                                {AMETHYST_DIVISIONS.map(d => (
+                                                    <button key={d} onClick={() => { setAmethystDivision(d); setAmethystLevel("all"); }}
+                                                        className={`py-2.5 rounded-xl border-2 border-black font-black text-sm transition-all ${amethystDivision === d ? 'bg-[#e9d5ff] text-[#581c87] translate-x-0.5 translate-y-0.5 shadow-none' : 'bg-white text-black shadow-[2px_2px_0px_#000]'}`}>
+                                                        {t(lang,'amethyst_division',{d})}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            <div className="flex flex-wrap justify-end items-center gap-2 mb-3">
+                                                <BadgeDropdown
+                                                    label={amethystLevel === "all" ? t(lang,'amethyst_level_label') : `Lv${amethystLevel}`}
+                                                    icon="ph-chart-bar"
+                                                    options={levelOptions}
+                                                    value={amethystLevel}
+                                                    onChange={setAmethystLevel}
+                                                />
+                                                <ViewModeDropdown viewMode={amethystViewMode} onChange={setAmethystViewMode} lang={lang} />
+                                                <SortDropdown sortKey={listSortKey} onChange={setListSortKey} lang={lang} />
+                                            </div>
+
+                                            <div className="flex justify-end mb-2">
+                                                <div className="hit-counter">{t(lang,'common_chart_count',{n: list.length})}</div>
+                                            </div>
+
+                                            {list.length === 0 ? (
+                                                <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
+                                                    <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
+                                                    <p className="font-black text-gray-400 text-sm">{t(lang,'common_not_found')}</p>
+                                                </div>
+                                            ) : amethystViewMode === "grid" ? (
+                                                <div className="grid grid-cols-4 gap-2 animate-in fade-in duration-300">
+                                                    {list.map(song => (
+                                                        <div key={getSongId(song)} onClick={() => setSelectedGridSong(song)} className="grid-item cursor-pointer" style={{ borderColor: getBorderColor(song.difficult) }}>
+                                                            <JacketImage lang={lang} src={song.jacket} className="w-full h-full object-cover" textClassName="text-[11px]" />
+                                                            <div className="grid-title-badge">{song.title}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="animate-in fade-in duration-300">
+                                                    {list.map(song => (
+                                                        <div key={getSongId(song)} onClick={() => setSelectedGridSong(song)} className="pop-card rounded-2xl p-2 mb-3 cursor-pointer flex items-center gap-3">
+                                                            <div className="flex-shrink-0 w-[58px] h-[58px] relative overflow-hidden rounded-lg">
+                                                                <JacketImage lang={lang} src={song.jacket} className="border-[3px] w-full h-full object-cover rounded-lg" style={{ borderColor: getBorderColor(song.difficult) }} textClassName="text-[8px]" />
+                                                            </div>
+                                                            <div className="flex-grow min-w-0">
+                                                                <p className="text-sm font-black leading-tight break-words">{song.title}</p>
+                                                                <p className="text-[10px] font-bold text-black mt-1 flex items-center gap-1">
+                                                                    <DiffBadge diff={song.difficult} /> Lv {formatLevel(song.level)}
+                                                                    <span className="ml-1">BPM {song.bpm}</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+
                                 {currentPage === "bpm" && bpmUnlocked && (() => {
                                     const q = bpmSearch.toLowerCase();
                                     const candidates = sortSongs(songs.filter(s => isBpmVariable(s.bpm) && (q === "" ||
@@ -5218,7 +5363,7 @@
                                     );
                                 })()}
 
-                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && (
+                                {currentPage !== "ranking" && currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && currentPage !== "amethyst" && (
                                     <div className={viewMode === 'grid' && (currentPage === 'main' || currentPage === 'newsongs') ? 'grid grid-cols-4 gap-2 animate-in fade-in duration-300' : 'animate-in fade-in duration-300'}>
                                         {paginatedSongs.map((song, idx) => {
                                             const songId = getSongId(song);
@@ -5245,14 +5390,14 @@
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && paginatedSongs.length === 0 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && currentPage !== "amethyst" && paginatedSongs.length === 0 && (
                                     <div className="text-center py-20 bg-white border-4 border-black border-dashed rounded-3xl">
                                         <i className="ph-bold ph-ghost text-4xl text-gray-300 mb-4 block"></i>
                                         <p className="font-black text-gray-400 text-sm">{t(lang,'common_not_found')}</p>
                                     </div>
                                 )}
 
-                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && totalPages > 1 && (
+                                {currentPage !== "setlist" && currentPage !== "random" && currentPage !== "terms" && currentPage !== "contact" && currentPage !== "simulation" && currentPage !== "bpl" && currentPage !== "bpm" && currentPage !== "amethyst" && totalPages > 1 && (
                                     <div className="pagination-container">
                                         <button onClick={() => handlePageChange(pageIndex - 1)} disabled={pageIndex <= 1} className="page-btn">
                                             <i className="ph-bold ph-caret-left"></i> {t(lang,'common_prev')}
@@ -5284,10 +5429,20 @@
 
 
                     {/* --- グリッドモード用楽曲詳細 --- */}
-                    <BpmUnlockModal
+                    <SecretUnlockModal
                         isOpen={isBpmUnlockOpen}
+                        password={BPM_UNLOCK_PW}
+                        successText={t(lang,'bpm_unlock_success')}
                         onSuccess={unlockBpm}
                         onCancel={() => setIsBpmUnlockOpen(false)}
+                        lang={lang}
+                    />
+                    <SecretUnlockModal
+                        isOpen={isAmethystUnlockOpen}
+                        password={AMETHYST_UNLOCK_PW}
+                        successText={t(lang,'amethyst_unlock_success')}
+                        onSuccess={unlockAmethyst}
+                        onCancel={() => setIsAmethystUnlockOpen(false)}
                         lang={lang}
                     />
                     {selectedBpmSong && (
