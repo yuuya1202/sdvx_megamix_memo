@@ -942,7 +942,6 @@
                 "common_filter": `絞り込み`,
                 "amethyst_title": `あめじすと杯`,
                 "amethyst_group": `グループ`,
-                "filter_amethyst_only": `あめじすと杯の曲のみ`,
                 "amethyst_subtitle": `大会課題曲一覧`,
                 "amethyst_level_label": `レベル`,
                 "amethyst_unlock_success": `専用ページが解禁されました`,
@@ -1159,7 +1158,6 @@
                 "common_filter": `필터`,
                 "amethyst_title": `아메지스트배`,
                 "amethyst_group": `그룹`,
-                "filter_amethyst_only": `아메지스트배 곡만`,
                 "amethyst_subtitle": `대회 과제곡 목록`,
                 "amethyst_level_label": `레벨`,
                 "amethyst_unlock_success": `전용 페이지가 해제되었습니다`,
@@ -2985,12 +2983,11 @@
             const [songModalFilter, setSongModalFilter] = useState("closed"); // "open" | "closed"
             const [songModalFavOnly, setSongModalFavOnly] = useState(false);
             const [songModalMirrorOnly, setSongModalMirrorOnly] = useState(false);
-            const [songModalAmethystOnly, setSongModalAmethystOnly] = useState(false);
             const [songModalDiffs, setSongModalDiffs] = useState([]);
             const [songModalVersions, setSongModalVersions] = useState([]);
             const [songModalLevels, setSongModalLevels] = useState([]);
             const [songModalBpls, setSongModalBpls] = useState([]);
-            const songModalFilterActive = songModalFavOnly || songModalMirrorOnly || songModalAmethystOnly || songModalDiffs.length > 0 || songModalVersions.length > 0 || songModalLevels.length > 0 || songModalBpls.length > 0;
+            const songModalFilterActive = songModalFavOnly || songModalMirrorOnly || songModalDiffs.length > 0 || songModalVersions.length > 0 || songModalLevels.length > 0 || songModalBpls.length > 0;
             const [openSetlists, setOpenSetlists] = useState({});
             
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -3033,7 +3030,6 @@
                 setSongModalFilter("closed");
                 setSongModalFavOnly(false);
                 setSongModalMirrorOnly(false);
-                setSongModalAmethystOnly(false);
                 setSongModalDiffs([]);
                 setSongModalVersions([]);
                 setSongModalLevels([]);
@@ -3427,7 +3423,6 @@
                                                 String(s.reading || "").toLowerCase().includes(searchTerm.toLowerCase());
                                             const matchFav = !songModalFavOnly || favIds.includes(id);
                                             const matchMirror = !songModalMirrorOnly || (mirrors && mirrors[id] && (mirrors[id].first || mirrors[id].second));
-                                            const matchAmethyst = !songModalAmethystOnly || parseAmethystDivisions(s.amethyst).length > 0;
                                             const matchDiff = songModalDiffs.length === 0 || songModalDiffs.includes(String(s.difficult||"").toUpperCase());
                                             const matchVer = songModalVersions.length === 0 || songModalVersions.includes(String(s.version||""));
                                             const lvStr = String(s.level || "");
@@ -3444,7 +3439,7 @@
                                                 if (season === '6') return String(s.bpl6) === sec;
                                                 return false;
                                             });
-                                            return matchSearch && matchFav && matchMirror && matchAmethyst && matchDiff && matchVer && matchLv && matchBpl;
+                                            return matchSearch && matchFav && matchMirror && matchDiff && matchVer && matchLv && matchBpl;
                                         }).slice(0, 100);
 
                                         if (!songModalFilterActive && searchTerm.trim() === "") {
@@ -3527,7 +3522,7 @@
                                     <span className="text-base font-black">{t(lang,'filter_title')}</span>
                                     <div className="flex items-center gap-2">
                                         {songModalFilterActive && (
-                                            <button onClick={() => { setSongModalFavOnly(false); setSongModalMirrorOnly(false); setSongModalAmethystOnly(false); setSongModalDiffs([]); setSongModalVersions([]); setSongModalLevels([]); setSongModalBpls([]); }}
+                                            <button onClick={() => { setSongModalFavOnly(false); setSongModalMirrorOnly(false); setSongModalDiffs([]); setSongModalVersions([]); setSongModalLevels([]); setSongModalBpls([]); }}
                                                 className="flex items-center gap-1 text-[10px] font-black bg-gray-100 border border-gray-300 px-3 py-1 rounded-full">
                                                 <i className="ph-bold ph-arrows-counter-clockwise"></i> {t(lang,'common_reset')}
                                             </button>
@@ -3538,18 +3533,6 @@
                                     </div>
                                 </div>
                                 <div className="overflow-y-auto px-5 py-4 space-y-6 text-black">
-                                    {/* あめじすと杯（解放済みの人のみ） */}
-                                    {amethystUnlocked && (
-                                        <div className="space-y-2">
-                                            <div className="text-[10px] font-black text-black uppercase border-b-2 border-gray-100 pb-1 mb-2">{t(lang,'amethyst_title')}</div>
-                                            <div className="toggle-btn-group" style={{background:'#d1d5db'}}>
-                                                <button onClick={() => setSongModalAmethystOnly(false)} className={`toggle-btn-small ${!songModalAmethystOnly ? 'active' : ''}`} style={{color: !songModalAmethystOnly ? '#1b4332' : '#374151'}}>{t(lang,'common_all')}</button>
-                                                <button onClick={() => setSongModalAmethystOnly(true)} className={`toggle-btn-small ${songModalAmethystOnly ? 'active' : ''}`} style={{color: songModalAmethystOnly ? '#581c87' : '#374151'}}>
-                                                    <i className="ph-fill ph-diamond"></i> {t(lang,'filter_amethyst_only')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
                                     {/* お気に入り・ミラー */}
                                     {favorites && favorites.length > 0 && (
                                         <div className="space-y-2">
